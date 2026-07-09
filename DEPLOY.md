@@ -1,10 +1,10 @@
 # Deploying to Coolify
 
-This repo deploys as three services via `docker-compose.yml` at the repo root: `mongo`, `backend`, `frontend`.
+This repo deploys as three services via `docker-compose.yaml` at the repo root: `mongo`, `backend`, `frontend`.
 
 ## Setup in Coolify
 
-1. Create a new **Docker Compose** resource in Coolify, pointing at this repository (root `docker-compose.yml`).
+1. Create a new **Docker Compose** resource in Coolify, pointing at this repository (root `docker-compose.yaml`).
 2. Set environment variables on the Coolify resource (these populate the root `.env` used by the compose file) — copy from `.env.example`:
    - `MONGO_ROOT_USER`, `MONGO_ROOT_PASSWORD` — pick a strong password; Mongo is only reachable internally, never exposed to the host.
    - `BETTER_AUTH_SECRET` — generate with `openssl rand -hex 32`.

@@ -185,3 +185,22 @@ body {
     cursor: pointer;
   }
 }
+
+@utility font-display {
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+@keyframes gentle-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--float-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--float-rotate, 0deg));
+  }
+}
+
+@utility animate-gentle-float {
+  animation: gentle-float 5s ease-in-out infinite;
+}

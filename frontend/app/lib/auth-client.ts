@@ -3,6 +3,6 @@ import { adminClient } from "better-auth/client/plugins";
 import { polarClient } from "@polar-sh/better-auth/client";
 
 export const authClient = createAuthClient({
-  baseURL: "http://localhost:5000",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
   plugins: [adminClient(), polarClient()],
 });

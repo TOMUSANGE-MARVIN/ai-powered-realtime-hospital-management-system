@@ -37,7 +37,7 @@ export const auth = betterAuth({
     }),
     polar({
       client: polarClient,
-      createCustomerOnSignUp: true,
+      createCustomerOnSignUp: !!process.env.POLAR_ACCESS_TOKEN,
       use: [
         checkout({
           authenticatedUsersOnly: true,

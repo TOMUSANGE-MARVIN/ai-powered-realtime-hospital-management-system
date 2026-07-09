@@ -13,7 +13,7 @@ import Footer from "@/components/home/Footer";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "MedFlow AI — Smarter care starts here" },
+    { title: "Ask Musawo — Smarter care starts here" },
     {
       name: "description",
       content:

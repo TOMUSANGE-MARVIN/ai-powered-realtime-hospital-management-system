@@ -82,7 +82,7 @@ const Login = () => {
               <Activity className="text-white w-8 h-8" />
             </div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-              MedFlow AI
+              Ask Musawo
             </h1>
             <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
               Secure Provider Portal

@@ -44,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             __html: `
               (function() {
                 try {
-                  var storageKey = "medflow-theme";
+                  var storageKey = "askmusawo-theme";
                   var defaultTheme = "system";
                   var theme = localStorage.getItem(storageKey) || defaultTheme;
                   var supportDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;

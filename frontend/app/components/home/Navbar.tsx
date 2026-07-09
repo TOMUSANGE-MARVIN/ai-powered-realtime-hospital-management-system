@@ -28,7 +28,7 @@ export default function Navbar() {
             <Activity className="size-4 text-white" strokeWidth={2.5} />
           </span>
           <span className="font-display text-lg font-semibold tracking-tight text-stone-900">
-            MedFlow AI
+            Ask Musawo
           </span>
         </Link>
 
@@ -70,7 +70,7 @@ export default function Navbar() {
             </SheetTrigger>
             <SheetContent side="right">
               <SheetHeader>
-                <SheetTitle className="font-display">MedFlow AI</SheetTitle>
+                <SheetTitle className="font-display">Ask Musawo</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-1 px-4">
                 {NAV_LINKS.map((link) => (

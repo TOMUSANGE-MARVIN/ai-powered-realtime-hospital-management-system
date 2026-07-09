@@ -45,7 +45,7 @@ export default function HMSDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight">
-            MedFlow Dashboard
+            Ask Musawo Dashboard
           </h1>
           <p className="text-slate-500 font-medium">
             Welcome back, {user?.name}. Here's what's happening today.

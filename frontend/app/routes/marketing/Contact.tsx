@@ -9,10 +9,10 @@ const fieldClass =
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Contact — MedFlow AI" },
+    { title: "Contact — Ask Musawo" },
     {
       name: "description",
-      content: "Get in touch with the MedFlow AI care team.",
+      content: "Get in touch with the Ask Musawo care team.",
     },
   ];
 }
@@ -24,7 +24,7 @@ const INFO = [
     value: "14 Acacia Avenue, Kololo, Kampala, Uganda",
   },
   { icon: Phone, label: "Phone", value: "+256 414 255 900" },
-  { icon: Mail, label: "Email", value: "care@medflow.co.ug" },
+  { icon: Mail, label: "Email", value: "care@askmusawo.co.ug" },
   { icon: Clock, label: "Hours", value: "Open 24/7 for emergency care" },
 ];
 

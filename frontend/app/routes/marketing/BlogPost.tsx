@@ -7,7 +7,7 @@ import CtaBanner from "@/components/home/CtaBanner";
 export function meta({ params }: Route.MetaArgs) {
   const post = getBlogPost(params.slug as string);
   return [
-    { title: post ? `${post.title} — MedFlow AI` : "Blog — MedFlow AI" },
+    { title: post ? `${post.title} — Ask Musawo` : "Blog — Ask Musawo" },
     { name: "description", content: post?.excerpt ?? "" },
   ];
 }

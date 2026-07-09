@@ -59,7 +59,7 @@ export default function Footer() {
                 <Activity className="size-4 text-white" strokeWidth={2.5} />
               </span>
               <span className="font-display text-lg font-semibold text-white">
-                MedFlow AI
+                Ask Musawo
               </span>
             </Link>
 
@@ -116,7 +116,7 @@ export default function Footer() {
             </a>
           </div>
           <p className="text-xs text-stone-500">
-            © 2026 MedFlow AI. All Rights Reserved
+            © 2026 Ask Musawo. All Rights Reserved
           </p>
           <div className="flex items-center gap-5 text-xs text-stone-500">
             <a href="#" className="hover:text-white">

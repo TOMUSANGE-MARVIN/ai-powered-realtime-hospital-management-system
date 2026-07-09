@@ -4,11 +4,11 @@ import CtaBanner from "@/components/home/CtaBanner";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Doctors — MedFlow AI" },
+    { title: "Doctors — Ask Musawo" },
     {
       name: "description",
       content:
-        "Meet the board-certified specialists behind MedFlow AI's coordinated, AI-assisted care.",
+        "Meet the board-certified specialists behind Ask Musawo's coordinated, AI-assisted care.",
     },
   ];
 }

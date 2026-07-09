@@ -6,11 +6,11 @@ import { BLOG_POSTS } from "@/lib/blogPosts";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Blog — MedFlow AI" },
+    { title: "Blog — Ask Musawo" },
     {
       name: "description",
       content:
-        "Health tips and updates from the MedFlow AI care team — nutrition, recovery, mental health, and preventive care.",
+        "Health tips and updates from the Ask Musawo care team — nutrition, recovery, mental health, and preventive care.",
     },
   ];
 }
@@ -24,7 +24,7 @@ export default function Blog() {
           <>
             The latest from
             <br />
-            MedFlow AI
+            Ask Musawo
           </>
         }
         description="Practical, evidence-based health tips from our specialists — no jargon, just what actually helps."

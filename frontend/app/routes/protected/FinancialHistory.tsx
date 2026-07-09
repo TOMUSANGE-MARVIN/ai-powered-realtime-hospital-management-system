@@ -33,7 +33,7 @@ import GlobalSearch from "@/components/global/GlobalSearch";
 import { toast } from "sonner";
 
 export function meta() {
-  return [{ title: "Financial History | MedFlow AI" }];
+  return [{ title: "Financial History | Ask Musawo" }];
 }
 
 const FinancialHistory = () => {

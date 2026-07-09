@@ -12,7 +12,7 @@ export default function BlogSection() {
         <Reveal className="flex items-end justify-between">
           <h2 className="font-display text-4xl font-medium text-stone-900">
             The latest from{" "}
-            <span className="text-orange-600">MedFlow AI</span>
+            <span className="text-orange-600">Ask Musawo</span>
           </h2>
           <Link
             to="/blog"

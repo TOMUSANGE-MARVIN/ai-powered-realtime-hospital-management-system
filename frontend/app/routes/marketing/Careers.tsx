@@ -10,10 +10,10 @@ import PageHeader from "@/components/home/PageHeader";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Careers — MedFlow AI" },
+    { title: "Careers — Ask Musawo" },
     {
       name: "description",
-      content: "Open roles at MedFlow AI — build the future of healthcare with us.",
+      content: "Open roles at Ask Musawo — build the future of healthcare with us.",
     },
   ];
 }
@@ -144,7 +144,7 @@ export default function Careers() {
                   </div>
                 </div>
                 <a
-                  href="mailto:careers@medflow.co.ug"
+                  href="mailto:careers@askmusawo.co.ug"
                   className="inline-flex shrink-0 items-center justify-center rounded-full bg-stone-950 px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
                 >
                   Apply
@@ -156,7 +156,7 @@ export default function Careers() {
           <p className="mt-10 text-center text-sm text-stone-600">
             Don't see the right role?{" "}
             <a
-              href="mailto:careers@medflow.co.ug"
+              href="mailto:careers@askmusawo.co.ug"
               className="font-semibold text-stone-900 underline underline-offset-4"
             >
               Reach out anyway

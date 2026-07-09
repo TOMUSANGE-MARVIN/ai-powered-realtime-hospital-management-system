@@ -5,11 +5,11 @@ import CtaBanner from "@/components/home/CtaBanner";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "About Us — MedFlow AI" },
+    { title: "About Us — Ask Musawo" },
     {
       name: "description",
       content:
-        "MedFlow AI pairs board-certified specialists with AI-assisted tools to deliver faster, safer, more coordinated care.",
+        "Ask Musawo pairs board-certified specialists with AI-assisted tools to deliver faster, safer, more coordinated care.",
     },
   ];
 }
@@ -60,7 +60,7 @@ export default function About() {
             driven by technology
           </>
         }
-        description="MedFlow AI started with a simple idea: patients get better outcomes when their care team has the right information at the right moment. We built the platform we wished every hospital already had."
+        description="Ask Musawo started with a simple idea: patients get better outcomes when their care team has the right information at the right moment. We built the platform we wished every hospital already had."
       />
 
       <section className="bg-white py-24">
@@ -80,7 +80,7 @@ export default function About() {
               Faster answers, calmer decisions
             </h2>
             <p className="mt-6 max-w-md text-[15px] leading-relaxed text-stone-600">
-              From admission to discharge, MedFlow AI keeps every clinician,
+              From admission to discharge, Ask Musawo keeps every clinician,
               nurse, and specialist working off the same live picture of a
               patient's condition — vitals, lab results, imaging, and
               billing, all in one place.

@@ -73,7 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {/* Hide text when collapsed */}
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-bold text-slate-800 dark:text-slate-100">
-                    MedFlow AI
+                    Ask Musawo
                   </span>
                   <span className="truncate text-xs text-slate-500">
                     {userRole.charAt(0).toUpperCase() + userRole.slice(1)}{" "}

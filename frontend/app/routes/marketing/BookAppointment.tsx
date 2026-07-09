@@ -6,10 +6,10 @@ import PageHeader from "@/components/home/PageHeader";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Book Appointment — MedFlow AI" },
+    { title: "Book Appointment — Ask Musawo" },
     {
       name: "description",
-      content: "Schedule a visit with a MedFlow AI specialist.",
+      content: "Schedule a visit with a Ask Musawo specialist.",
     },
   ];
 }

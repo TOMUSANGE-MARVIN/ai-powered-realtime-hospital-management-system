@@ -6,10 +6,10 @@ import CtaBanner from "@/components/home/CtaBanner";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "FAQ — MedFlow AI" },
+    { title: "FAQ — Ask Musawo" },
     {
       name: "description",
-      content: "Answers to common questions about visiting MedFlow AI.",
+      content: "Answers to common questions about visiting Ask Musawo.",
     },
   ];
 }

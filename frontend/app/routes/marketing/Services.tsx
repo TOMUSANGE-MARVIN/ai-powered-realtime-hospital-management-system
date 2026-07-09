@@ -14,7 +14,7 @@ import CtaBanner from "@/components/home/CtaBanner";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Services — MedFlow AI" },
+    { title: "Services — Ask Musawo" },
     {
       name: "description",
       content:

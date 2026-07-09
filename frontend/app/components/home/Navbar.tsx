@@ -54,7 +54,7 @@ export default function Navbar() {
           <div className="hidden h-5 w-px bg-stone-200 sm:block" />
           <Link
             to="/book-appointment"
-            className="rounded-full bg-stone-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            className="hidden rounded-full bg-stone-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03] active:scale-[0.98] md:inline-flex"
           >
             Book Appointment
           </Link>

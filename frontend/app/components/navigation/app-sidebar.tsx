@@ -203,6 +203,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenu>
           </SidebarGroup>
         )}
+        {/* Group 3 */}
+        {filteredSecondary.length > 0 && (
+          <SidebarGroup className="mt-auto">
+            <SidebarMenu>
+              {filteredSecondary.map((item) => {
+                const isActive = pathname === item.url;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={isActive}
+                      className="group-data-[collapsible=icon]:justify-center!"
+                    >
+                      <Link to={item.url}>
+                        {item.icon && <item.icon />}
+                        <span className="group-data-[collapsible=icon]:hidden">
+                          {item.title}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       {session?.user && (
         <SidebarFooter>

@@ -119,14 +119,85 @@ export interface invoice {
 
 export interface appointment {
   _id: string;
-  patientId: string;
-  doctorId: string;
+  patientId?: string;
+  patientName: string;
+  patientEmail?: string;
+  patientPhone?: string;
+  doctorId?: string;
+  doctorName?: string;
   nurseId?: string;
-  date: Date;
-  time: string;
-  reason: string;
-  status: "scheduled" | "confirmed" | "completed" | "cancelled" | "in-progress";
+  department?: string;
+  date: string;
+  time?: string;
+  reason?: string;
+  status:
+    | "requested"
+    | "scheduled"
+    | "confirmed"
+    | "completed"
+    | "cancelled"
+    | "in-progress";
   isVirtual: boolean;
-  meetingId: string; // Used as the LiveKit Room Name
-  createdAt: Date;
+  meetingId?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface Medication {
+  _id: string;
+  name: string;
+  category: string;
+  unit: string;
+  stock: number;
+  reorderLevel: number;
+  unitPrice: number;
+  expiryDate?: string;
+  supplier?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PrescriptionItem {
+  medication?: string;
+  medicationName: string;
+  dosage: string;
+  quantity: number;
+  instructions?: string;
+}
+
+export interface Prescription {
+  _id: string;
+  patient: string;
+  patientName: string;
+  doctor: string;
+  doctorName: string;
+  items: PrescriptionItem[];
+  status: "pending" | "dispensed" | "cancelled";
+  dispensedBy?: string;
+  dispensedAt?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupportTicket {
+  _id: string;
+  userId: string;
+  userName: string;
+  subject: string;
+  message: string;
+  priority: "low" | "medium" | "high";
+  status: "open" | "in_progress" | "resolved";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Feedback {
+  _id: string;
+  userId: string;
+  userName: string;
+  category: "bug" | "feature" | "general";
+  message: string;
+  rating?: number;
+  createdAt: string;
 }

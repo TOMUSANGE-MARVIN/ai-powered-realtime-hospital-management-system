@@ -74,11 +74,11 @@ export default function Hero() {
             Trusted
           </span>
 
-          {/* photo A - woman, amber */}
+          {/* photo A - nurse preparing, amber */}
           <div className="absolute top-0 right-4 z-10 h-56 w-44 -rotate-2 overflow-hidden rounded-[2rem] bg-amber-200 p-1.5 shadow-xl">
             <img
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80&auto=format&fit=crop"
-              alt="Smiling patient"
+              src="/images/hero/nurse-gloves.png"
+              alt="Nurse preparing for patient care"
               className="h-full w-full rounded-[1.5rem] object-cover"
             />
           </div>
@@ -88,11 +88,11 @@ export default function Hero() {
             Calm
           </span>
 
-          {/* photo B - woman, violet */}
+          {/* photo B - nurse in clinic, violet */}
           <div className="absolute top-44 left-0 z-10 h-60 w-48 rotate-2 overflow-hidden rounded-[2rem] bg-violet-200 p-1.5 shadow-xl">
             <img
-              src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80&auto=format&fit=crop"
-              alt="Content patient"
+              src="/images/hero/nurse-clinic.png"
+              alt="Nurse reviewing patient medication"
               className="h-full w-full rounded-[1.5rem] object-cover"
             />
             <span className="absolute -right-3 -bottom-3 flex size-9 items-center justify-center rounded-full bg-white shadow-md">
@@ -100,11 +100,11 @@ export default function Hero() {
             </span>
           </div>
 
-          {/* photo C - man, lime */}
+          {/* photo C - doctor & nurse consulting, lime */}
           <div className="absolute top-64 right-0 z-10 h-52 w-40 -rotate-3 overflow-hidden rounded-[2rem] bg-lime-200 p-1.5 shadow-xl">
             <img
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&auto=format&fit=crop"
-              alt="Reassured patient"
+              src="/images/hero/doctor-nurse-consult.png"
+              alt="Doctor and nurse consulting on patient care"
               className="h-full w-full rounded-[1.5rem] object-cover"
             />
           </div>
@@ -130,23 +130,23 @@ export default function Hero() {
         <div className="mx-auto flex items-center justify-center gap-3 md:hidden">
           <div className="h-56 w-44 overflow-hidden rounded-[2rem] bg-amber-200 p-1.5 shadow-xl">
             <img
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80&auto=format&fit=crop"
-              alt="Smiling patient"
+              src="/images/hero/nurse-gloves.png"
+              alt="Nurse preparing for patient care"
               className="h-full w-full rounded-[1.5rem] object-cover"
             />
           </div>
           <div className="flex flex-col gap-3">
             <div className="h-24 w-24 overflow-hidden rounded-[1.5rem] bg-violet-200 p-1.5 shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80&auto=format&fit=crop"
-                alt="Content patient"
+                src="/images/hero/nurse-clinic.png"
+                alt="Nurse reviewing patient medication"
                 className="h-full w-full rounded-[1.2rem] object-cover"
               />
             </div>
             <div className="h-24 w-24 overflow-hidden rounded-[1.5rem] bg-lime-200 p-1.5 shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80&auto=format&fit=crop"
-                alt="Reassured patient"
+                src="/images/hero/doctor-nurse-consult.png"
+                alt="Doctor and nurse consulting on patient care"
                 className="h-full w-full rounded-[1.2rem] object-cover"
               />
             </div>

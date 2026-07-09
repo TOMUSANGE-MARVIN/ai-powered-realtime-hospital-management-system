@@ -4,6 +4,7 @@ import { checkRole } from "../middleware/checkRole"; // Your RBAC middleware
 import {
   createLabResult,
   getPatientLabResults,
+  getAllLabResults,
   updateLabResult,
 } from "../controllers/labResults";
 
@@ -15,6 +16,14 @@ labResultsRouter.post(
   requireAuth,
   checkRole(["admin", "doctor", "lab_tech"]),
   createLabResult,
+);
+
+// GET: Fetch all lab results across all patients (Test Requests / Results Entry pages)
+labResultsRouter.get(
+  "/",
+  requireAuth,
+  checkRole(["admin", "doctor", "nurse", "lab_tech"]),
+  getAllLabResults,
 );
 
 // GET: Fetch all X-Rays for a patient (Allowed for Medical Staff)

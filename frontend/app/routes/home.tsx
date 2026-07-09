@@ -30,19 +30,25 @@ export default function Home() {
       <div className="pointer-events-none absolute right-0 bottom-40 size-72 translate-x-1/3 rounded-full bg-amber-300" />
 
       <div className="relative">
-        <div className="bg-linear-to-b from-[#F8F5F2] to-[#F4F6F1]">
-          <Navbar />
-          <Hero />
-          <HelpSection />
+        {/* z-10 keeps this content stacked above VideoSection's fixed video
+            backdrop regardless of scroll position or DOM order */}
+        <div className="relative z-10">
+          <div className="bg-linear-to-b from-[#F8F5F2] to-[#F4F6F1]">
+            <Navbar />
+            <Hero />
+            <HelpSection />
+          </div>
+          <ConfidenceSection />
+          <FeaturesSection />
+          <AICapabilitiesSection />
+          <ProcessSection />
         </div>
-        <ConfidenceSection />
-        <FeaturesSection />
-        <AICapabilitiesSection />
-        <ProcessSection />
         <VideoSection />
-        <TestimonialSection />
-        <BlogSection />
-        <Footer />
+        <div className="relative z-10">
+          <TestimonialSection />
+          <BlogSection />
+          <Footer />
+        </div>
       </div>
     </div>
   );

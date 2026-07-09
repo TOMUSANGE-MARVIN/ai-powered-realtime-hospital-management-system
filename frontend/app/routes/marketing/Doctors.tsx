@@ -18,43 +18,38 @@ const DOCTORS = [
     name: "Dr. Grace Nakato",
     specialty: "Internal Medicine",
     department: "Internal Medicine",
-    image:
-      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80&auto=format&fit=crop",
+    image: "/images/doctors/dr-female-1.png",
   },
   {
     name: "Dr. Joseph Okello",
     specialty: "Pediatrics",
     department: "Pediatrics",
-    image:
-      "https://images.unsplash.com/photo-1622902046580-2b47f47f5471?w=400&q=80&auto=format&fit=crop",
-  },
-  {
-    name: "Dr. Ronald Ssebunya",
-    specialty: "Emergency Medicine",
-    department: "Emergency",
-    image:
-      "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80&auto=format&fit=crop",
+    image: "/images/doctors/dr-male-1.png",
+    imagePosition: "left",
   },
   {
     name: "Dr. Patricia Namutebi",
     specialty: "Orthopedic Surgery",
     department: "Orthopedics",
-    image:
-      "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80&auto=format&fit=crop",
+    image: "/images/doctors/dr-female-2.png",
   },
   {
     name: "Dr. Ibrahim Wasswa",
     specialty: "Cardiology",
     department: "Cardiology",
-    image:
-      "https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=400&q=80&auto=format&fit=crop",
+    image: "/images/doctors/dr-male-2.png",
   },
   {
     name: "Dr. Susan Achieng",
     specialty: "Obstetrics & Gynecology",
     department: "Maternity",
-    image:
-      "https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=400&q=80&auto=format&fit=crop",
+    image: "/images/doctors/dr-female-3.png",
+  },
+  {
+    name: "Dr. Sarah Nabwire",
+    specialty: "Emergency Medicine",
+    department: "Emergency",
+    image: "/images/doctors/dr-female-4.png",
   },
 ];
 
@@ -81,6 +76,11 @@ export default function Doctors() {
                 <img
                   src={doctor.image}
                   alt={doctor.name}
+                  style={
+                    doctor.imagePosition
+                      ? { objectPosition: doctor.imagePosition }
+                      : undefined
+                  }
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>

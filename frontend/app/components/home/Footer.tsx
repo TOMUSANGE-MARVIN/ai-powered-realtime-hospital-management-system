@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Activity, Instagram, Linkedin, Mail, Twitter } from "lucide-react";
+import {
+  Activity,
+  Instagram,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  X,
+} from "lucide-react";
 
-const FOOTER_LINKS = [
+const QUICK_LINKS = [
   { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
   { label: "Doctors", href: "/team" },
@@ -10,6 +18,18 @@ const FOOTER_LINKS = [
   { label: "Contact", href: "/contact" },
   { label: "FAQ", href: "/faq" },
   { label: "Careers", href: "/careers" },
+  { label: "Book Appointment", href: "/book-appointment" },
+];
+
+const SERVICE_LINKS = [
+  "Emergency Care",
+  "Inpatient Care",
+  "Diagnostic Imaging",
+  "Laboratory Services",
+  "Maternity & Newborn",
+  "Outpatient Clinics",
+  "Telehealth Visits",
+  "Pharmacy",
 ];
 
 export default function Footer() {
@@ -19,41 +39,9 @@ export default function Footer() {
   return (
     <footer className="bg-[#1B140F] pt-20 pb-8 text-stone-300">
       <div className="mx-auto max-w-6xl px-6 md:px-4">
-        <div className="grid grid-cols-1 gap-14 border-b border-white/10 pb-14 md:grid-cols-2">
-          {/* left */}
-          <div>
-            <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              {FOOTER_LINKS.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className="text-sm font-medium text-stone-300 hover:text-white"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-
-            <div className="mt-16 flex items-baseline gap-14">
-              <div>
-                <span className="font-display text-5xl text-white">
-                  12<span className="text-2xl">k+</span>
-                </span>
-                <p className="mt-1 text-xs text-stone-400">Patients served</p>
-              </div>
-              <div>
-                <span className="font-display text-5xl text-white">
-                  98<span className="text-2xl">%</span>
-                </span>
-                <p className="mt-1 text-xs text-stone-400">
-                  Satisfaction rate
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* right */}
-          <div>
+        <div className="grid grid-cols-1 gap-12 border-b border-white/10 pb-14 sm:grid-cols-2 lg:grid-cols-5">
+          {/* brand */}
+          <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2">
               <span className="flex size-8 items-center justify-center rounded-full bg-linear-to-tr from-blue-600 to-indigo-600">
                 <Activity className="size-4 text-white" strokeWidth={2.5} />
@@ -67,8 +55,96 @@ export default function Footer() {
               AI-powered care
             </span>
 
-            <p className="mt-6 text-sm font-semibold text-white">
-              Subscribe to our newsletter!
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-stone-400">
+              Real-time patient monitoring and AI-assisted diagnostics for
+              modern hospitals — coordinated care from triage to recovery.
+            </p>
+
+            <ul className="mt-6 space-y-3 text-sm text-stone-400">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-stone-500" />
+                14 Acacia Avenue, Kololo, Kampala, Uganda
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="size-4 shrink-0 text-stone-500" />
+                <a href="tel:+256414255900" className="hover:text-white">
+                  +256 414 255 900
+                </a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="size-4 shrink-0 text-stone-500" />
+                <a
+                  href="mailto:care@askmusawo.co.ug"
+                  className="hover:text-white"
+                >
+                  care@askmusawo.co.ug
+                </a>
+              </li>
+            </ul>
+
+            <div className="mt-8 flex items-baseline gap-10">
+              <div>
+                <span className="font-display text-4xl text-white">
+                  12<span className="text-xl">k+</span>
+                </span>
+                <p className="mt-1 text-xs text-stone-400">Patients served</p>
+              </div>
+              <div>
+                <span className="font-display text-4xl text-white">
+                  98<span className="text-xl">%</span>
+                </span>
+                <p className="mt-1 text-xs text-stone-400">
+                  Satisfaction rate
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* quick links */}
+          <div>
+            <h3 className="text-xs font-semibold tracking-widest text-white uppercase">
+              Quick Links
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {QUICK_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
+                    className="text-sm font-medium text-stone-400 hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* services */}
+          <div>
+            <h3 className="text-xs font-semibold tracking-widest text-white uppercase">
+              Services
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {SERVICE_LINKS.map((service) => (
+                <li key={service}>
+                  <Link
+                    to="/services"
+                    className="text-sm font-medium text-stone-400 hover:text-white"
+                  >
+                    {service}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* newsletter */}
+          <div>
+            <h3 className="text-xs font-semibold tracking-widest text-white uppercase">
+              Stay Updated
+            </h3>
+            <p className="mt-5 text-sm font-medium text-stone-400">
+              Health tips and hospital news, straight to your inbox.
             </p>
 
             {subscribed ? (
@@ -100,21 +176,34 @@ export default function Footer() {
                 </button>
               </form>
             )}
+
+            <div className="mt-8 flex items-center gap-4">
+              <a
+                href="#"
+                aria-label="X (Twitter)"
+                className="flex size-9 items-center justify-center rounded-full border border-white/15 text-stone-300 hover:border-white/30 hover:text-white"
+              >
+                <X className="size-4" />
+              </a>
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="flex size-9 items-center justify-center rounded-full border border-white/15 text-stone-300 hover:border-white/30 hover:text-white"
+              >
+                <Instagram className="size-4" />
+              </a>
+              <a
+                href="#"
+                aria-label="LinkedIn"
+                className="flex size-9 items-center justify-center rounded-full border border-white/15 text-stone-300 hover:border-white/30 hover:text-white"
+              >
+                <Linkedin className="size-4" />
+              </a>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center gap-6 pt-8 sm:flex-row sm:justify-between">
-          <div className="flex items-center gap-5">
-            <a href="#" aria-label="Twitter" className="hover:text-white">
-              <Twitter className="size-4" />
-            </a>
-            <a href="#" aria-label="Instagram" className="hover:text-white">
-              <Instagram className="size-4" />
-            </a>
-            <a href="#" aria-label="LinkedIn" className="hover:text-white">
-              <Linkedin className="size-4" />
-            </a>
-          </div>
+        <div className="flex flex-col items-center gap-4 pt-8 sm:flex-row sm:justify-between">
           <p className="text-xs text-stone-500">
             © 2026 Ask Musawo. All Rights Reserved
           </p>
@@ -123,13 +212,14 @@ export default function Footer() {
               Privacy
             </a>
             <a href="#" className="hover:text-white">
+              Terms
+            </a>
+            <a href="#" className="hover:text-white">
               Sitemap
             </a>
           </div>
         </div>
       </div>
-
-      <div className="mt-8 h-1 w-full bg-linear-to-r from-rose-500 via-orange-400 to-amber-300" />
     </footer>
   );
 }

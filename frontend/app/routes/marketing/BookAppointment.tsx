@@ -3,6 +3,8 @@ import type { Route } from "./+types/BookAppointment";
 import { toast } from "sonner";
 import { CalendarCheck, ChevronDown } from "lucide-react";
 import PageHeader from "@/components/home/PageHeader";
+import { useMutation } from "@tanstack/react-query";
+import { requestAppointment } from "@/lib/api";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -40,11 +42,29 @@ export default function BookAppointment() {
   const [form, setForm] = useState(emptyForm);
   const [submitted, setSubmitted] = useState(false);
 
+  const mutation = useMutation({
+    mutationFn: requestAppointment,
+    onSuccess: () => {
+      setSubmitted(true);
+      toast.success("Appointment request received.");
+    },
+    onError: () => {
+      toast.error("Failed to submit request. Please try again.");
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.department || !form.date) return;
-    setSubmitted(true);
-    toast.success("Appointment request received.");
+    mutation.mutate({
+      patientName: form.name,
+      patientEmail: form.email,
+      patientPhone: form.phone,
+      department: form.department,
+      date: form.date,
+      time: form.time,
+      reason: form.notes,
+    });
   };
 
   return (
@@ -210,9 +230,10 @@ export default function BookAppointment() {
 
               <button
                 type="submit"
-                className="w-full rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                disabled={mutation.isPending}
+                className="w-full rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
               >
-                Request Appointment
+                {mutation.isPending ? "Submitting..." : "Request Appointment"}
               </button>
             </form>
           )}

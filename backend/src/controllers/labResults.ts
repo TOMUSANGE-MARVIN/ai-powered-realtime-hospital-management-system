@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import mongoose from "mongoose";
 import LabResult from "../models/labResults";
 import { inngest } from "../inngest/client";
 import { logActivity } from "../lib/activity";
@@ -24,7 +25,7 @@ export const createLabResult = async (req: Request, res: Response) => {
     if (io) {
       io.emit("lab_result_added");
     }
-    if (testType === "X-Ray" && newLabResult) {
+    if (testType === "X-Ray" && imageUrl && newLabResult) {
       // trigger an event in Inngest(analyze-xray) to analyze the x-ray image
       await inngest.send({
         name: "labResult/created",
@@ -52,6 +53,61 @@ export const createLabResult = async (req: Request, res: Response) => {
     res.status(201).json(newLabResult);
   } catch (error) {
     console.error("Error creating lab result:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// 2b. Get all Lab Results across all patients (paginated, filterable) — used by Lab Requests/Results Entry pages
+export const getAllLabResults = async (req: Request, res: Response) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit as string) || 20);
+    const skip = (page - 1) * limit;
+    const status = req.query.status as string;
+
+    const filter: any = {};
+    if (status && status !== "all") filter.status = status;
+
+    const total = await LabResult.countDocuments(filter);
+    const results = await LabResult.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // Denormalize patient name/email since "user" isn't a registered Mongoose model
+    const patientIds = [
+      ...new Set(results.map((r) => r.patient?.toString()).filter(Boolean)),
+    ];
+    const patientQueryIds: (string | mongoose.Types.ObjectId)[] = patientIds.map(
+      (id) => (id.length === 24 ? new mongoose.Types.ObjectId(id) : id),
+    );
+
+    const patients = await mongoose.connection
+      .collection("user")
+      .find(
+        { _id: { $in: patientQueryIds } as any },
+        { projection: { name: 1, email: 1 } },
+      )
+      .toArray();
+    const patientMap = new Map(patients.map((p) => [p._id.toString(), p]));
+
+    const enriched = results.map((r) => ({
+      ...r,
+      patientName: patientMap.get(r.patient?.toString())?.name || "Unknown",
+    }));
+
+    res.json({
+      res: enriched,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalData: total,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching all lab results:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

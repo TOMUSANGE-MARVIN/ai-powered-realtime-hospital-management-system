@@ -5,6 +5,7 @@ import {
   FileText,
   ScanLine,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import Reveal from "@/components/home/Reveal";
 
@@ -60,67 +61,76 @@ export default function AICapabilitiesSection() {
         </Reveal>
 
         <div className="mt-16 grid grid-cols-1 items-center gap-14 lg:grid-cols-2">
-          {/* mockup AI insight panel */}
-          <Reveal delay={100}>
-            <div className="relative rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-sm">
+          {/* doctor photo with floating AI insight badges */}
+          <Reveal delay={100} className="relative mx-auto w-full max-w-md">
+            {/* ambient glow */}
+            <div className="absolute inset-0 -z-10 rounded-[3rem] bg-gradient-to-br from-indigo-500/25 via-indigo-500/5 to-transparent blur-2xl" />
+
+            {/* doodles */}
+            <Sparkles
+              className="absolute -top-5 right-8 size-6 rotate-12 text-indigo-300/60"
+              strokeWidth={1.5}
+            />
+            <svg
+              className="absolute -left-9 top-1/3 size-16 text-indigo-400/25"
+              viewBox="0 0 60 60"
+              fill="none"
+            >
+              <path
+                d="M2 14c10 0 12 24 24 24s10-20 22-16"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="absolute right-2 bottom-6 size-2.5 rounded-full bg-orange-400/70" />
+            <span className="absolute top-1/2 -right-2 size-1.5 rounded-full bg-indigo-300/60" />
+
+            {/* photo panel */}
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-indigo-950/60 to-slate-900/70 px-6 pt-8">
+              <img
+                src="/images/ai/doctor-ai-insight.png"
+                alt="Physician reviewing AI-assisted patient insights"
+                className="mx-auto h-[420px] w-auto object-contain drop-shadow-2xl"
+              />
+            </div>
+
+            {/* floating badge: AI Insight mini card */}
+            <div className="absolute -left-6 top-8 w-44 rounded-2xl border border-white/10 bg-white/[0.06] p-3 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <BrainCircuit className="size-4 text-indigo-400" />
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-white">
+                  <BrainCircuit className="size-3.5 text-indigo-400" />
                   AI Insight
                 </span>
-                <span className="flex items-center gap-1.5 text-xs text-emerald-400">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
-                  </span>
-                  Analyzing
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
                 </span>
               </div>
+              <svg viewBox="0 0 100 30" className="mt-2 h-6 w-full">
+                <polyline
+                  points="0,20 15,18 30,22 45,10 60,14 75,5 90,9 100,6"
+                  fill="none"
+                  stroke="#818cf8"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <p className="mt-1 text-[10px] leading-snug text-slate-400">
+                Analyzing vitals in real time
+              </p>
+            </div>
 
-              {/* mini vitals chart */}
-              <div className="mt-6 rounded-2xl bg-black/20 p-4">
-                <svg viewBox="0 0 300 80" className="h-20 w-full">
-                  <polyline
-                    points="0,55 30,52 60,58 90,45 120,50 150,20 180,28 210,15 240,22 270,18 300,25"
-                    fill="none"
-                    stroke="url(#lineGradient)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="210" cy="15" r="5" fill="#f97316" />
-                  <defs>
-                    <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#818cf8" />
-                      <stop offset="100%" stopColor="#f97316" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-
-              <div className="mt-5">
-                <p className="text-sm font-medium text-white">
-                  Elevated heart rate trend detected
-                </p>
-                <p className="mt-1 text-xs text-slate-400">
-                  Room 214 · Patient vitals, last 6 hours
-                </p>
-
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full w-[94%] rounded-full bg-gradient-to-r from-indigo-400 to-orange-400" />
-                  </div>
-                  <span className="text-xs font-semibold text-white">94%</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-500">
-                  Confidence score
-                </p>
-              </div>
-
-              <div className="mt-5 flex items-center gap-2 rounded-xl bg-orange-500/10 px-4 py-3">
-                <AlertTriangle className="size-4 shrink-0 text-orange-400" />
-                <p className="text-xs text-orange-200">
-                  Flagged for physician review
+            {/* floating badge: confidence score */}
+            <div className="absolute -right-4 bottom-10 flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 shadow-xl backdrop-blur-md">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                <Activity className="size-4 text-emerald-400" />
+              </span>
+              <div>
+                <p className="text-sm font-bold text-white">98%</p>
+                <p className="text-[10px] text-slate-400">
+                  Diagnostic accuracy
                 </p>
               </div>
             </div>

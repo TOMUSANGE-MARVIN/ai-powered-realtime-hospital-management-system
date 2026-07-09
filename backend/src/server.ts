@@ -29,6 +29,11 @@ import { getIO, initSocket } from "./lib/socket";
 import { uploadRouter } from "./lib/uploadthing";
 import { createRouteHandler } from "uploadthing/express";
 import uploadthingRouter from "./routes/uploadthing";
+import medicationRouter from "./routes/medication";
+import prescriptionRouter from "./routes/prescription";
+import appointmentRouter from "./routes/appointment";
+import settingRouter from "./routes/setting";
+import supportRouter from "./routes/support";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -87,6 +92,11 @@ app.use("/api/activity-logs", activityLogRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/lab-results", labResultsRouter);
 app.use("/api/invoices", invoiceRouter);
+app.use("/api/medications", medicationRouter);
+app.use("/api/prescriptions", prescriptionRouter);
+app.use("/api/appointments", appointmentRouter);
+app.use("/api/settings", settingRouter);
+app.use("/api/support", supportRouter);
 // inngest API route
 app.use(
   "/api/inngest",

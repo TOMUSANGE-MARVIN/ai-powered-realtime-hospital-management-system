@@ -7,6 +7,10 @@ import type {
   ActivityLog,
   invoice,
   appointment,
+  Medication,
+  Prescription,
+  SupportTicket,
+  Feedback,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -247,5 +251,297 @@ export const markAsRead = async (id: string) => {
     credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to mark as read");
+  return res.json();
+};
+
+// --- Lab results (global list, used by Lab Requests / Results Entry) ---
+
+export const getAllLabResults = async (params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedResponse<LabResult & { patientName: string }>> => {
+  const query = new URLSearchParams({
+    status: params?.status || "all",
+    page: (params?.page || 1).toString(),
+    limit: (params?.limit || 20).toString(),
+  }).toString();
+  const res = await fetch(`${API_URL}/lab-results?${query}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch lab results");
+  return res.json();
+};
+
+// --- Pharmacy: Medications (inventory) ---
+
+export const getMedications = async (params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedResponse<Medication>> => {
+  const query = new URLSearchParams({
+    search: params?.search || "",
+    page: (params?.page || 1).toString(),
+    limit: (params?.limit || 20).toString(),
+  }).toString();
+  const res = await fetch(`${API_URL}/medications?${query}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch medications");
+  return res.json();
+};
+
+export const createMedication = async (data: Partial<Medication>) => {
+  const res = await fetch(`${API_URL}/medications`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to add medication");
+  return res.json();
+};
+
+export const updateMedication = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: Partial<Medication>;
+}) => {
+  const res = await fetch(`${API_URL}/medications/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to update medication");
+  return res.json();
+};
+
+export const deleteMedication = async (id: string) => {
+  const res = await fetch(`${API_URL}/medications/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to delete medication");
+  return res.json();
+};
+
+// --- Pharmacy: Prescriptions ---
+
+export const getPrescriptions = async (params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedResponse<Prescription>> => {
+  const query = new URLSearchParams({
+    status: params?.status || "all",
+    page: (params?.page || 1).toString(),
+    limit: (params?.limit || 20).toString(),
+  }).toString();
+  const res = await fetch(`${API_URL}/prescriptions?${query}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch prescriptions");
+  return res.json();
+};
+
+export const createPrescription = async (data: {
+  patient: string;
+  patientName: string;
+  items: Prescription["items"];
+  notes?: string;
+}) => {
+  const res = await fetch(`${API_URL}/prescriptions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to create prescription");
+  return res.json();
+};
+
+export const dispensePrescription = async (id: string) => {
+  const res = await fetch(`${API_URL}/prescriptions/${id}/dispense`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to dispense prescription");
+  }
+  return res.json();
+};
+
+export const cancelPrescription = async (id: string) => {
+  const res = await fetch(`${API_URL}/prescriptions/${id}/cancel`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to cancel prescription");
+  return res.json();
+};
+
+// --- Appointments ---
+
+export const requestAppointment = async (data: {
+  patientName: string;
+  patientEmail: string;
+  patientPhone?: string;
+  department: string;
+  date: string;
+  time?: string;
+  reason?: string;
+}) => {
+  const res = await fetch(`${API_URL}/appointments/request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to submit appointment request");
+  return res.json();
+};
+
+export const getAppointments = async (params?: {
+  status?: string;
+  isVirtual?: boolean;
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedResponse<appointment>> => {
+  const query = new URLSearchParams({
+    status: params?.status || "all",
+    ...(params?.isVirtual ? { isVirtual: "true" } : {}),
+    page: (params?.page || 1).toString(),
+    limit: (params?.limit || 20).toString(),
+  }).toString();
+  const res = await fetch(`${API_URL}/appointments?${query}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch appointments");
+  return res.json();
+};
+
+export const createAppointment = async (data: Partial<appointment>) => {
+  const res = await fetch(`${API_URL}/appointments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to create appointment");
+  return res.json();
+};
+
+export const updateAppointment = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: Partial<appointment>;
+}) => {
+  const res = await fetch(`${API_URL}/appointments/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to update appointment");
+  return res.json();
+};
+
+// --- Settings ---
+
+export const getSetting = async (
+  key: string,
+): Promise<{ key: string; data: Record<string, any> }> => {
+  const res = await fetch(`${API_URL}/settings/${key}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch settings");
+  return res.json();
+};
+
+export const updateSetting = async ({
+  key,
+  data,
+}: {
+  key: string;
+  data: Record<string, any>;
+}) => {
+  const res = await fetch(`${API_URL}/settings/${key}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data }),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to update settings");
+  return res.json();
+};
+
+// --- Support & Feedback ---
+
+export const getSupportTickets = async (): Promise<SupportTicket[]> => {
+  const res = await fetch(`${API_URL}/support/tickets`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch support tickets");
+  return res.json();
+};
+
+export const createSupportTicket = async (data: {
+  subject: string;
+  message: string;
+  priority?: string;
+}) => {
+  const res = await fetch(`${API_URL}/support/tickets`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to submit ticket");
+  return res.json();
+};
+
+export const updateSupportTicketStatus = async ({
+  id,
+  status,
+}: {
+  id: string;
+  status: string;
+}) => {
+  const res = await fetch(`${API_URL}/support/tickets/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to update ticket");
+  return res.json();
+};
+
+export const getFeedbackList = async (): Promise<Feedback[]> => {
+  const res = await fetch(`${API_URL}/support/feedback`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch feedback");
+  return res.json();
+};
+
+export const createFeedback = async (data: {
+  category: string;
+  message: string;
+  rating?: number;
+}) => {
+  const res = await fetch(`${API_URL}/support/feedback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to submit feedback");
   return res.json();
 };

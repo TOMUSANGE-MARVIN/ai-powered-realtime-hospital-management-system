@@ -4,16 +4,16 @@ import Reveal from "@/components/home/Reveal";
 
 const SLIDES = [
   {
-    src: "https://images.unsplash.com/photo-1470116945706-e6bf5d5a53ca?w=500&q=80&auto=format&fit=crop",
-    alt: "Parent holding a newborn's hand",
+    src: "/images/confidence/xray-review.png",
+    alt: "Doctor reviewing an X-ray with a patient",
   },
   {
-    src: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=500&q=80&auto=format&fit=crop",
-    alt: "Doctor consulting a patient warmly",
+    src: "/images/confidence/senior-medication.png",
+    alt: "Nurse reviewing medication with a senior patient",
   },
   {
-    src: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?w=500&q=80&auto=format&fit=crop",
-    alt: "Doctor reviewing care with a senior patient",
+    src: "/images/confidence/child-vaccination.png",
+    alt: "Health worker vaccinating a child",
   },
 ];
 

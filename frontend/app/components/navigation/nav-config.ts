@@ -109,8 +109,11 @@ export const navConfig: {
       title: "Appointments",
       url: "/appointments",
       icon: FileText,
-      allowedRoles: ["admin", "doctor", "nurse", "patient"],
-      items: [{ title: "Telemedicine", url: "/telemedicine" }],
+      allowedRoles: ["admin", "doctor", "nurse"],
+      items: [
+        { title: "All Appointments", url: "/appointments" },
+        { title: "Telemedicine", url: "/telemedicine" },
+      ],
     },
   ],
   navAdmin: [

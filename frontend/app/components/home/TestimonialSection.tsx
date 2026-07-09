@@ -8,7 +8,7 @@ export default function TestimonialSection() {
         <Reveal className="relative overflow-hidden rounded-[2.5rem] bg-stone-900 p-6">
           <div className="h-72 overflow-hidden rounded-[1.75rem] sm:h-96">
             <img
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=500&q=80&auto=format&fit=crop"
+              src="/images/doctors/dr-female-1.png"
               alt="Dr. Grace Nakato"
               className="h-full w-full object-cover"
             />

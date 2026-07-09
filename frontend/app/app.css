@@ -175,7 +175,7 @@ body {
 
 @layer components {
   .card {
-    @apply border-gradient p-0.5 rounded-2xl border-none;
+    @apply bg-card text-card-foreground rounded-2xl border border-border;
   }
 }
 

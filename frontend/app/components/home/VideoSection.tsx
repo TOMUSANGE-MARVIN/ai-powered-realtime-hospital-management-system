@@ -4,26 +4,35 @@ import Reveal from "@/components/home/Reveal";
 
 export default function VideoSection() {
   return (
-    <section className="relative overflow-hidden rounded-t-[3rem] py-0">
-      <div className="relative flex min-h-[560px] items-center justify-center">
+    <section className="relative">
+      {/* fixed video backdrop — pinned to the viewport at all times. Sections
+          before and after this one are wrapped in their own `relative z-10`
+          stacking context (see home.tsx) so they paint above this video
+          regardless of scroll position; this div stays at the base z-index
+          so it's only ever visible through this section's own transparent
+          content, with no extra height or scroll range needed. Note: a
+          negative z-index here would tuck it behind the page's own opaque
+          background instead of just behind the surrounding sections. */}
+      <div className="fixed inset-0 overflow-hidden">
         <video
           className="motion-reduce:hidden absolute inset-0 h-full w-full object-cover"
-          src="/videos/hospital-hallway.mp4"
-          poster="/images/hospital-hallway-poster.jpg"
+          src="/videos/healthcare-animations.mp4"
+          poster="/images/healthcare-animations-poster.jpg"
           autoPlay
           muted
           loop
           playsInline
         />
         <img
-          src="/images/hospital-hallway-poster.jpg"
+          src="/images/healthcare-animations-poster.jpg"
           alt=""
           className="motion-safe:hidden absolute inset-0 h-full w-full object-cover"
         />
-
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30" />
+      </div>
 
-        <Reveal className="relative z-10 mx-auto max-w-2xl px-6 py-24 text-center md:px-4">
+      <div className="relative z-10 flex min-h-[560px] items-center justify-center px-6 md:px-4">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center rounded-full border border-white/30 px-4 py-1.5 text-[11px] font-semibold tracking-wider text-white/80 uppercase">
             Take a look inside
           </span>

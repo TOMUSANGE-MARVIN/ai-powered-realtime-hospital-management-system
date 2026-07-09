@@ -13,6 +13,7 @@ import type { User as UserType } from "@/types";
 import Profile from "./tabs/profile";
 import History from "./tabs/History";
 import Radiology from "./tabs/Radiology";
+import { STATUS_CONFIG } from "./statusBadge";
 
 interface UserDetailsSheetProps {
   user: UserType | null;
@@ -31,7 +32,7 @@ export function DetailsSheet({ user, isOpen, onClose }: UserDetailsSheetProps) {
         className="inset-y-4! right-4! h-auto! sm:max-w-xl rounded-xl border shadow-2xl p-0 overflow-hidden bg-white dark:bg-zinc-950 flex flex-col min-w-120"
         side="right"
       >
-        <div className="p-6 bg-slate-50 dark:bg-slate-900 border-b shrink-0">
+        <div className="p-6 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b shrink-0">
           <SheetHeader className="flex flex-row items-center gap-4 space-y-0">
             <Avatar className="h-16 w-16 border-2 border-white dark:border-slate-800 shadow-sm">
               <AvatarImage src={user.image || ""} />
@@ -50,11 +51,8 @@ export function DetailsSheet({ user, isOpen, onClose }: UserDetailsSheetProps) {
                 </Badge>
                 <Badge
                   className={
-                    user.status === "admitted"
-                      ? "bg-orange-100 text-orange-700 hover:bg-orange-100 border-orange-200"
-                      : user.status === "active"
-                        ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-100 border-slate-200"
+                    (user.status && STATUS_CONFIG[user.status]?.color) ||
+                    "bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200"
                   }
                   variant="outline"
                 >

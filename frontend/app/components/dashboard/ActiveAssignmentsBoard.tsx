@@ -34,7 +34,7 @@ export default function ActiveAssignmentsBoard() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64 border rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
+      <div className="flex justify-center items-center h-64 border rounded-xl bg-primary/5">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
@@ -92,7 +92,7 @@ export default function ActiveAssignmentsBoard() {
                 "overflow-hidden transition-all duration-300 relative",
                 isHighlighted
                   ? "ring-2 ring-indigo-500 shadow-lg shadow-indigo-500/10 bg-indigo-50/30 dark:bg-indigo-950/20"
-                  : "shadow-md shadow-accent bg-zinc-100 dark:bg-zinc-900",
+                  : "shadow-md shadow-accent bg-card",
               )}
             >
               {/* Highlight Ribbon at the top */}
@@ -142,7 +142,7 @@ export default function ActiveAssignmentsBoard() {
                       "p-2 rounded-md border flex flex-col gap-1",
                       isMyPatientAsDoctor
                         ? "bg-indigo-100 border-indigo-200 dark:bg-indigo-900/40 dark:border-indigo-800"
-                        : "bg-slate-50 dark:bg-slate-900",
+                        : "bg-sky-50 border-sky-100 dark:bg-sky-950/30 dark:border-sky-900",
                     )}
                   >
                     <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
@@ -164,7 +164,7 @@ export default function ActiveAssignmentsBoard() {
                       "p-2 rounded-md border flex flex-col gap-1",
                       isMyPatientAsNurse
                         ? "bg-indigo-100 border-indigo-200 dark:bg-indigo-900/40 dark:border-indigo-800"
-                        : "bg-slate-50 dark:bg-slate-900",
+                        : "bg-emerald-50 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900",
                     )}
                   >
                     <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">

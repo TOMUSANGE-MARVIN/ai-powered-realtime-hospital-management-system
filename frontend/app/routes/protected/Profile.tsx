@@ -255,7 +255,7 @@ const Profile = () => {
                     {billingHistory.map((pastInv: any) => (
                       <div
                         key={pastInv._id}
-                        className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30"
+                        className="flex items-center justify-between p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20"
                       >
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600">

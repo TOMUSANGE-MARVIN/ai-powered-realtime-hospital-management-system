@@ -118,7 +118,7 @@ const FinancialHistory = () => {
 
       {/* --- FINANCIAL OVERVIEW CARDS --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="card shadow-sm rounded-xl">
+        <Card className="card shadow-sm rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-none">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="p-2 bg-white/20 rounded-xl">
@@ -230,7 +230,7 @@ const FinancialHistory = () => {
                   filteredInvoices.map((inv) => (
                     <TableRow
                       key={inv._id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                      className="hover:bg-primary/5 transition-colors"
                     >
                       <TableCell className="pl-6 py-4">
                         <div className="flex items-center gap-3">

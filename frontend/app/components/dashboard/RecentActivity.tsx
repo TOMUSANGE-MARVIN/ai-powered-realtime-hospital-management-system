@@ -42,7 +42,7 @@ const getActionConfig = (action: string) => {
   }
   return {
     icon: Activity,
-    color: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+    color: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400",
   };
 };
 

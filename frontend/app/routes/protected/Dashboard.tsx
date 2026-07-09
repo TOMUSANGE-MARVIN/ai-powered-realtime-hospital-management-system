@@ -9,6 +9,9 @@ import StatsCards from "@/components/global/StatsCards";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import ActiveAssignmentsBoard from "@/components/dashboard/ActiveAssignmentsBoard";
+import { PatientStatusChart } from "@/components/dashboard/PatientStatusChart";
+import { RoleDistributionChart } from "@/components/dashboard/RoleDistributionChart";
+import { MetricGauges } from "@/components/dashboard/MetricGauges";
 
 export function meta() {
   return [{ title: "Dashboard" }];
@@ -63,22 +66,39 @@ export default function HMSDashboard() {
         <div className="lg:col-span-8 space-y-8">
           {/* Admin-Only: Financial Trends */}
           {isAdmin && (
-            <section className="card p-6 rounded-xl shadow-sm">
-              <h3 className="text-lg font-bold mb-6">Revenue Overview</h3>
-              <RevenueChart />
-            </section>
+            <>
+              <section className="card p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-bold mb-6">Revenue Overview</h3>
+                <RevenueChart />
+              </section>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <section className="card p-6 rounded-xl shadow-sm">
+                  <h3 className="text-lg font-bold mb-2">Patient Status</h3>
+                  <PatientStatusChart patients={userData?.res || []} />
+                </section>
+                <section className="card p-6 rounded-xl shadow-sm">
+                  <h3 className="text-lg font-bold mb-6">Team Composition</h3>
+                  <RoleDistributionChart />
+                </section>
+              </div>
+            </>
           )}
         </div>
         {/* RIGHT COLUMN (4 Units) */}
-        {isAdmin && 
-        <div className="lg:col-span-4 space-y-8">
-          {/* Recent Activity (Lab results, admissions, payments) */}
-          <section className="card p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-bold mb-4">Recent Activity</h3>
-            <RecentActivity />
-          </section>
-        </div>
-        }
+        {isAdmin && (
+          <div className="lg:col-span-4 space-y-8">
+            <section className="card p-6 rounded-xl shadow-sm">
+              <h3 className="text-lg font-bold mb-6">Key Metrics</h3>
+              <MetricGauges />
+            </section>
+            {/* Recent Activity (Lab results, admissions, payments) */}
+            <section className="card p-6 rounded-xl shadow-sm">
+              <h3 className="text-lg font-bold mb-4">Recent Activity</h3>
+              <RecentActivity />
+            </section>
+          </div>
+        )}
       </div>
       <section className="card p-6 rounded-xl shadow-sm">
         <ActiveAssignmentsBoard />

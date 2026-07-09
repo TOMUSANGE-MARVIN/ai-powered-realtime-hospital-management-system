@@ -13,8 +13,8 @@ This repo deploys as three services via `docker-compose.yaml` at the repo root: 
    - `VITE_API_URL` — same value as `BETTER_AUTH_URL`. This one matters at **build time**: it gets baked into the frontend's JS bundle, so it must be set before the frontend image builds, and changing it later requires a rebuild (not just a restart).
    - `GEMINI_KEY`, `UPLOADTHING_TOKEN` — optional; leave blank to disable those features.
    - `POLAR_PRODUCT_ID`, `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET` — optional; leave blank to disable billing/checkout. When unset, sign-up still works (the app only auto-creates a Polar customer when `POLAR_ACCESS_TOKEN` is present).
-3. Assign domains in Coolify to the `backend` (port 5000) and `frontend` (port 3000) services, and make sure both are served over HTTPS (Coolify's built-in Let's Encrypt handles this).
-4. Deploy. Coolify will build all three images and start them on an internal network; `backend` reaches Mongo at `mongo:27017`, and the browser reaches `backend` at whatever public URL you set in `VITE_API_URL`.
+3. In the Coolify UI, assign a domain to the `backend` service and a domain to the `frontend` service, and make sure both are served over HTTPS (Coolify's built-in Let's Encrypt handles this). Coolify auto-detects each service's internal port from `expose` in `docker-compose.yaml` (5000 for backend, 3000 for frontend) and routes to it through its own Traefik proxy — **the compose file intentionally does not bind these to fixed host ports**, since a shared VPS usually has other apps already using common ports like 3000; Coolify's proxy avoids that conflict entirely.
+4. Deploy. Coolify will build all three images and start them on an internal network; `backend` reaches Mongo at `mongo:27017`, and the browser reaches `backend` at whatever public domain you assigned to it (must match `VITE_API_URL`, see below).
 
 ## Why `VITE_API_URL` must match your real backend domain
 
@@ -32,7 +32,20 @@ db.user.updateOne({ email: "you@example.com" }, { $set: { role: "admin" } })
 
 ## Local testing of the compose stack
 
+The compose file uses `expose` (internal-only) rather than `ports`, matching how Coolify's proxy expects it — so `docker compose up` alone won't publish anything to your host. To test locally, add a small override with `ports` mappings:
+
 ```bash
 cp .env.example .env   # fill in real values, or use localhost defaults for a local smoke test
+cat > docker-compose.override.yaml << 'EOF'
+services:
+  backend:
+    ports:
+      - "5000:5000"
+  frontend:
+    ports:
+      - "3000:3000"
+EOF
 docker compose up --build
 ```
+
+`docker-compose.override.yaml` is picked up automatically by `docker compose` and is gitignored — don't commit it, since Coolify must not see host port bindings.

@@ -32,8 +32,8 @@ services:
       POLAR_PRODUCT_ID: ${POLAR_PRODUCT_ID}
       POLAR_ACCESS_TOKEN: ${POLAR_ACCESS_TOKEN}
       POLAR_WEBHOOK_SECRET: ${POLAR_WEBHOOK_SECRET}
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
 
   frontend:
     build:
@@ -46,8 +46,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
 
 volumes:
   mongo_data:

@@ -83,7 +83,7 @@ export function DetailsSheet({ user, isOpen, onClose }: UserDetailsSheetProps) {
                 <History user={user} />
               </TabsContent>
               <TabsContent value="radiology">
-                <Radiology patientId={user._id} />
+                <Radiology patientId={user.id} />
               </TabsContent>
               <TabsContent value="password">
                 Change your password here.

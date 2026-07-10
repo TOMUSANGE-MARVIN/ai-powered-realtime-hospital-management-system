@@ -144,7 +144,7 @@ export default function FeedbackPage() {
             ) : (
               (data || []).map((f) => (
                 <div
-                  key={f._id}
+                  key={f.id}
                   className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3"
                 >
                   <div className="flex items-center justify-between mb-1">

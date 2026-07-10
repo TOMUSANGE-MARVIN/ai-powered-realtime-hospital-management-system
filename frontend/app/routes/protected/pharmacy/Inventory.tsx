@@ -105,7 +105,7 @@ function MedicationModal({
       unitPrice: Math.round(Number(data.unitPrice) * 100),
     };
     if (medication) {
-      updateMutation.mutate({ id: medication._id, data: payload });
+      updateMutation.mutate({ id: medication.id, data: payload });
     } else {
       createMutation.mutate(payload);
     }
@@ -331,7 +331,7 @@ export default function PharmacyInventory() {
                   </TableRow>
                 ) : (
                   medications.map((med) => (
-                    <TableRow key={med._id}>
+                    <TableRow key={med.id}>
                       <TableCell className="font-medium flex items-center gap-2">
                         <Pill size={14} className="text-slate-400" />
                         {med.name}
@@ -362,7 +362,7 @@ export default function PharmacyInventory() {
                             variant="destructive"
                             size="sm"
                             disabled={deleteMutation.isPending}
-                            onClick={() => deleteMutation.mutate(med._id)}
+                            onClick={() => deleteMutation.mutate(med.id)}
                           >
                             Delete
                           </Button>

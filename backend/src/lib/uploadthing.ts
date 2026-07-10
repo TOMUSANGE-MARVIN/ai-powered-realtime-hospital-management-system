@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { prisma } from "./prisma";
 import { createUploadthing, type FileRouter } from "uploadthing/express";
 
 const f = createUploadthing();
@@ -15,9 +15,7 @@ export const uploadRouter = {
       }
       const token = authHeader.substring(7); // Remove "Bearer " prefix
 
-      const session = await mongoose.connection.collection("session").findOne({
-        token: token,
-      });
+      const session = await prisma.session.findUnique({ where: { token } });
       if (!session) {
         console.error("Upload rejected: Session not found in DB");
         throw new Error("Unauthorized");

@@ -1,6 +1,16 @@
 import type { Request, Response } from "express";
-import Medication from "../models/medication";
+import { prisma } from "../lib/prisma";
 import { logActivity } from "../lib/activity";
+
+const normalizeMedicationInput = (body: any) => {
+  const { expiryDate, ...rest } = body;
+  return {
+    ...rest,
+    ...(expiryDate !== undefined && {
+      expiryDate: expiryDate ? new Date(expiryDate) : null,
+    }),
+  };
+};
 
 export const getMedications = async (req: Request, res: Response) => {
   try {
@@ -9,17 +19,21 @@ export const getMedications = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
     const search = (req.query.search as string) || "";
 
-    const filter: any = {};
-    if (search) filter.name = { $regex: search, $options: "i" };
+    const where: any = {};
+    if (search) where.name = { contains: search };
 
-    const total = await Medication.countDocuments(filter);
-    const res_ = await Medication.find(filter)
-      .sort({ name: 1 })
-      .skip(skip)
-      .limit(limit);
+    const [total, medications] = await Promise.all([
+      prisma.medication.count({ where }),
+      prisma.medication.findMany({
+        where,
+        orderBy: { name: "asc" },
+        skip,
+        take: limit,
+      }),
+    ]);
 
     res.json({
-      res: res_,
+      res: medications,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit),
@@ -35,7 +49,9 @@ export const getMedications = async (req: Request, res: Response) => {
 
 export const createMedication = async (req: Request, res: Response) => {
   try {
-    const medication = await Medication.create(req.body);
+    const medication = await prisma.medication.create({
+      data: normalizeMedicationInput(req.body),
+    });
     const io = req.app.get("io");
     if (io) io.emit("medication_updated");
     await logActivity(
@@ -52,10 +68,10 @@ export const createMedication = async (req: Request, res: Response) => {
 
 export const updateMedication = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const medication = await Medication.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    const id = req.params.id as string;
+    const medication = await prisma.medication
+      .update({ where: { id }, data: normalizeMedicationInput(req.body) })
+      .catch(() => null);
     if (!medication) {
       return res.status(404).json({ message: "Medication not found" });
     }
@@ -75,8 +91,8 @@ export const updateMedication = async (req: Request, res: Response) => {
 
 export const deleteMedication = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const medication = await Medication.findByIdAndDelete(id);
+    const id = req.params.id as string;
+    const medication = await prisma.medication.delete({ where: { id } }).catch(() => null);
     if (!medication) {
       return res.status(404).json({ message: "Medication not found" });
     }

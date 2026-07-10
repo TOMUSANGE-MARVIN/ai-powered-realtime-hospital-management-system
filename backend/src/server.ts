@@ -12,7 +12,7 @@ import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { serve } from "inngest/express";
 import { createServer } from "http";
 
-import { connectDB } from "./config/db";
+import { prisma } from "./lib/prisma";
 import { auth } from "./lib/auth";
 import userRouter from "./routes/user";
 import activityLogRouter from "./routes/activity";
@@ -34,6 +34,7 @@ import prescriptionRouter from "./routes/prescription";
 import appointmentRouter from "./routes/appointment";
 import settingRouter from "./routes/setting";
 import supportRouter from "./routes/support";
+import doctorRouter from "./routes/doctor";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -97,6 +98,7 @@ app.use("/api/prescriptions", prescriptionRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/settings", settingRouter);
 app.use("/api/support", supportRouter);
+app.use("/api/doctors", doctorRouter);
 // inngest API route
 app.use(
   "/api/inngest",
@@ -119,8 +121,10 @@ app.use((err: any, req: Request, res: Response, next: any) => {
 });
 
 // Start the server
-connectDB()
+prisma
+  .$connect()
   .then(() => {
+    console.log("✅ MySQL Connected");
     httpServer.listen(PORT, () => {
       console.log(
         `🚀 Server + Socket.IO running in ${process.env.NODE_ENV} mode on port ${PORT}`,
@@ -131,4 +135,5 @@ connectDB()
     console.error(
       `Failed to connect to the database: ${(error as Error).message}`,
     );
+    process.exit(1);
   });

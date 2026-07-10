@@ -229,7 +229,7 @@ const FinancialHistory = () => {
                 ) : (
                   filteredInvoices.map((inv) => (
                     <TableRow
-                      key={inv._id}
+                      key={inv.id}
                       className="hover:bg-primary/5 transition-colors"
                     >
                       <TableCell className="pl-6 py-4">
@@ -272,7 +272,7 @@ const FinancialHistory = () => {
                               size={"icon"}
                               disabled={getPolarPortalLink.isPending}
                               onClick={() =>
-                                getPolarPortalLink.mutate(inv.user._id)
+                                getPolarPortalLink.mutate(inv.user.id)
                               }
                             >
                               <ExternalLink size={14} />

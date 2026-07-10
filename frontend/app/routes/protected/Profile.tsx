@@ -211,7 +211,7 @@ const Profile = () => {
                         <Button
                           className="w-full bg-blue-600 hover:bg-blue-700"
                           disabled={!isDischarged || checkoutMutation.isPending}
-                          onClick={() => checkoutMutation.mutate(invoice._id)}
+                          onClick={() => checkoutMutation.mutate(invoice.id)}
                         >
                           {checkoutMutation.isPending ? (
                             <Loader2 className="animate-spin mr-2 h-4 w-4" />
@@ -254,7 +254,7 @@ const Profile = () => {
                   <div className="space-y-4">
                     {billingHistory.map((pastInv: any) => (
                       <div
-                        key={pastInv._id}
+                        key={pastInv.id}
                         className="flex items-center justify-between p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20"
                       >
                         <div className="flex items-center gap-3">

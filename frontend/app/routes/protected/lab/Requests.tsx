@@ -68,10 +68,10 @@ function NewRequestModal({ onSaved }: { onSaved: () => void }) {
   });
 
   const onSubmit = (data: any) => {
-    const patient = patientsData?.res.find((p) => p._id === data.patient);
+    const patient = patientsData?.res.find((p) => p.id === data.patient);
     if (!patient) return toast.error("Select a patient");
     mutation.mutate({
-      patientId: patient._id,
+      patientId: patient.id,
       testType,
       bodyPart: data.bodyPart,
       imageUrl: "",
@@ -103,7 +103,7 @@ function NewRequestModal({ onSaved }: { onSaved: () => void }) {
               </SelectTrigger>
               <SelectContent>
                 {(patientsData?.res || []).map((p) => (
-                  <SelectItem key={p._id} value={p._id}>
+                  <SelectItem key={p.id} value={p.id}>
                     {p.name} — {p.email}
                   </SelectItem>
                 ))}
@@ -210,7 +210,7 @@ export default function LabRequests() {
                   </TableRow>
                 ) : (
                   requests.map((r) => (
-                    <TableRow key={r._id}>
+                    <TableRow key={r.id}>
                       <TableCell className="font-medium flex items-center gap-2">
                         <FlaskConical size={14} className="text-slate-400" />
                         {r.patientName}

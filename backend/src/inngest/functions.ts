@@ -1,10 +1,8 @@
-import mongoose from "mongoose";
+import { prisma } from "../lib/prisma";
 import { inngest } from "./client";
 import { NonRetriableError } from "inngest";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { notifyUsers } from "./notifyUsers";
-import labResults from "../models/labResults";
-import invoice from "../models/invoice";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY!);
 
@@ -14,22 +12,18 @@ export const admitPatient = inngest.createFunction(
   async ({ event, step }) => {
     // get data
     const { patientId, admissionReason } = event.data;
-    // user collection
-    const collection = mongoose.connection.collection("user");
 
     //  setp1: Fetch data(patient, doctors, nurses(available))
     const data = await step.run("fetch-hospital-data", async () => {
       // patient
-      const patient = await collection.findOne({
-        _id: new mongoose.Types.ObjectId(patientId),
-      });
+      const patient = await prisma.user.findUnique({ where: { id: patientId } });
       // doctors and nurses
-      const doctors = await collection
-        .find({ role: "doctor", status: "active" })
-        .toArray();
-      const nurses = await collection
-        .find({ role: "nurse", status: "active" })
-        .toArray();
+      const doctors = await prisma.user.findMany({
+        where: { role: "doctor", status: "active" },
+      });
+      const nurses = await prisma.user.findMany({
+        where: { role: "nurse", status: "active" },
+      });
       return { patient, doctors, nurses };
     });
 
@@ -57,15 +51,12 @@ export const admitPatient = inngest.createFunction(
       const doctorDataStr = data.doctors
         .map(
           (d) =>
-            `ID: ${d._id.toString()}, Name: ${d.name}, Spec: ${d.specialization}, Dept: ${d.department}`,
+            `ID: ${d.id}, Name: ${d.name}, Spec: ${d.specialization}, Dept: ${d.department}`,
         )
         .join("\n");
       // nurse data
       const nurseDataStr = data.nurses
-        .map(
-          (n) =>
-            `ID: ${n._id.toString()}, Name: ${n.name}, Dept: ${n.department}`,
-        )
+        .map((n) => `ID: ${n.id}, Name: ${n.name}, Dept: ${n.department}`)
         .join("\n");
 
       // prompt
@@ -74,7 +65,7 @@ export const admitPatient = inngest.createFunction(
         PATIENT: ${patientDataStr}
         AVAILABLE DOCTORS: ${doctorDataStr}
         AVAILABLE NURSES: ${nurseDataStr}
-        
+
         Respond ONLY with a valid JSON object:
         {
           "doctorId": "id",
@@ -108,13 +99,9 @@ export const admitPatient = inngest.createFunction(
         assignedNurseName: aiAssignment.nurseName,
         triageReasoning: aiAssignment.reasoning,
       };
-      await collection.updateOne(
-        { _id: new mongoose.Types.ObjectId(patientId) },
-        { $set: updatePayload },
-      );
-      // Return the updated document
-      return await collection.findOne({
-        _id: new mongoose.Types.ObjectId(patientId),
+      return prisma.user.update({
+        where: { id: patientId },
+        data: updatePayload,
       });
     });
 
@@ -172,39 +159,35 @@ export const analyzeXRayJob = inngest.createFunction(
 
     // STEP 3: Update the Database
     const updatedLab = await step.run("update-db", async () => {
-      const updatedLabResult = await labResults
-        .findByIdAndUpdate(
-          labResultId,
-          { aiAnalysis, status: "analyzed" },
-          { new: true },
-        )
-        .lean(); // Use lean() since we are going to modify the object
+      const updatedLabResult = await prisma.labResult
+        .update({
+          where: { id: labResultId },
+          data: { aiAnalysis, status: "analyzed" },
+        })
+        .catch(() => null);
 
       if (!updatedLabResult) {
         throw new NonRetriableError("Lab result not found");
       }
 
-      // 2. Manually fetch the Patient from the 'user' collection
-      const patient = await mongoose.connection.collection("user").findOne(
-        { _id: new mongoose.Types.ObjectId(updatedLabResult.patient) },
-        { projection: { password: 0, emailVerified: 0 } }, // Exclude sensitive fields
-      );
+      // 2. Manually fetch the Patient
+      const patient = await prisma.user.findUnique({
+        where: { id: updatedLabResult.patient },
+        omit: { emailVerified: true },
+      });
 
       // 3. Attach the patient data to the result (mimicking populate)
-      const resultWithPatient = {
+      return {
         ...updatedLabResult,
         patient: patient || null, // Replace the ID with the actual user object
       };
-
-      // Now you can use it or send it
-      return resultWithPatient;
     });
 
     // STEP 4: Notify Frontend & Assigned Staff
     await step.run("send-notification", async () => {
       await notifyUsers(
-        updatedLab?.patient?.assignedDoctorId.toString() || "",
-        updatedLab?.patient?.assignedNurseId.toString() || "",
+        (updatedLab?.patient as any)?.assignedDoctorId?.toString() || "",
+        (updatedLab?.patient as any)?.assignedNurseId?.toString() || "",
         "Lab Result Analyzed",
         `Your lab result for ${updatedLab?.testType} has been analyzed.`,
         `/patients`,
@@ -224,25 +207,50 @@ export const addChargeToInvoice = inngest.createFunction(
       throw new NonRetriableError("Missing required charge information.");
     }
 
-    let inv = await invoice.findOne({ patientId, status: "draft" });
-    await step.run("create invoice", async () => {
+    const invoiceId = await step.run("create-invoice", async () => {
       // 1. Find the active draft invoice or create a new one
-      if (!inv) {
-        inv = new invoice({ patientId, items: [], totalAmount: 0 });
+      const existing = await prisma.invoice.findFirst({
+        where: { patientId, status: "draft" },
+      });
+
+      if (existing) {
+        await prisma.$transaction([
+          prisma.invoiceItem.create({
+            data: {
+              invoiceId: existing.id,
+              description,
+              quantity: 1,
+              unitPrice: priceInCents,
+              totalPrice: priceInCents,
+            },
+          }),
+          prisma.invoice.update({
+            where: { id: existing.id },
+            data: { totalAmount: { increment: priceInCents } },
+          }),
+        ]);
+        return existing.id;
       }
 
-      // 2. Add the itemized charge
-      inv.items.push({
-        description,
-        quantity: 1,
-        unitPrice: priceInCents,
-        totalPrice: priceInCents,
+      const created = await prisma.invoice.create({
+        data: {
+          patientId,
+          totalAmount: priceInCents,
+          items: {
+            create: [
+              {
+                description,
+                quantity: 1,
+                unitPrice: priceInCents,
+                totalPrice: priceInCents,
+              },
+            ],
+          },
+        },
       });
-      // 3. Recalculate Total
-      inv.totalAmount += priceInCents;
-      await inv.save();
+      return created.id;
     });
 
-    return { success: true, invoiceId: inv?._id.toString() };
+    return { success: true, invoiceId };
   },
 );

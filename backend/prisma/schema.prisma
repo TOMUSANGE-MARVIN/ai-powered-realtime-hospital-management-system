@@ -1,0 +1,317 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id                 String    @id
+  name               String    @db.Text
+  email              String
+  emailVerified      Boolean   @default(false)
+  image              String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  role               String?   @db.Text
+  banned             Boolean?  @default(false)
+  banReason          String?   @db.Text
+  banExpires         DateTime?
+  specialization     String?   @db.Text
+  department         String?   @db.Text
+  gender             String?   @db.Text
+  bloodgroup         String?   @db.Text
+  medicalHistory     String?   @db.Text
+  age                String?   @db.Text
+  status             String?   @db.Text
+  admissionReason    String?   @db.Text
+  assignedDoctorId   String?   @db.Text
+  assignedDoctorName String?   @db.Text
+  assignedNurseId    String?   @db.Text
+  assignedNurseName  String?   @db.Text
+  triageReasoning    String?   @db.Text
+  sessions           Session[]
+  accounts           Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?  @db.Text
+  userAgent      String?  @db.Text
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?  @db.Text
+
+  @@unique([token])
+  @@index([userId(length: 191)])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @db.Text
+  providerId            String    @db.Text
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId(length: 191)])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String   @db.Text
+  value      String   @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier(length: 191)])
+  @@map("verification")
+}
+
+enum AppointmentStatus {
+  requested
+  scheduled
+  confirmed
+  completed
+  cancelled
+  in_progress
+}
+
+model Appointment {
+  id           String            @id @default(cuid())
+  patientId    String?
+  patientName  String
+  patientEmail String?
+  patientPhone String?
+  doctorId     String?
+  doctorName   String?
+  nurseId      String?
+  department   String?
+  date         DateTime
+  time         String?
+  reason       String?           @db.Text
+  status       AppointmentStatus @default(requested)
+  isVirtual    Boolean           @default(false)
+  meetingId    String?
+  notes        String?           @db.Text
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("appointment")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  user      String?
+  action    String
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("activity_log")
+}
+
+enum FeedbackCategory {
+  bug
+  feature
+  general
+}
+
+model Feedback {
+  id        String           @id @default(cuid())
+  userId    String
+  userName  String
+  category  FeedbackCategory @default(general)
+  message   String           @db.Text
+  rating    Int?
+  createdAt DateTime         @default(now())
+
+  @@map("feedback")
+}
+
+enum InvoiceStatus {
+  draft
+  pending_payment
+  paid
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  patientId       String
+  polarCheckoutId String?
+  status          InvoiceStatus @default(draft)
+  items           InvoiceItem[]
+  totalAmount     Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("invoice")
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int
+  unitPrice   Int
+  totalPrice  Int
+
+  @@map("invoice_item")
+}
+
+enum LabResultStatus {
+  pending
+  analyzed
+  reviewed
+}
+
+model LabResult {
+  id          String          @id @default(cuid())
+  patient     String
+  uploadedBy  String
+  testType    String          @default("X-Ray")
+  bodyPart    String?
+  imageUrl    String?         @db.Text
+  aiAnalysis  String?         @db.Text
+  doctorNotes String?         @db.Text
+  status      LabResultStatus @default(pending)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("lab_result")
+}
+
+model Medication {
+  id                String             @id @default(cuid())
+  name              String
+  category          String             @default("General")
+  unit              String             @default("tablet")
+  stock             Int                @default(0)
+  reorderLevel      Int                @default(10)
+  unitPrice         Int                @default(0)
+  expiryDate        DateTime?
+  supplier          String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  prescriptionItems PrescriptionItem[]
+
+  @@map("medication")
+}
+
+enum NotificationType {
+  system
+  assignment
+  lab_result
+  alert
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  user      String
+  title     String
+  message   String           @db.Text
+  type      NotificationType @default(system)
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  @@map("notification")
+}
+
+enum PrescriptionStatus {
+  pending
+  dispensed
+  cancelled
+}
+
+model Prescription {
+  id          String             @id @default(cuid())
+  patient     String
+  doctor      String
+  doctorName  String
+  patientName String
+  items       PrescriptionItem[]
+  status      PrescriptionStatus @default(pending)
+  dispensedBy String?
+  dispensedAt DateTime?
+  notes       String?            @db.Text
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("prescription")
+}
+
+model PrescriptionItem {
+  id             String       @id @default(cuid())
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medication     String?
+  medicationRow  Medication?  @relation(fields: [medication], references: [id])
+  medicationName String
+  dosage         String
+  quantity       Int          @default(1)
+  instructions   String?      @db.Text
+
+  @@map("prescription_item")
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("setting")
+}
+
+enum TicketPriority {
+  low
+  medium
+  high
+}
+
+enum TicketStatus {
+  open
+  in_progress
+  resolved
+}
+
+model SupportTicket {
+  id        String         @id @default(cuid())
+  userId    String
+  userName  String
+  subject   String
+  message   String         @db.Text
+  priority  TicketPriority @default(medium)
+  status    TicketStatus   @default(open)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("support_ticket")
+}

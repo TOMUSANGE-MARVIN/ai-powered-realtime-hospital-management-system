@@ -67,7 +67,7 @@ const Radiology = ({ patientId }: { patientId: string }) => {
 
   // editing handlers
   const startEditing = (xray: LabResult) => {
-    setEditingId(xray._id);
+    setEditingId(xray.id);
     setNotesContent(xray.doctorNotes || "");
   };
 
@@ -101,7 +101,7 @@ const Radiology = ({ patientId }: { patientId: string }) => {
         </p>
       ) : (
         xrays.map((xray) => (
-          <Card key={xray._id} className="overflow-hidden text-shadow-sm">
+          <Card key={xray.id} className="overflow-hidden text-shadow-sm">
             {/* Image Section */}
             <div className="relative h-48 bg-black w-full flex items-center justify-center">
               <img
@@ -150,7 +150,7 @@ const Radiology = ({ patientId }: { patientId: string }) => {
                   </div>
 
                   {/* Edit Button (Only show if Doctor and NOT currently editing this item) */}
-                  {isDoctor && editingId !== xray._id && (
+                  {isDoctor && editingId !== xray.id && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -162,7 +162,7 @@ const Radiology = ({ patientId }: { patientId: string }) => {
                   )}
                 </div>
                 {/* --- EDIT MODE OR VIEW MODE --- */}
-                {editingId === xray._id ? (
+                {editingId === xray.id ? (
                   <div className="space-y-2 animate-in fade-in zoom-in-95 duration-200">
                     <Textarea
                       value={notesContent}
@@ -183,7 +183,7 @@ const Radiology = ({ patientId }: { patientId: string }) => {
                       <Button
                         size="sm"
                         className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
-                        onClick={() => saveNotes(xray._id)}
+                        onClick={() => saveNotes(xray.id)}
                         disabled={updateNotesMutation.isPending}
                       >
                         {updateNotesMutation.isPending ? (

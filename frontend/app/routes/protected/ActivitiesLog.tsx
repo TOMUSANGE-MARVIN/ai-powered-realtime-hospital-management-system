@@ -99,7 +99,7 @@ const ActivitiesLog = () => {
                 </TableRow>
               ) : (
                 filteredLogs.map((log) => (
-                  <TableRow key={log._id}>
+                  <TableRow key={log.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">

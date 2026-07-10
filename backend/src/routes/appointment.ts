@@ -6,12 +6,35 @@ import {
   getAppointments,
   createAppointment,
   updateAppointment,
+  bookAppointment,
+  getMyAppointments,
+  cancelMyAppointment,
 } from "../controllers/appointment";
 
 const appointmentRouter = Router();
 
 // Public — the marketing "Book Appointment" form
 appointmentRouter.post("/request", requestAppointment);
+
+// Patient (mobile app) — book with a specific doctor, view/cancel own appointments
+appointmentRouter.post(
+  "/book",
+  requireAuth,
+  checkRole(["patient"]),
+  bookAppointment,
+);
+appointmentRouter.get(
+  "/mine",
+  requireAuth,
+  checkRole(["patient"]),
+  getMyAppointments,
+);
+appointmentRouter.patch(
+  "/:id/cancel",
+  requireAuth,
+  checkRole(["patient"]),
+  cancelMyAppointment,
+);
 
 appointmentRouter.get(
   "/",

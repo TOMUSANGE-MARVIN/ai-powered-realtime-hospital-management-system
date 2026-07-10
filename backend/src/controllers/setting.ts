@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import Setting from "../models/setting";
+import { prisma } from "../lib/prisma";
 import { logActivity } from "../lib/activity";
 
 const DEFAULTS: Record<string, Record<string, any>> = {
@@ -21,7 +21,7 @@ const DEFAULTS: Record<string, Record<string, any>> = {
 export const getSetting = async (req: Request, res: Response) => {
   try {
     const key = req.params.key as string;
-    const setting = await Setting.findOne({ key });
+    const setting = await prisma.setting.findUnique({ where: { key } });
     res.json({ key, data: setting?.data || DEFAULTS[key] || {} });
   } catch (error) {
     console.error("Error fetching setting:", error);
@@ -31,14 +31,14 @@ export const getSetting = async (req: Request, res: Response) => {
 
 export const updateSetting = async (req: Request, res: Response) => {
   try {
-    const { key } = req.params;
+    const key = req.params.key as string;
     const { data } = req.body;
 
-    const setting = await Setting.findOneAndUpdate(
-      { key },
-      { key, data },
-      { upsert: true, new: true },
-    );
+    const setting = await prisma.setting.upsert({
+      where: { key },
+      update: { data },
+      create: { key, data },
+    });
 
     await logActivity(
       (req as any).user.id,

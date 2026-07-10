@@ -1,15 +1,17 @@
 import type { Request, Response } from "express";
-import SupportTicket from "../models/supportTicket";
-import Feedback from "../models/feedback";
+import { prisma } from "../lib/prisma";
 import { logActivity } from "../lib/activity";
 
 export const getTickets = async (req: Request, res: Response) => {
   try {
     const currentUser = (req as any).user;
     const isAdmin = currentUser.role === "admin";
-    const filter = isAdmin ? {} : { userId: currentUser.id };
+    const where = isAdmin ? {} : { userId: currentUser.id };
 
-    const tickets = await SupportTicket.find(filter).sort({ createdAt: -1 });
+    const tickets = await prisma.supportTicket.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
     res.json(tickets);
   } catch (error) {
     console.error("Error fetching tickets:", error);
@@ -22,12 +24,14 @@ export const createTicket = async (req: Request, res: Response) => {
     const currentUser = (req as any).user;
     const { subject, message, priority } = req.body;
 
-    const ticket = await SupportTicket.create({
-      userId: currentUser.id,
-      userName: currentUser.name,
-      subject,
-      message,
-      priority,
+    const ticket = await prisma.supportTicket.create({
+      data: {
+        userId: currentUser.id,
+        userName: currentUser.name,
+        subject,
+        message,
+        priority,
+      },
     });
 
     const io = req.app.get("io");
@@ -41,14 +45,12 @@ export const createTicket = async (req: Request, res: Response) => {
 
 export const updateTicketStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status } = req.body;
 
-    const ticket = await SupportTicket.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true },
-    );
+    const ticket = await prisma.supportTicket
+      .update({ where: { id }, data: { status } })
+      .catch(() => null);
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
     }
@@ -69,7 +71,10 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
 
 export const getFeedback = async (req: Request, res: Response) => {
   try {
-    const feedback = await Feedback.find().sort({ createdAt: -1 }).limit(100);
+    const feedback = await prisma.feedback.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
     res.json(feedback);
   } catch (error) {
     console.error("Error fetching feedback:", error);
@@ -82,12 +87,14 @@ export const createFeedback = async (req: Request, res: Response) => {
     const currentUser = (req as any).user;
     const { category, message, rating } = req.body;
 
-    const feedback = await Feedback.create({
-      userId: currentUser.id,
-      userName: currentUser.name,
-      category,
-      message,
-      rating,
+    const feedback = await prisma.feedback.create({
+      data: {
+        userId: currentUser.id,
+        userName: currentUser.name,
+        category,
+        message,
+        rating,
+      },
     });
 
     res.status(201).json(feedback);

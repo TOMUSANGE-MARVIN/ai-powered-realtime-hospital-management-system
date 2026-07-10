@@ -170,7 +170,7 @@ const CreateUserModal = ({ role, user, loading }: UserModalProps) => {
 
       // Trigger Mutation
       updateMutation.mutate({
-        userId: user._id, // Handle ID mismatch
+        userId: user.id, // Handle ID mismatch
         userData: payload,
       });
     } else {

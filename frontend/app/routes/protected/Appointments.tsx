@@ -50,7 +50,7 @@ function statusBadge(status: string) {
       "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400",
     confirmed:
       "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400",
-    "in-progress":
+    in_progress:
       "bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400",
     completed:
       "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400",
@@ -59,7 +59,7 @@ function statusBadge(status: string) {
   };
   return (
     <Badge className={map[status] || map.requested}>
-      {status.replace("-", " ")}
+      {status.replace(/[_-]/g, " ")}
     </Badge>
   );
 }
@@ -248,7 +248,7 @@ export default function Appointments() {
                   </TableRow>
                 ) : (
                   appointments.map((a) => (
-                    <TableRow key={a._id}>
+                    <TableRow key={a.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <CalendarClock size={14} className="text-slate-400" />
@@ -286,7 +286,7 @@ export default function Appointments() {
                               disabled={updateMutation.isPending}
                               onClick={() =>
                                 updateMutation.mutate({
-                                  id: a._id,
+                                  id: a.id,
                                   data: { status: "confirmed" },
                                 })
                               }
@@ -302,7 +302,7 @@ export default function Appointments() {
                                 disabled={updateMutation.isPending}
                                 onClick={() =>
                                   updateMutation.mutate({
-                                    id: a._id,
+                                    id: a.id,
                                     data: { status: "cancelled" },
                                   })
                                 }

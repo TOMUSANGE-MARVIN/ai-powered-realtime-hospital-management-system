@@ -87,7 +87,7 @@ export function RecentActivity() {
           const { icon: Icon, color } = getActionConfig(log.action);
 
           return (
-            <div key={log._id} className="flex gap-4 group transition-all">
+            <div key={log.id} className="flex gap-4 group transition-all">
               {/* Icon Side */}
               <div
                 className={cn(

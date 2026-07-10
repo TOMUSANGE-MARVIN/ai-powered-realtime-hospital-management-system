@@ -1,12 +1,12 @@
 # Deploying to Coolify
 
-This repo deploys as three services via `docker-compose.yaml` at the repo root: `mongo`, `backend`, `frontend`.
+This repo deploys as three services via `docker-compose.yaml` at the repo root: `mysql`, `backend`, `frontend`.
 
 ## Setup in Coolify
 
 1. Create a new **Docker Compose** resource in Coolify, pointing at this repository (root `docker-compose.yaml`).
 2. Set environment variables on the Coolify resource (these populate the root `.env` used by the compose file) — copy from `.env.example`:
-   - `MONGO_ROOT_USER`, `MONGO_ROOT_PASSWORD` — pick a strong password; Mongo is only reachable internally, never exposed to the host.
+   - `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD` — pick strong passwords; MySQL is only reachable internally, never exposed to the host.
    - `BETTER_AUTH_SECRET` — generate with `openssl rand -hex 32`.
    - `BETTER_AUTH_URL` — the **public** URL of the backend once deployed (e.g. `https://api.yourdomain.com`).
    - `FRONTEND_URL` — the **public** URL of the frontend (e.g. `https://app.yourdomain.com`).
@@ -14,19 +14,25 @@ This repo deploys as three services via `docker-compose.yaml` at the repo root: 
    - `GEMINI_KEY`, `UPLOADTHING_TOKEN` — optional; leave blank to disable those features.
    - `POLAR_PRODUCT_ID`, `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET` — optional; leave blank to disable billing/checkout. When unset, sign-up still works (the app only auto-creates a Polar customer when `POLAR_ACCESS_TOKEN` is present).
 3. In the Coolify UI, assign a domain to the `backend` service and a domain to the `frontend` service, and make sure both are served over HTTPS (Coolify's built-in Let's Encrypt handles this). Coolify auto-detects each service's internal port from `expose` in `docker-compose.yaml` (5000 for backend, 3000 for frontend) and routes to it through its own Traefik proxy — **the compose file intentionally does not bind these to fixed host ports**, since a shared VPS usually has other apps already using common ports like 3000; Coolify's proxy avoids that conflict entirely.
-4. Deploy. Coolify will build all three images and start them on an internal network; `backend` reaches Mongo at `mongo:27017`, and the browser reaches `backend` at whatever public domain you assigned to it (must match `VITE_API_URL`, see below).
+4. Deploy. Coolify will build all three images and start them on an internal network; `backend` reaches MySQL at `mysql:3306` and runs `prisma migrate deploy` automatically on container start (see the `Dockerfile` `CMD`) before the server boots, so the schema is always in sync with the deployed code. The browser reaches `backend` at whatever public domain you assigned to it (must match `VITE_API_URL`, see below).
 
 ## Why `VITE_API_URL` must match your real backend domain
 
 The frontend calls the backend directly from the **user's browser**, not through the Docker network — so `http://localhost:5000` (used during local dev) does not work in production. All frontend API/socket/auth calls now read `import.meta.env.VITE_API_URL` at build time, falling back to `localhost:5000` only when unset (i.e. local dev).
 
-## First deploy / promoting an admin
+## First deploy / seeding data
 
-The database starts empty. Sign up through the app's `/login` page (or `/book-appointment` flow), then promote that user to `admin` directly in Mongo:
+The database starts empty. Run the seed script once against the deployed backend container to create an admin account and sample doctors:
 
 ```bash
-docker exec -it <mongo-container-name> mongosh -u <MONGO_ROOT_USER> -p <MONGO_ROOT_PASSWORD> --authenticationDatabase admin hospital --eval '
-db.user.updateOne({ email: "you@example.com" }, { $set: { role: "admin" } })
+docker exec -it <backend-container-name> bunx prisma db seed
+```
+
+Alternatively, sign up through the app's `/login` page (or `/book-appointment` flow), then promote that user to `admin` directly in MySQL:
+
+```bash
+docker exec -it <mysql-container-name> mysql -u root -p<MYSQL_ROOT_PASSWORD> hospital -e '
+UPDATE user SET role = "admin" WHERE email = "you@example.com";
 '
 ```
 

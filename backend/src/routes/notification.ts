@@ -1,5 +1,5 @@
 import { Router } from "express";
-import Notification from "../models/notification";
+import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 
 const notificationRouter = Router();
@@ -7,14 +7,16 @@ const notificationRouter = Router();
 notificationRouter.get("/", requireAuth, async (req, res) => {
   try {
     const currentUserId = (req as any).user.id;
-    const notifications = await Notification.find({ user: currentUserId })
-      .sort({ createdAt: -1 })
-      .limit(20); // Only get the 20 most recent
-
-    const unreadCount = await Notification.countDocuments({
-      user: currentUserId,
-      isRead: false,
-    });
+    const [notifications, unreadCount] = await Promise.all([
+      prisma.notification.findMany({
+        where: { user: currentUserId },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+      prisma.notification.count({
+        where: { user: currentUserId, isRead: false },
+      }),
+    ]);
     res.json({ notifications, unreadCount });
   } catch (error) {
     console.error(error);
@@ -24,9 +26,9 @@ notificationRouter.get("/", requireAuth, async (req, res) => {
 
 notificationRouter.post("/:id/read", requireAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    await Notification.findByIdAndUpdate(id, { isRead: true });
+    await prisma.notification.update({ where: { id }, data: { isRead: true } });
     res.json({ message: "Notification marked as read" });
   } catch (error) {
     console.error(error);

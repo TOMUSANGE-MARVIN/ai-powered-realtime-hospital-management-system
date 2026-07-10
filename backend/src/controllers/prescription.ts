@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
-import Prescription from "../models/prescription";
-import Medication from "../models/medication";
+import { prisma } from "../lib/prisma";
 import { logActivity } from "../lib/activity";
 
 export const getPrescriptions = async (req: Request, res: Response) => {
@@ -10,14 +9,19 @@ export const getPrescriptions = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
     const status = req.query.status as string;
 
-    const filter: any = {};
-    if (status && status !== "all") filter.status = status;
+    const where: any = {};
+    if (status && status !== "all") where.status = status;
 
-    const total = await Prescription.countDocuments(filter);
-    const results = await Prescription.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const [total, results] = await Promise.all([
+      prisma.prescription.count({ where }),
+      prisma.prescription.findMany({
+        where,
+        include: { items: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
 
     res.json({
       res: results,
@@ -39,14 +43,25 @@ export const createPrescription = async (req: Request, res: Response) => {
     const currentUser = (req as any).user;
     const { patient, patientName, items, notes } = req.body;
 
-    const prescription = await Prescription.create({
-      patient,
-      patientName,
-      doctor: currentUser.id,
-      doctorName: currentUser.name,
-      items,
-      notes,
-      status: "pending",
+    const prescription = await prisma.prescription.create({
+      data: {
+        patient,
+        patientName,
+        doctor: currentUser.id,
+        doctorName: currentUser.name,
+        notes,
+        status: "pending",
+        items: {
+          create: (items || []).map((item: any) => ({
+            medication: item.medication || null,
+            medicationName: item.medicationName,
+            dosage: item.dosage,
+            quantity: item.quantity ?? 1,
+            instructions: item.instructions,
+          })),
+        },
+      },
+      include: { items: true },
     });
 
     const io = req.app.get("io");
@@ -66,10 +81,13 @@ export const createPrescription = async (req: Request, res: Response) => {
 // Dispense: decrements medication stock and marks prescription as dispensed
 export const dispensePrescription = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const currentUser = (req as any).user;
 
-    const prescription = await Prescription.findById(id);
+    const prescription = await prisma.prescription.findUnique({
+      where: { id },
+      include: { items: true },
+    });
     if (!prescription) {
       return res.status(404).json({ message: "Prescription not found" });
     }
@@ -77,19 +95,27 @@ export const dispensePrescription = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Already dispensed" });
     }
 
-    // Decrement stock for each item that references a real medication
-    for (const item of prescription.items) {
-      if (item.medication) {
-        await Medication.findByIdAndUpdate(item.medication, {
-          $inc: { stock: -Math.abs(item.quantity) },
-        });
+    const updated = await prisma.$transaction(async (tx) => {
+      // Decrement stock for each item that references a real medication
+      for (const item of prescription.items) {
+        if (item.medication) {
+          await tx.medication.update({
+            where: { id: item.medication },
+            data: { stock: { decrement: Math.abs(item.quantity) } },
+          });
+        }
       }
-    }
 
-    prescription.status = "dispensed";
-    prescription.dispensedBy = currentUser.name;
-    prescription.dispensedAt = new Date();
-    await prescription.save();
+      return tx.prescription.update({
+        where: { id },
+        data: {
+          status: "dispensed",
+          dispensedBy: currentUser.name,
+          dispensedAt: new Date(),
+        },
+        include: { items: true },
+      });
+    });
 
     const io = req.app.get("io");
     if (io) {
@@ -99,9 +125,9 @@ export const dispensePrescription = async (req: Request, res: Response) => {
     await logActivity(
       currentUser.id,
       "Dispensed Prescription",
-      `Dispensed prescription for ${prescription.patientName}`,
+      `Dispensed prescription for ${updated.patientName}`,
     );
-    res.json(prescription);
+    res.json(updated);
   } catch (error) {
     console.error("Error dispensing prescription:", error);
     res.status(500).json({ message: "Server error" });
@@ -110,12 +136,10 @@ export const dispensePrescription = async (req: Request, res: Response) => {
 
 export const cancelPrescription = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const prescription = await Prescription.findByIdAndUpdate(
-      id,
-      { status: "cancelled" },
-      { new: true },
-    );
+    const id = req.params.id as string;
+    const prescription = await prisma.prescription
+      .update({ where: { id }, data: { status: "cancelled" }, include: { items: true } })
+      .catch(() => null);
     if (!prescription) {
       return res.status(404).json({ message: "Prescription not found" });
     }

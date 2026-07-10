@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
-import invoice from "../models/invoice";
 import { fromNodeHeaders } from "better-auth/node";
-import mongoose from "mongoose";
+import { prisma } from "../lib/prisma";
 import { auth, polarClient } from "../lib/auth";
 
 export const getMyActiveInvoice = async (req: Request, res: Response) => {
@@ -11,9 +10,12 @@ export const getMyActiveInvoice = async (req: Request, res: Response) => {
 
     // 2. Find an active invoice for this specific patient
     // We look for 'draft' (still accumulating charges) or 'pending_payment' (ready to checkout)
-    const activeInvoice = await invoice.findOne({
-      patientId: currentUserId,
-      status: { $in: ["draft", "pending_payment"] },
+    const activeInvoice = await prisma.invoice.findFirst({
+      where: {
+        patientId: currentUserId,
+        status: { in: ["draft", "pending_payment"] },
+      },
+      include: { items: true },
     });
     // 3. Return 404 if no bill exists
     if (!activeInvoice) {
@@ -31,9 +33,9 @@ export const getMyActiveInvoice = async (req: Request, res: Response) => {
 export const getBillingHistory = async (req: Request, res: Response) => {
   try {
     const currentUserId = (req as any).user.id;
-    const activeInvoice = await invoice.find({
-      patientId: currentUserId,
-      status: { $in: ["paid"] },
+    const activeInvoice = await prisma.invoice.findMany({
+      where: { patientId: currentUserId, status: "paid" },
+      include: { items: true },
     });
     res.status(200).json(activeInvoice);
   } catch (error) {
@@ -48,35 +50,28 @@ export const allBilling = async (req: Request, res: Response) => {
     const limit = Number(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const billings = await invoice
-      .find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const [count, billings] = await Promise.all([
+      prisma.invoice.count(),
+      prisma.invoice.findMany({
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        include: { items: true },
+      }),
+    ]);
 
-    const count = await invoice.countDocuments();
-    const collection = mongoose.connection.collection("user");
-    const users = await collection
-      .find(
-        { role: "patient" },
-        { projection: { password: 0, headers: 0, emailVerified: 0 } },
-      )
-      .toArray();
-
-    // 4. Create a Lookup Map for instant access
-    const userMap = new Map<string, any>();
-    users.forEach((user) => {
-      userMap.set(user._id.toString(), user);
+    const users = await prisma.user.findMany({
+      where: { role: "patient" },
+      omit: { emailVerified: true },
     });
 
-    const billingsWithUser = billings.map((billing) => {
-      const user = userMap.get(billing.patientId.toString());
-      return {
-        ...billing,
-        user: user || null, // If no user found, set user to null
-      };
-    });
+    // Create a Lookup Map for instant access
+    const userMap = new Map(users.map((user) => [user.id, user]));
+
+    const billingsWithUser = billings.map((billing) => ({
+      ...billing,
+      user: userMap.get(billing.patientId) || null,
+    }));
 
     res.json({
       res: billingsWithUser,
@@ -94,10 +89,10 @@ export const allBilling = async (req: Request, res: Response) => {
 };
 
 export const createCheckoutSession = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   try {
     // 1. Fetch the unique invoice from your database
-    const userInvoice = await invoice.findById(id);
+    const userInvoice = await prisma.invoice.findUnique({ where: { id } });
     if (!userInvoice || userInvoice.status === "paid") {
       return res
         .status(400)
@@ -126,7 +121,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
         ],
       },
       metadata: {
-        hospitalInvoiceId: userInvoice._id.toString(),
+        hospitalInvoiceId: userInvoice.id,
         patientId: userInvoice.patientId,
       },
       // Where to redirect after success
@@ -134,13 +129,13 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       returnUrl: `${process.env.FRONTEND_URL}/profile/${userInvoice.patientId}`,
     });
 
-    // Redirect customer to checkout.url
-    // 3. Save checkout ID to Mongo
-    userInvoice.status = "pending_payment";
-    userInvoice.polarCheckoutId = checkout.id;
-    await userInvoice.save();
+    // Save checkout ID to the DB
+    await prisma.invoice.update({
+      where: { id: userInvoice.id },
+      data: { status: "pending_payment", polarCheckoutId: checkout.id },
+    });
 
-    // 4. Return the checkout URL to the frontend
+    // Return the checkout URL to the frontend
     res.json({ checkoutUrl: checkout.url });
   } catch (error) {
     console.error("Polar Checkout Error:", error);

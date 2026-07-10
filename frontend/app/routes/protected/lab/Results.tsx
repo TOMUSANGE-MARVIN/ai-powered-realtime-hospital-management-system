@@ -39,7 +39,7 @@ function ResultCard({ result, onSaved }: { result: any; onSaved: () => void }) {
   });
 
   const markReviewed = () => {
-    mutation.mutate({ id: result._id, data: { doctorNotes: notes, status: "reviewed" } });
+    mutation.mutate({ id: result.id, data: { doctorNotes: notes, status: "reviewed" } });
   };
 
   return (
@@ -146,7 +146,7 @@ export default function LabResults() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {results.map((r) => (
-            <ResultCard key={r._id} result={r} onSaved={refetch} />
+            <ResultCard key={r.id} result={r} onSaved={refetch} />
           ))}
         </div>
       )}

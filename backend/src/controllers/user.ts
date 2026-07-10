@@ -1,13 +1,12 @@
-import mongoose from "mongoose";
 import type { Request, Response } from "express";
 import { logActivity } from "../lib/activity";
 import { inngest } from "../inngest/client";
-import { auth, polarClient } from "../lib/auth";
-import { fromNodeHeaders } from "better-auth/node";
+import { polarClient } from "../lib/auth";
+import { prisma } from "../lib/prisma";
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     // to use current user, we need a middleware
     const currentUser = (req as any).user; // Assuming you have a middleware that attaches the user to the request object
 
@@ -17,13 +16,7 @@ export const getUserById = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const queryId =
-      id?.length === 24 ? new mongoose.Types.ObjectId(id as string) : id;
-    const collection = mongoose.connection.collection("user");
-    const user = await collection.findOne(
-      { _id: queryId as mongoose.Types.ObjectId },
-      { projection: { password: 0 } },
-    );
+    const user = await prisma.user.findUnique({ where: { id } });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -38,21 +31,15 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { name, email, role, password, ...customFields } = req.body; // Add fields you want to update
 
-    const queryId =
-      id?.length === 24 ? new mongoose.Types.ObjectId(id as string) : id;
-    const collection = mongoose.connection.collection("user");
-
-    const existingUser = await collection.findOne({
-      _id: queryId as mongoose.Types.ObjectId,
-    });
+    const existingUser = await prisma.user.findUnique({ where: { id } });
     if (!existingUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const updatePayload = {
+    const updatePayload: Record<string, unknown> = {
       name,
       email,
       role,
@@ -66,17 +53,14 @@ export const updateUser = async (req: Request, res: Response) => {
         delete updatePayload[key],
     );
 
-    // Update user
-    const result = await collection.updateOne(
-      { _id: new mongoose.Types.ObjectId(id as string) }, // Convert string ID to ObjectId
-      { $set: updatePayload },
-    );
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: updatePayload,
+    });
+
     // socket notification
     const io = req.app.get("io");
-    if (io && result.modifiedCount > 0) {
+    if (io) {
       io.emit("notify_user_updated");
     }
 
@@ -88,7 +72,7 @@ export const updateUser = async (req: Request, res: Response) => {
     );
     res.json({
       message: "User updated successfully",
-      updatedUser: result,
+      updatedUser,
     });
   } catch (error) {
     console.error("Error updating user:", error);
@@ -102,33 +86,25 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.max(1, parseInt(req.query.limit as string) || 10);
     const skip = (page - 1) * limit;
-    const filter: any = {};
+    const where: any = {};
     const role = req.query.role as string;
 
     // Only add role to filter if it exists and isn't empty/all
     if (role && role !== "all" && role !== "") {
-      filter.role = role;
+      where.role = role;
     }
 
-    // collection instance
-    const collection = mongoose.connection.collection("user");
-    // total count for pagination
-    const totalUsers = await collection.countDocuments(filter);
-    const users = await collection
-      .find(
-        filter, // 👈 Just pass the filter directly now
-        {
-          projection: {
-            password: 0,
-            headers: 0,
-            emailVerified: 0,
-          },
-        },
-      )
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray();
+    const [totalUsers, users] = await Promise.all([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        omit: { emailVerified: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
+
     res.json({
       res: users,
       pagination: {
@@ -147,7 +123,7 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
 //admit
 export const admitPatient = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { admissionReason } = req.body;
 
     // trigger inngest

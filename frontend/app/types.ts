@@ -27,7 +27,7 @@ export type StaffStatus = "active" | "on_leave" | "suspended" | "resigned";
 export type UserStatus = PatientStatus | StaffStatus;
 
 export interface LabResult {
-  _id: string;
+  id: string;
   patientId: string;
   testType: string;
   bodyPart: string;
@@ -39,7 +39,7 @@ export interface LabResult {
 }
 
 export interface User {
-  _id: string; // MongoDB uses _id. Change to 'id' if you transform it on backend.
+  id: string;
   name: string;
   email: string;
   image?: string | null;
@@ -76,7 +76,7 @@ export interface PaginatedResponse<T> {
 }
 
 export interface Notification {
-  _id: string;
+  id: string;
   title: string;
   message: string;
   type: "system" | "assignment" | "lab_result" | "alert";
@@ -95,7 +95,7 @@ export interface WebPushSubscription {
 }
 
 export interface ActivityLog {
-  _id: string;
+  id: string;
   user: User; // Who did it?
   action: string; // "Created Exam", "Registered Student"
   details?: string;
@@ -103,7 +103,7 @@ export interface ActivityLog {
 }
 
 export interface invoice {
-  _id: string;
+  id: string;
   user: User;
   polarCheckoutId?: string; // Links to Polar transaction
   status: "draft" | "pending_payment" | "paid";
@@ -118,7 +118,7 @@ export interface invoice {
 }
 
 export interface appointment {
-  _id: string;
+  id: string;
   patientId?: string;
   patientName: string;
   patientEmail?: string;
@@ -136,7 +136,7 @@ export interface appointment {
     | "confirmed"
     | "completed"
     | "cancelled"
-    | "in-progress";
+    | "in_progress";
   isVirtual: boolean;
   meetingId?: string;
   notes?: string;
@@ -144,7 +144,7 @@ export interface appointment {
 }
 
 export interface Medication {
-  _id: string;
+  id: string;
   name: string;
   category: string;
   unit: string;
@@ -166,7 +166,7 @@ export interface PrescriptionItem {
 }
 
 export interface Prescription {
-  _id: string;
+  id: string;
   patient: string;
   patientName: string;
   doctor: string;
@@ -181,7 +181,7 @@ export interface Prescription {
 }
 
 export interface SupportTicket {
-  _id: string;
+  id: string;
   userId: string;
   userName: string;
   subject: string;
@@ -193,7 +193,7 @@ export interface SupportTicket {
 }
 
 export interface Feedback {
-  _id: string;
+  id: string;
   userId: string;
   userName: string;
   category: "bug" | "feature" | "general";

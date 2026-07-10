@@ -96,7 +96,7 @@ export default function Notifications({ user }: { user: User }) {
             <DropdownMenuGroup>
               {notifications.map((notif) => (
                 <DropdownMenuItem
-                  key={notif._id}
+                  key={notif.id}
                   className={cn(
                     "p-4 border-b last:border-0 cursor-pointer focus:bg-slate-50 dark:focus:bg-slate-900 transition-colors",
                     !notif.isRead
@@ -105,7 +105,7 @@ export default function Notifications({ user }: { user: User }) {
                   )}
                   onClick={() => {
                     // Mark as read when clicked
-                    if (!notif.isRead) readMutation.mutate(notif._id);
+                    if (!notif.isRead) readMutation.mutate(notif.id);
                   }}
                   asChild
                 >
@@ -159,7 +159,7 @@ export default function Notifications({ user }: { user: User }) {
                 onClick={() => {
                   // Mark all as read by sending multiple requests (could be optimized with a batch endpoint)
                   notifications.forEach((notif) => {
-                    if (!notif.isRead) readMutation.mutate(notif._id);
+                    if (!notif.isRead) readMutation.mutate(notif.id);
                   });
                 }}
                 disabled={unreadCount === 0 || readMutation.isPending}

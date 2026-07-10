@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
-import mongoose from "mongoose";
-import LabResult from "../models/labResults";
+import { prisma } from "../lib/prisma";
 import { inngest } from "../inngest/client";
 import { logActivity } from "../lib/activity";
 
@@ -10,13 +9,16 @@ export const createLabResult = async (req: Request, res: Response) => {
     const { patientId, testType, bodyPart, imageUrl } = req.body;
     const currentUserId = (req as any).user?.id;
 
-    const newLabResult = await LabResult.create({
-      patient: patientId,
-      testType,
-      bodyPart,
-      imageUrl,
-      status: "pending",
-      uploadedBy: currentUserId,
+    const newLabResult = await prisma.labResult.create({
+      data: {
+        patient: patientId,
+        testType,
+        bodyPart,
+        imageUrl,
+        status: "pending",
+        uploadedBy: currentUserId,
+        aiAnalysis: "Pending Analysis...",
+      },
     });
     if (!newLabResult) {
       return res.status(400).json({ message: "Failed to create lab result" });
@@ -30,7 +32,7 @@ export const createLabResult = async (req: Request, res: Response) => {
       await inngest.send({
         name: "labResult/created",
         data: {
-          labResultId: newLabResult._id.toString(),
+          labResultId: newLabResult.id,
           imageUrl: newLabResult.imageUrl,
           bodyPart: newLabResult.bodyPart,
         },
@@ -65,36 +67,30 @@ export const getAllLabResults = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
     const status = req.query.status as string;
 
-    const filter: any = {};
-    if (status && status !== "all") filter.status = status;
+    const where: any = {};
+    if (status && status !== "all") where.status = status;
 
-    const total = await LabResult.countDocuments(filter);
-    const results = await LabResult.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const [total, results] = await Promise.all([
+      prisma.labResult.count({ where }),
+      prisma.labResult.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
 
-    // Denormalize patient name/email since "user" isn't a registered Mongoose model
-    const patientIds = [
-      ...new Set(results.map((r) => r.patient?.toString()).filter(Boolean)),
-    ];
-    const patientQueryIds: (string | mongoose.Types.ObjectId)[] = patientIds.map(
-      (id) => (id.length === 24 ? new mongoose.Types.ObjectId(id) : id),
-    );
-
-    const patients = await mongoose.connection
-      .collection("user")
-      .find(
-        { _id: { $in: patientQueryIds } as any },
-        { projection: { name: 1, email: 1 } },
-      )
-      .toArray();
-    const patientMap = new Map(patients.map((p) => [p._id.toString(), p]));
+    // Denormalize patient name/email
+    const patientIds = [...new Set(results.map((r) => r.patient).filter(Boolean))];
+    const patients = await prisma.user.findMany({
+      where: { id: { in: patientIds } },
+      select: { id: true, name: true, email: true },
+    });
+    const patientMap = new Map(patients.map((p) => [p.id, p]));
 
     const enriched = results.map((r) => ({
       ...r,
-      patientName: patientMap.get(r.patient?.toString())?.name || "Unknown",
+      patientName: patientMap.get(r.patient)?.name || "Unknown",
     }));
 
     res.json({
@@ -115,9 +111,10 @@ export const getAllLabResults = async (req: Request, res: Response) => {
 // 2. Get all Lab Results for a specific patient
 export const getPatientLabResults = async (req: Request, res: Response) => {
   try {
-    const { patientId } = req.params;
-    const results = await LabResult.find({ patient: patientId }).sort({
-      createdAt: -1,
+    const patientId = req.params.patientId as string;
+    const results = await prisma.labResult.findMany({
+      where: { patient: patientId },
+      orderBy: { createdAt: "desc" },
     });
     res.status(200).json(results);
   } catch (error) {
@@ -129,19 +126,19 @@ export const getPatientLabResults = async (req: Request, res: Response) => {
 // 3. Update Lab Result (Used for saving AI Analysis or Doctor Notes)
 export const updateLabResult = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { aiAnalysis, doctorNotes, status } = req.body;
-    const updatedResult = await LabResult.findByIdAndUpdate(
-      id,
-      {
-        $set: {
+
+    const updatedResult = await prisma.labResult
+      .update({
+        where: { id },
+        data: {
           ...(aiAnalysis && { aiAnalysis }),
           ...(doctorNotes && { doctorNotes }),
           ...(status && { status }),
         },
-      },
-      { new: true }, // Return the updated document
-    );
+      })
+      .catch(() => null);
 
     if (!updatedResult) {
       return res.status(404).json({ message: "Lab result not found" });

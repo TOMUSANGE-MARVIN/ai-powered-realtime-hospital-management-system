@@ -109,10 +109,10 @@ function CreatePrescriptionModal({ onSaved }: { onSaved: () => void }) {
   });
 
   const onSubmit = (data: any) => {
-    const patient = patientsData?.res.find((p) => p._id === data.patient);
+    const patient = patientsData?.res.find((p) => p.id === data.patient);
     if (!patient) return toast.error("Select a patient");
     mutation.mutate({
-      patient: patient._id,
+      patient: patient.id,
       patientName: patient.name,
       items: data.items,
       notes: data.notes,
@@ -146,7 +146,7 @@ function CreatePrescriptionModal({ onSaved }: { onSaved: () => void }) {
               </SelectTrigger>
               <SelectContent>
                 {(patientsData?.res || []).map((p) => (
-                  <SelectItem key={p._id} value={p._id}>
+                  <SelectItem key={p.id} value={p.id}>
                     {p.name} — {p.email}
                   </SelectItem>
                 ))}
@@ -191,7 +191,7 @@ function CreatePrescriptionModal({ onSaved }: { onSaved: () => void }) {
                       </SelectTrigger>
                       <SelectContent>
                         {medications.map((m) => (
-                          <SelectItem key={m._id} value={m.name}>
+                          <SelectItem key={m.id} value={m.name}>
                             {m.name}
                           </SelectItem>
                         ))}
@@ -358,7 +358,7 @@ export default function Prescriptions() {
                   </TableRow>
                 ) : (
                   prescriptions.map((p) => (
-                    <TableRow key={p._id}>
+                    <TableRow key={p.id}>
                       <TableCell className="font-medium flex items-center gap-2">
                         <ClipboardList size={14} className="text-slate-400" />
                         {p.patientName}
@@ -381,7 +381,7 @@ export default function Prescriptions() {
                             variant="destructive"
                             size="sm"
                             disabled={cancelMutation.isPending}
-                            onClick={() => cancelMutation.mutate(p._id)}
+                            onClick={() => cancelMutation.mutate(p.id)}
                           >
                             Cancel
                           </Button>

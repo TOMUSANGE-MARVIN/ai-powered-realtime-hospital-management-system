@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
-import ActivityLog from "../models/activityLog";
+import { prisma } from "../lib/prisma";
 import { logActivity } from "../lib/activity";
-import mongoose from "mongoose";
 
 // Controller to add an activity log
 export const addActivityLog = async (req: Request, res: Response) => {
@@ -24,32 +23,24 @@ export const getActivityLogs = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     // fetch activity logs
-    const logs = await ActivityLog.find()
-      .sort({ createdAt: -1 }) // sort by most recent
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    // get total count for pagination
-    const totalLogs = await ActivityLog.countDocuments();
+    const [totalLogs, logs] = await Promise.all([
+      prisma.activityLog.count(),
+      prisma.activityLog.findMany({
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
 
     // get user details for each log
-    const collection = mongoose.connection.collection("user");
-    const users = await collection.find().toArray();
-    // create a map of userId to user details for easy lookup
-    const userMap = new Map<string, any>();
-    users.forEach((user) => {
-      userMap.set(user._id.toString(), user);
-    });
+    const users = await prisma.user.findMany();
+    const userMap = new Map(users.map((user) => [user.id, user]));
 
     // attach user details to each log
-    const logsWithUserDetails = logs.map((log) => {
-      const user = userMap.get(log.user.toString());
-      return {
-        ...log,
-        user: user ? user : null,
-      };
-    });
+    const logsWithUserDetails = logs.map((log) => ({
+      ...log,
+      user: (log.user && userMap.get(log.user)) || null,
+    }));
 
     // total pages for pagination
     const totalPages = Math.ceil(totalLogs / limit);

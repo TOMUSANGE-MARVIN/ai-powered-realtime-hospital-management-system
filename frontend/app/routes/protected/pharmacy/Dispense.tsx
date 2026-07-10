@@ -78,7 +78,7 @@ export default function Dispense() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {pending.map((p) => (
-            <Card key={p._id} className="card shadow-sm">
+            <Card key={p.id} className="card shadow-sm">
               <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function Dispense() {
                 <Button
                   className="w-full gap-2"
                   disabled={dispenseMutation.isPending}
-                  onClick={() => dispenseMutation.mutate(p._id)}
+                  onClick={() => dispenseMutation.mutate(p.id)}
                 >
                   <PackageCheck size={16} /> Mark as Dispensed
                 </Button>

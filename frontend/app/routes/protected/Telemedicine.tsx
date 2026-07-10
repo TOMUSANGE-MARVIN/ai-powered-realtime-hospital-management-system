@@ -70,7 +70,7 @@ export default function Telemedicine() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {visits.map((v) => (
-            <Card key={v._id} className="card shadow-sm">
+            <Card key={v.id} className="card shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Video size={16} className="text-slate-400" />
@@ -85,14 +85,14 @@ export default function Telemedicine() {
               <CardContent className="space-y-3">
                 <Badge
                   className={
-                    v.status === "in-progress"
+                    v.status === "in_progress"
                       ? "bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400"
                       : v.status === "completed"
                         ? "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400"
                         : "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400"
                   }
                 >
-                  {v.status.replace("-", " ")}
+                  {v.status.replace(/[_-]/g, " ")}
                 </Badge>
 
                 {v.meetingId ? (
@@ -114,22 +114,22 @@ export default function Telemedicine() {
                 )}
 
                 <div className="flex gap-2">
-                  {v.status !== "in-progress" && v.status !== "completed" && (
+                  {v.status !== "in_progress" && v.status !== "completed" && (
                     <Button
                       className="flex-1 gap-2"
                       size="sm"
                       disabled={updateMutation.isPending}
                       onClick={() =>
                         updateMutation.mutate({
-                          id: v._id,
-                          data: { status: "in-progress", isVirtual: true },
+                          id: v.id,
+                          data: { status: "in_progress", isVirtual: true },
                         })
                       }
                     >
                       <PhoneCall size={14} /> Start Session
                     </Button>
                   )}
-                  {v.status === "in-progress" && (
+                  {v.status === "in_progress" && (
                     <Button
                       className="flex-1 gap-2"
                       size="sm"
@@ -137,7 +137,7 @@ export default function Telemedicine() {
                       disabled={updateMutation.isPending}
                       onClick={() =>
                         updateMutation.mutate({
-                          id: v._id,
+                          id: v.id,
                           data: { status: "completed" },
                         })
                       }

@@ -182,7 +182,7 @@ export default function Support() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {tickets.map((t) => (
-            <Card key={t._id} className="card shadow-sm">
+            <Card key={t.id} className="card shadow-sm">
               <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                   <CardTitle className="text-base">{t.subject}</CardTitle>
@@ -208,7 +208,7 @@ export default function Support() {
                         variant="outline"
                         disabled={statusMutation.isPending}
                         onClick={() =>
-                          statusMutation.mutate({ id: t._id, status: "in_progress" })
+                          statusMutation.mutate({ id: t.id, status: "in_progress" })
                         }
                       >
                         Start Working
@@ -218,7 +218,7 @@ export default function Support() {
                       size="sm"
                       disabled={statusMutation.isPending}
                       onClick={() =>
-                        statusMutation.mutate({ id: t._id, status: "resolved" })
+                        statusMutation.mutate({ id: t.id, status: "resolved" })
                       }
                     >
                       Mark Resolved

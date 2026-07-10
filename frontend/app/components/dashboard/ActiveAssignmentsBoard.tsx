@@ -81,13 +81,13 @@ export default function ActiveAssignmentsBoard() {
             currentUser?.role === "nurse" &&
             patient.assignedNurseId === currentUser?.id;
           const isMeAsPatient =
-            currentUser?.role === "patient" && patient._id === currentUser?.id;
+            currentUser?.role === "patient" && patient.id === currentUser?.id;
 
           const isHighlighted =
             isMyPatientAsDoctor || isMyPatientAsNurse || isMeAsPatient;
           return (
             <Card
-              key={patient._id}
+              key={patient.id}
               className={cn(
                 "overflow-hidden transition-all duration-300 relative",
                 isHighlighted

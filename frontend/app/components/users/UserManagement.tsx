@@ -223,7 +223,7 @@ const UserManagement = ({ role, title, description }: UserManagementProps) => {
                   </TableRow>
                 ) : (
                   filteredUsers?.map((user) => (
-                    <TableRow key={user._id}>
+                    <TableRow key={user.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
@@ -304,7 +304,7 @@ const UserManagement = ({ role, title, description }: UserManagementProps) => {
                           {session?.user.role === "admin" && (
                             <>
                               <Button
-                                onClick={() => banUser(user?.banned, user._id)}
+                                onClick={() => banUser(user?.banned, user.id)}
                                 variant="outline"
                                 size="sm"
                                 disabled={loading}
@@ -314,7 +314,7 @@ const UserManagement = ({ role, title, description }: UserManagementProps) => {
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => deleteUser(user._id)}
+                                onClick={() => deleteUser(user.id)}
                                 disabled={loading}
                               >
                                 Delete

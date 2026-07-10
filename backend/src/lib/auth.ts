@@ -1,7 +1,6 @@
 import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin } from "better-auth/plugins";
-import { MongoClient } from "mongodb";
 import {
   polar,
   checkout,
@@ -10,10 +9,7 @@ import {
   webhooks,
 } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
-import invoice from "../models/invoice";
-
-const client = new MongoClient(process.env.MONGO_URI || "");
-const db = client.db();
+import { prisma } from "./prisma";
 
 export const polarClient = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
@@ -24,7 +20,7 @@ export const polarClient = new Polar({
 });
 
 export const auth = betterAuth({
-  database: mongodbAdapter(db),
+  database: prismaAdapter(prisma, { provider: "mysql" }),
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
   // if you comment this out, thunder client will be able to create user, but let add origin on thunder client to test it out
   trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:5173"],
@@ -53,9 +49,9 @@ export const auth = betterAuth({
             if (type === "order.paid" && data.paid) {
               const invoiceId = data.metadata?.hospitalInvoiceId;
               if (invoiceId) {
-                // Update your Mongo DB!
-                await invoice.findByIdAndUpdate(invoiceId, {
-                  status: "paid",
+                await prisma.invoice.update({
+                  where: { id: invoiceId as string },
+                  data: { status: "paid" },
                 });
                 console.log(
                   `✅ Invoice ${invoiceId} marked as PAID via Polar!`,
@@ -98,12 +94,29 @@ export const auth = betterAuth({
         required: false,
         defaultValue: "active",
       },
-      prescriptions: {
-        type: "string[]",
+      admissionReason: {
+        type: "string",
         required: false,
       },
-      appointments: {
-        type: "string[]",
+      assignedDoctorId: {
+        type: "string",
+        required: false,
+      },
+      assignedDoctorName: {
+        type: "string",
+        required: false,
+      },
+      assignedNurseId: {
+        type: "string",
+        required: false,
+      },
+      assignedNurseName: {
+        type: "string",
+        required: false,
+      },
+      triageReasoning: {
+        type: "string",
+        required: false,
       },
     },
   },

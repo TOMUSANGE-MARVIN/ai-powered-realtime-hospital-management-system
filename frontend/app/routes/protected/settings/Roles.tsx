@@ -117,7 +117,7 @@ export default function RolesSettings() {
                   </TableRow>
                 ) : (
                   users.map((u) => (
-                    <TableRow key={u._id}>
+                    <TableRow key={u.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
@@ -135,7 +135,7 @@ export default function RolesSettings() {
                           value={u.role}
                           onValueChange={(role) =>
                             mutation.mutate({
-                              userId: u._id,
+                              userId: u.id,
                               userData: { role: role as Role },
                             })
                           }

@@ -1,9 +1,17 @@
 import type { Route } from "../+types/root";
-import { Activity, Lock, Mail, ChevronRight, AlertCircle } from "lucide-react";
+import {
+  Activity,
+  Lock,
+  Mail,
+  ChevronRight,
+  AlertCircle,
+  ShieldCheck,
+  Clock,
+  Stethoscope,
+} from "lucide-react";
 import { CustomInput } from "@/components/global/CustomInput";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import z from "zod";
@@ -71,13 +79,79 @@ const Login = () => {
     );
     setIsLoading(false);
   };
-  // console.log(form.formState.errors);
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
-      <Card className="rounded-lg shadow-2xl card backdrop-blur-xl">
-        <CardContent className="p-10 min-w-100 md:min-w-140.5">
-          {/* logo */}
-          <div className="flex flex-col items-center mb-10">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 transition-colors">
+      {/* Brand / illustration panel — hidden below lg, where the form panel
+          becomes the whole page (matches the previous single-column layout). */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-linear-to-br from-blue-600 via-indigo-600 to-indigo-800">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/15 backdrop-blur p-2.5 rounded-xl">
+              <Activity className="w-6 h-6" />
+            </div>
+            <span className="text-xl font-black tracking-tight">
+              Ask Musawo
+            </span>
+          </div>
+
+          <div className="max-w-md">
+            <h2 className="text-4xl font-black leading-tight mb-4">
+              Real-time care,
+              <br />
+              whenever you need it.
+            </h2>
+            <p className="text-blue-100 text-lg mb-8">
+              Sign in to manage appointments, patients, and consultations from
+              one secure portal.
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-blue-50">
+                <div className="bg-white/15 backdrop-blur p-2 rounded-lg shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">
+                  HIPAA-conscious, encrypted patient data
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-blue-50">
+                <div className="bg-white/15 backdrop-blur p-2 rounded-lg shrink-0">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">
+                  Live appointment and triage updates
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-blue-50">
+                <div className="bg-white/15 backdrop-blur p-2 rounded-lg shrink-0">
+                  <Stethoscope className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">
+                  Built for doctors, nurses, and admins alike
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* spacer so the photo has room to sit at the bottom without
+              overlapping the copy above on shorter viewports */}
+          <div className="h-40" />
+        </div>
+
+        <img
+          src="/images/doctor-photo.png"
+          alt=""
+          className="absolute bottom-0 right-6 w-2/3 max-w-sm object-contain drop-shadow-2xl pointer-events-none select-none"
+        />
+      </div>
+
+      {/* Form panel */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-md">
+          {/* Logo shown only when the brand panel is hidden (mobile/tablet) */}
+          <div className="flex lg:hidden flex-col items-center mb-10">
             <div className="bg-linear-to-tr from-blue-600 to-indigo-600 p-3 rounded-2xl shadow-lg shadow-blue-500/30 mb-4">
               <Activity className="text-white w-8 h-8" />
             </div>
@@ -88,6 +162,16 @@ const Login = () => {
               Secure Provider Portal
             </p>
           </div>
+
+          <div className="hidden lg:block mb-10">
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Welcome back
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-2">
+              Sign in to your provider account
+            </p>
+          </div>
+
           {/* global error */}
           {globalError && (
             <div className="mb-6 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-4 rounded-2xl text-sm flex items-center gap-3 border border-red-100 dark:border-red-900/50 animate-in slide-in-from-top-2 fade-in">
@@ -158,8 +242,8 @@ const Login = () => {
               )}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

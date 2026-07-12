@@ -15,6 +15,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -29,8 +30,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
+    // A successful sign-in triggers an immediate redirect away from this
+    // screen (see app_router.dart), which can unmount it before this
+    // continuation runs. Touching `ref`/`context` after that is unsafe.
+    if (!mounted) return;
     final state = ref.read(authControllerProvider);
-    if (state.hasError && mounted) {
+    if (state.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.error.toString())),
       );
@@ -53,7 +58,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.local_hospital, size: 48, color: Colors.indigo),
+                  Image.asset('assets/images/healthcare_illustration.webp', height: 160),
                   const SizedBox(height: 12),
                   Text(
                     'Welcome back',
@@ -69,15 +74,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'Email'),
                     validator: (value) =>
                         (value == null || !value.contains('@')) ? 'Enter a valid email' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
                     validator: (value) =>
                         (value == null || value.length < 8) ? 'Minimum 8 characters' : null,
                   ),

@@ -152,8 +152,16 @@ export const updateAppointment = async (req: Request, res: Response) => {
 export const bookAppointment = async (req: Request, res: Response) => {
   try {
     const patient = (req as any).user;
-    const { doctorId, date, time, reason, consultationType, department } =
-      req.body;
+    const {
+      doctorId,
+      date,
+      time,
+      reason,
+      consultationType,
+      department,
+      isEmergency,
+      paymentId,
+    } = req.body;
 
     if (!doctorId || !date) {
       return res
@@ -163,12 +171,43 @@ export const bookAppointment = async (req: Request, res: Response) => {
 
     const doctor = await prisma.user.findFirst({
       where: { id: doctorId, role: "doctor" },
-      select: { name: true, department: true },
+      select: { name: true, department: true, consultationFee: true },
     });
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
+
+    // Pay-before-book: if the doctor charges a fee, the booking must carry a
+    // paid, unused payment belonging to this patient for this doctor.
+    if (doctor.consultationFee) {
+      if (!paymentId) {
+        return res
+          .status(402)
+          .json({ message: "Payment is required before booking this doctor" });
+      }
+      const payment = await prisma.payment.findFirst({
+        where: { id: paymentId, patientId: patient.id, doctorId },
+      });
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      if (payment.status !== "paid") {
+        return res.status(402).json({ message: "Payment has not been completed" });
+      }
+      const alreadyUsed = await prisma.appointment.findFirst({
+        where: { paymentId },
+        select: { id: true },
+      });
+      if (alreadyUsed) {
+        return res
+          .status(409)
+          .json({ message: "This payment is already linked to an appointment" });
+      }
+    }
+
+    // Emergencies need immediate attention — the date is always today.
+    const appointmentDate = isEmergency ? new Date() : new Date(date);
 
     const appointment = await prisma.appointment.create({
       data: {
@@ -178,11 +217,15 @@ export const bookAppointment = async (req: Request, res: Response) => {
         doctorId,
         doctorName: doctor.name,
         department: department || doctor.department,
-        date: new Date(date),
+        date: appointmentDate,
         time,
         reason,
-        isVirtual: consultationType !== "in_person",
+        consultationType,
+        isVirtual: consultationType !== "in_person" && consultationType !== "physical",
+        isEmergency: !!isEmergency,
+        paymentId: doctor.consultationFee ? paymentId : undefined,
         status: "requested",
+        fee: doctor.consultationFee ?? undefined,
       },
     });
 
@@ -260,6 +303,52 @@ export const cancelMyAppointment = async (req: Request, res: Response) => {
     res.json(updated);
   } catch (error) {
     console.error("Error cancelling appointment:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Doctor's own assigned appointments (mobile doctor app dashboard/appointments tab)
+export const getAssignedAppointments = async (req: Request, res: Response) => {
+  try {
+    const doctor = (req as any).user;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit as string) || 20);
+    const skip = (page - 1) * limit;
+    const status = req.query.status as string;
+    const date = req.query.date as string;
+
+    const where: any = { doctorId: doctor.id };
+    if (status && status !== "all") where.status = status;
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+      where.date = { gte: start, lte: end };
+    }
+
+    const [total, results] = await Promise.all([
+      prisma.appointment.count({ where }),
+      prisma.appointment.findMany({
+        where,
+        // Emergencies surface first so the doctor sees them immediately.
+        orderBy: [{ isEmergency: "desc" }, { date: "asc" }],
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    res.json({
+      res: results,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalData: total,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching assigned appointments:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

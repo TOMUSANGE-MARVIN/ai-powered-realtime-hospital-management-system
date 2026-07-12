@@ -6,9 +6,18 @@ import {
   createPrescription,
   dispensePrescription,
   cancelPrescription,
+  getMyPrescriptions,
 } from "../controllers/prescription";
 
 const prescriptionRouter = Router();
+
+// Patient (mobile app) — own prescriptions
+prescriptionRouter.get(
+  "/mine",
+  requireAuth,
+  checkRole(["patient"]),
+  getMyPrescriptions,
+);
 
 prescriptionRouter.get(
   "/",

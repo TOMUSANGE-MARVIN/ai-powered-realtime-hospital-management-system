@@ -23,7 +23,17 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "mysql" }),
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
   // if you comment this out, thunder client will be able to create user, but let add origin on thunder client to test it out
-  trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:5173"],
+  // "askmusawo://mobile" is a synthetic origin for the Flutter app — native
+  // HTTP clients don't have a real browser origin, so the app sends this as
+  // a static Origin header (see mobile/lib/core/api/api_client.dart) to
+  // satisfy better-auth's origin-check middleware, which otherwise rejects
+  // any cookie-bearing request (including the sign-in request itself, once
+  // a session cookie already exists in the app's persisted cookie jar) that
+  // arrives without a recognized Origin header.
+  trustedOrigins: [
+    process.env.FRONTEND_URL || "http://localhost:5173",
+    "askmusawo://mobile",
+  ],
   emailAndPassword: { enabled: true },
   plugins: [
     admin({
@@ -81,6 +91,10 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      maritalStatus: {
+        type: "string",
+        required: false,
+      },
       medicalHistory: {
         type: "string",
         required: false,
@@ -115,6 +129,34 @@ export const auth = betterAuth({
         required: false,
       },
       triageReasoning: {
+        type: "string",
+        required: false,
+      },
+      bio: {
+        type: "string",
+        required: false,
+      },
+      hospitalName: {
+        type: "string",
+        required: false,
+      },
+      hospitalAddress: {
+        type: "string",
+        required: false,
+      },
+      consultationFee: {
+        type: "number",
+        required: false,
+      },
+      emergencyContactName: {
+        type: "string",
+        required: false,
+      },
+      emergencyContactPhone: {
+        type: "string",
+        required: false,
+      },
+      emergencyContactRelation: {
         type: "string",
         required: false,
       },

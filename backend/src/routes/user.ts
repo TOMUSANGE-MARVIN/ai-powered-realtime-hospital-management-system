@@ -6,6 +6,8 @@ import {
   fetchAllUsers,
   getUserById,
   updateUser,
+  updateMe,
+  deleteMe,
   admitPatient,
   getPolarPortalLink,
 } from "../controllers/user";
@@ -18,6 +20,11 @@ userRouter.get(
   checkRole(["admin", "doctor", "nurse"]),
   fetchAllUsers,
 );
+
+// Self-service — any authenticated user editing/deleting their own profile
+userRouter.patch("/me", requireAuth, updateMe);
+userRouter.delete("/me", requireAuth, deleteMe);
+
 userRouter.put(
   "/update/:id",
   requireAuth,

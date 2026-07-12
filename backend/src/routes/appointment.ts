@@ -9,6 +9,7 @@ import {
   bookAppointment,
   getMyAppointments,
   cancelMyAppointment,
+  getAssignedAppointments,
 } from "../controllers/appointment";
 
 const appointmentRouter = Router();
@@ -34,6 +35,14 @@ appointmentRouter.patch(
   requireAuth,
   checkRole(["patient"]),
   cancelMyAppointment,
+);
+
+// Doctor (mobile app) — appointments assigned to the authenticated doctor
+appointmentRouter.get(
+  "/assigned",
+  requireAuth,
+  checkRole(["doctor"]),
+  getAssignedAppointments,
 );
 
 appointmentRouter.get(

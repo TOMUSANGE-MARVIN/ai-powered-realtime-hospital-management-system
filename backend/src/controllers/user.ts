@@ -145,6 +145,75 @@ export const admitPatient = async (req: Request, res: Response) => {
   }
 };
 
+// Self-service profile update — any authenticated role can edit their own profile
+export const updateMe = async (req: Request, res: Response) => {
+  try {
+    const currentUser = (req as any).user;
+    const {
+      name,
+      image,
+      gender,
+      bloodgroup,
+      maritalStatus,
+      age,
+      bio,
+      hospitalName,
+      hospitalAddress,
+      consultationFee,
+      specialization,
+      department,
+      emergencyContactName,
+      emergencyContactPhone,
+      emergencyContactRelation,
+    } = req.body;
+
+    const updatePayload: Record<string, unknown> = {
+      name,
+      image,
+      gender,
+      bloodgroup,
+      maritalStatus,
+      age,
+      bio,
+      hospitalName,
+      hospitalAddress,
+      consultationFee,
+      specialization,
+      department,
+      emergencyContactName,
+      emergencyContactPhone,
+      emergencyContactRelation,
+    };
+    Object.keys(updatePayload).forEach(
+      (key) =>
+        (updatePayload[key] === undefined || updatePayload[key] === null) &&
+        delete updatePayload[key],
+    );
+
+    const updatedUser = await prisma.user.update({
+      where: { id: currentUser.id },
+      data: updatePayload,
+    });
+
+    res.json({ message: "Profile updated successfully", updatedUser });
+  } catch (error) {
+    console.error("Error updating own profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Self-service account deletion
+export const deleteMe = async (req: Request, res: Response) => {
+  try {
+    const currentUser = (req as any).user;
+    await prisma.user.delete({ where: { id: currentUser.id } });
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting own account:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // polar portal
 export const getPolarPortalLink = async (req: Request, res: Response) => {
   try {

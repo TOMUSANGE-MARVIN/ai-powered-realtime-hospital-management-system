@@ -9,6 +9,12 @@ class Appointment {
     this.reason,
     this.department,
     this.meetingId,
+    this.patientId,
+    this.patientName,
+    this.doctorId,
+    this.fee,
+    this.consultationType,
+    this.isEmergency = false,
   });
 
   final String id;
@@ -20,8 +26,15 @@ class Appointment {
   final String? reason;
   final String? department;
   final String? meetingId;
+  final String? patientId;
+  final String? patientName;
+  final String? doctorId;
+  final int? fee;
+  final String? consultationType;
+  final bool isEmergency;
 
   bool get isCancellable => status == 'requested' || status == 'scheduled' || status == 'confirmed';
+  bool get isPending => status == 'requested';
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
@@ -34,6 +47,12 @@ class Appointment {
       reason: json['reason'] as String?,
       department: json['department'] as String?,
       meetingId: json['meetingId'] as String?,
+      patientId: json['patientId'] as String?,
+      patientName: json['patientName'] as String?,
+      doctorId: json['doctorId'] as String?,
+      fee: json['fee'] as int?,
+      consultationType: json['consultationType'] as String?,
+      isEmergency: json['isEmergency'] as bool? ?? false,
     );
   }
 }

@@ -5,6 +5,12 @@ class Doctor {
     this.image,
     this.specialization,
     this.department,
+    this.bio,
+    this.hospitalName,
+    this.hospitalAddress,
+    this.consultationFee,
+    this.rating,
+    this.reviewCount = 0,
   });
 
   final String id;
@@ -12,6 +18,12 @@ class Doctor {
   final String? image;
   final String? specialization;
   final String? department;
+  final String? bio;
+  final String? hospitalName;
+  final String? hospitalAddress;
+  final int? consultationFee;
+  final double? rating;
+  final int reviewCount;
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
@@ -20,6 +32,12 @@ class Doctor {
       image: json['image'] as String?,
       specialization: json['specialization'] as String?,
       department: json['department'] as String?,
+      bio: json['bio'] as String?,
+      hospitalName: json['hospitalName'] as String?,
+      hospitalAddress: json['hospitalAddress'] as String?,
+      consultationFee: (json['consultationFee'] as num?)?.toInt(),
+      rating: (json['rating'] as num?)?.toDouble(),
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
     );
   }
 }

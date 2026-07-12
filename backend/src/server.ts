@@ -8,6 +8,8 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import fs from "fs";
+import path from "path";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { serve } from "inngest/express";
 import { createServer } from "http";
@@ -35,6 +37,14 @@ import appointmentRouter from "./routes/appointment";
 import settingRouter from "./routes/setting";
 import supportRouter from "./routes/support";
 import doctorRouter from "./routes/doctor";
+import earningsRouter from "./routes/earnings";
+import medicalDocumentRouter from "./routes/medicalDocument";
+import uploadRouterGeneric from "./routes/upload";
+import reviewRouter from "./routes/review";
+import paymentRouter from "./routes/payment";
+import messageRouter from "./routes/message";
+import callRouter from "./routes/call";
+import aiSearchRouter from "./routes/aiSearch";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -43,6 +53,12 @@ dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 const httpServer = createServer(app);
+
+// Behind Coolify's Traefik proxy in production, this makes req.protocol
+// reflect the original request's scheme (via X-Forwarded-Proto) instead of
+// always reporting "http" — relied on by routes/upload.ts to build correct,
+// reachable file URLs.
+app.set("trust proxy", 1);
 
 initSocket(httpServer);
 
@@ -99,6 +115,19 @@ app.use("/api/appointments", appointmentRouter);
 app.use("/api/settings", settingRouter);
 app.use("/api/support", supportRouter);
 app.use("/api/doctors", doctorRouter);
+app.use("/api/earnings", earningsRouter);
+app.use("/api/medical-documents", medicalDocumentRouter);
+app.use("/api/reviews", reviewRouter);
+app.use("/api/payments", paymentRouter);
+app.use("/api/messages", messageRouter);
+app.use("/api/calls", callRouter);
+app.use("/api/ai", aiSearchRouter);
+
+// Generic authenticated file upload (mobile app), served back statically
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/uploads", express.static(uploadsDir));
+app.use("/api/uploads", uploadRouterGeneric);
 // inngest API route
 app.use(
   "/api/inngest",

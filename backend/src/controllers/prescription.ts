@@ -41,7 +41,8 @@ export const getPrescriptions = async (req: Request, res: Response) => {
 export const createPrescription = async (req: Request, res: Response) => {
   try {
     const currentUser = (req as any).user;
-    const { patient, patientName, items, notes } = req.body;
+    const { patient, patientName, items, notes, imageUrl, signatureUrl } =
+      req.body;
 
     const prescription = await prisma.prescription.create({
       data: {
@@ -50,6 +51,8 @@ export const createPrescription = async (req: Request, res: Response) => {
         doctor: currentUser.id,
         doctorName: currentUser.name,
         notes,
+        imageUrl,
+        signatureUrl,
         status: "pending",
         items: {
           create: (items || []).map((item: any) => ({
@@ -130,6 +133,41 @@ export const dispensePrescription = async (req: Request, res: Response) => {
     res.json(updated);
   } catch (error) {
     console.error("Error dispensing prescription:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Patient's own prescriptions (mobile app profile screen)
+export const getMyPrescriptions = async (req: Request, res: Response) => {
+  try {
+    const patient = (req as any).user;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit as string) || 20);
+    const skip = (page - 1) * limit;
+
+    const where = { patient: patient.id };
+    const [total, results] = await Promise.all([
+      prisma.prescription.count({ where }),
+      prisma.prescription.findMany({
+        where,
+        include: { items: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    res.json({
+      res: results,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalData: total,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching my prescriptions:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

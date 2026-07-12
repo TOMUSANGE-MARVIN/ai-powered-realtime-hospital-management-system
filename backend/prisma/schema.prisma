@@ -13,32 +13,40 @@ datasource db {
 }
 
 model User {
-  id                 String    @id
-  name               String    @db.Text
-  email              String
-  emailVerified      Boolean   @default(false)
-  image              String?   @db.Text
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  role               String?   @db.Text
-  banned             Boolean?  @default(false)
-  banReason          String?   @db.Text
-  banExpires         DateTime?
-  specialization     String?   @db.Text
-  department         String?   @db.Text
-  gender             String?   @db.Text
-  bloodgroup         String?   @db.Text
-  medicalHistory     String?   @db.Text
-  age                String?   @db.Text
-  status             String?   @db.Text
-  admissionReason    String?   @db.Text
-  assignedDoctorId   String?   @db.Text
-  assignedDoctorName String?   @db.Text
-  assignedNurseId    String?   @db.Text
-  assignedNurseName  String?   @db.Text
-  triageReasoning    String?   @db.Text
-  sessions           Session[]
-  accounts           Account[]
+  id                       String    @id
+  name                     String    @db.Text
+  email                    String
+  emailVerified            Boolean   @default(false)
+  image                    String?   @db.Text
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  role                     String?   @db.Text
+  banned                   Boolean?  @default(false)
+  banReason                String?   @db.Text
+  banExpires               DateTime?
+  specialization           String?   @db.Text
+  department               String?   @db.Text
+  gender                   String?   @db.Text
+  bloodgroup               String?   @db.Text
+  maritalStatus            String?   @db.Text
+  medicalHistory           String?   @db.Text
+  age                      String?   @db.Text
+  status                   String?   @db.Text
+  admissionReason          String?   @db.Text
+  assignedDoctorId         String?   @db.Text
+  assignedDoctorName       String?   @db.Text
+  assignedNurseId          String?   @db.Text
+  assignedNurseName        String?   @db.Text
+  triageReasoning          String?   @db.Text
+  bio                      String?   @db.Text
+  hospitalName             String?   @db.Text
+  hospitalAddress          String?   @db.Text
+  consultationFee          Int?
+  emergencyContactName     String?   @db.Text
+  emergencyContactPhone    String?   @db.Text
+  emergencyContactRelation String?   @db.Text
+  sessions                 Session[]
+  accounts                 Account[]
 
   @@unique([email])
   @@map("user")
@@ -103,26 +111,109 @@ enum AppointmentStatus {
 }
 
 model Appointment {
-  id           String            @id @default(cuid())
-  patientId    String?
-  patientName  String
-  patientEmail String?
-  patientPhone String?
-  doctorId     String?
-  doctorName   String?
-  nurseId      String?
-  department   String?
-  date         DateTime
-  time         String?
-  reason       String?           @db.Text
-  status       AppointmentStatus @default(requested)
-  isVirtual    Boolean           @default(false)
-  meetingId    String?
-  notes        String?           @db.Text
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id               String            @id @default(cuid())
+  patientId        String?
+  patientName      String
+  patientEmail     String?
+  patientPhone     String?
+  doctorId         String?
+  doctorName       String?
+  nurseId          String?
+  department       String?
+  date             DateTime
+  time             String?
+  reason           String?           @db.Text
+  status           AppointmentStatus @default(requested)
+  isVirtual        Boolean           @default(false)
+  // "physical" | "voice" | "video" — isVirtual stays derived (type != "physical")
+  // so existing earnings/web breakdowns keep working.
+  consultationType String?
+  isEmergency      Boolean           @default(false)
+  paymentId        String?           @unique
+  meetingId        String?
+  notes            String?           @db.Text
+  fee              Int?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@map("appointment")
+}
+
+model Review {
+  id              String    @id @default(cuid())
+  appointmentId   String    @unique
+  patientId       String
+  patientName     String
+  doctorId        String
+  rating          Int
+  comment         String?   @db.Text
+  doctorReply     String?   @db.Text
+  doctorRepliedAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([doctorId])
+  @@map("review")
+}
+
+model Message {
+  id                    String    @id @default(cuid())
+  senderId              String
+  receiverId            String
+  text                  String    @db.Text
+  attachmentUrl         String?   @db.Text
+  attachmentType        String?
+  attachmentName        String?
+  // Snapshotted at send time (like Appointment.doctorName elsewhere in this
+  // schema) rather than a Prisma relation — keeps quoting the replied-to
+  // message a plain read with no join, and survives that message later
+  // being soft-deleted.
+  replyToId             String?
+  replyToText           String?   @db.Text
+  replyToSenderId       String?
+  replyToAttachmentType String?
+  // Ticks: neither set → sent (single gray); deliveredAt set → delivered
+  // (double gray); readAt set → seen (double blue).
+  deliveredAt           DateTime?
+  readAt                DateTime?
+  deletedAt             DateTime?
+  createdAt             DateTime  @default(now())
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, senderId])
+  @@map("message")
+}
+
+model CallLog {
+  id         String   @id @default(cuid())
+  callerId   String
+  callerName String
+  calleeId   String
+  calleeName String
+  // "voice" | "video" — no real media connects yet (UI-only stub), this
+  // just records that a call was attempted, same as WhatsApp's call log.
+  type       String
+  createdAt  DateTime @default(now())
+
+  @@index([callerId])
+  @@index([calleeId])
+  @@map("call_log")
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  patientId   String
+  doctorId    String
+  amount      Int
+  currency    String   @default("UGX")
+  method      String
+  phoneNumber String?
+  status      String   @default("pending")
+  reference   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([patientId])
+  @@map("payment")
 }
 
 model ActivityLog {
@@ -250,18 +341,20 @@ enum PrescriptionStatus {
 }
 
 model Prescription {
-  id          String             @id @default(cuid())
-  patient     String
-  doctor      String
-  doctorName  String
-  patientName String
-  items       PrescriptionItem[]
-  status      PrescriptionStatus @default(pending)
-  dispensedBy String?
-  dispensedAt DateTime?
-  notes       String?            @db.Text
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  id           String             @id @default(cuid())
+  patient      String
+  doctor       String
+  doctorName   String
+  patientName  String
+  items        PrescriptionItem[]
+  status       PrescriptionStatus @default(pending)
+  dispensedBy  String?
+  dispensedAt  DateTime?
+  notes        String?            @db.Text
+  imageUrl     String?            @db.Text
+  signatureUrl String?            @db.Text
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
   @@map("prescription")
 }
@@ -314,4 +407,14 @@ model SupportTicket {
   updatedAt DateTime       @updatedAt
 
   @@map("support_ticket")
+}
+
+model MedicalDocument {
+  id        String   @id @default(cuid())
+  patientId String
+  title     String
+  url       String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("medical_document")
 }

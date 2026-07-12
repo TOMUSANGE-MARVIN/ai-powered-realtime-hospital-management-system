@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../chat/data/chat_args.dart';
+import '../../doctors/state/doctor_providers.dart';
 import '../data/appointment.dart';
 import '../state/appointment_providers.dart';
+
+/// Appointment ids reviewed in this session — flips the button to
+/// "Reviewed ✓" immediately without another backend lookup.
+final _reviewedAppointmentsProvider = StateProvider<Set<String>>((ref) => {});
 
 class MyAppointmentsScreen extends ConsumerWidget {
   const MyAppointmentsScreen({super.key});
@@ -81,6 +89,33 @@ class _AppointmentCard extends ConsumerWidget {
     }
   }
 
+  Future<void> _review(BuildContext context, WidgetRef ref) async {
+    final result = await showDialog<({int rating, String comment})>(
+      context: context,
+      builder: (context) => _ReviewDialog(doctorName: appointment.doctorName),
+    );
+    if (result == null) return;
+    try {
+      await ref.read(reviewRepositoryProvider).submit(
+            appointmentId: appointment.id,
+            rating: result.rating,
+            comment: result.comment.isEmpty ? null : result.comment,
+          );
+      ref
+          .read(_reviewedAppointmentsProvider.notifier)
+          .update((ids) => {...ids, appointment.id});
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thanks for your review!')),
+        );
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dateFormat = DateFormat('EEE, MMM d, yyyy');
@@ -115,6 +150,38 @@ class _AppointmentCard extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(appointment.reason!, style: TextStyle(color: Colors.grey.shade600)),
             ],
+            if (appointment.isEmergency)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  children: [
+                    Icon(Icons.emergency, size: 15, color: Theme.of(context).colorScheme.error),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Emergency',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (appointment.doctorId != null) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.chat_bubble_outline, size: 16),
+                  label: const Text('Message doctor'),
+                  onPressed: () => context.push(
+                    '/chat/${appointment.doctorId}',
+                    extra: ChatArgs(name: appointment.doctorName),
+                  ),
+                ),
+              ),
+            ],
             if (appointment.isCancellable) ...[
               const SizedBox(height: 12),
               Align(
@@ -125,9 +192,91 @@ class _AppointmentCard extends ConsumerWidget {
                 ),
               ),
             ],
+            if (appointment.status == 'completed') ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ref.watch(_reviewedAppointmentsProvider).contains(appointment.id)
+                    ? const TextButton(
+                        onPressed: null,
+                        child: Text('Reviewed ✓'),
+                      )
+                    : TextButton.icon(
+                        icon: const Icon(Icons.star_outline, size: 18),
+                        label: const Text('Leave a review'),
+                        onPressed: () => _review(context, ref),
+                      ),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ReviewDialog extends StatefulWidget {
+  const _ReviewDialog({required this.doctorName});
+
+  final String doctorName;
+
+  @override
+  State<_ReviewDialog> createState() => _ReviewDialogState();
+}
+
+class _ReviewDialogState extends State<_ReviewDialog> {
+  final _commentController = TextEditingController();
+  int _rating = 0;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Rate ${widget.doctorName}'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (i) {
+              return IconButton(
+                icon: Icon(
+                  i < _rating ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                  size: 32,
+                ),
+                onPressed: () => setState(() => _rating = i + 1),
+              );
+            }),
+          ),
+          TextField(
+            controller: _commentController,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: 'Comment (optional)',
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _rating == 0
+              ? null
+              : () => Navigator.of(context).pop(
+                    (rating: _rating, comment: _commentController.text.trim()),
+                  ),
+          child: const Text('Submit'),
+        ),
+      ],
     );
   }
 }

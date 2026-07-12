@@ -8,13 +8,19 @@ class DoctorRepository {
 
   final Dio _dio;
 
-  Future<List<Doctor>> listDoctors({String? search, String? specialization}) async {
+  Future<List<Doctor>> listDoctors({
+    String? search,
+    String? specialization,
+    bool featured = false,
+    int limit = 50,
+  }) async {
     final response = await _dio.get(
       '/api/doctors',
       queryParameters: {
         if (search != null && search.isNotEmpty) 'search': search,
         if (specialization != null && specialization != 'all') 'specialization': specialization,
-        'limit': 50,
+        if (featured) 'featured': 'true',
+        'limit': limit,
       },
     );
     ApiException.checkStatus(response);

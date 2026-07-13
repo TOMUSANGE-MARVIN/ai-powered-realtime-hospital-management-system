@@ -5,13 +5,16 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../data/doctor.dart';
 
-const categoryIcons = <String, IconData>{
-  'Internal Medicine': Icons.medical_services,
-  'Pediatrics': Icons.child_care,
-  'Orthopedic Surgery': Icons.accessibility_new,
-  'Cardiology': Icons.favorite,
-  'Obstetrics & Gynecology': Icons.pregnant_woman,
-  'Emergency Medicine': Icons.emergency,
+const iconForKey = <String, IconData>{
+  'internal_medicine': Icons.medical_services,
+  'pediatrics': Icons.child_care,
+  'orthopedics': Icons.accessibility_new,
+  'cardiology': Icons.favorite,
+  'obstetrics_gynecology': Icons.pregnant_woman,
+  'emergency_medicine': Icons.emergency,
+  'neurology': Icons.psychology,
+  'dermatology': Icons.face,
+  'general': Icons.local_hospital,
 };
 
 /// A colored category chip — used on the home dashboard's horizontal
@@ -20,24 +23,26 @@ const categoryIcons = <String, IconData>{
 class CategoryCard extends StatelessWidget {
   const CategoryCard({
     super.key,
-    required this.specialty,
+    required this.category,
+    this.count = 0,
     this.width = 86,
     this.showCount = false,
   });
 
-  final Specialty specialty;
+  final Category category;
+  final int count;
   final double width;
   final bool showCount;
 
   @override
   Widget build(BuildContext context) {
-    final accent = specialtyAccent(specialty.name);
+    final accent = accentForColorKey(category.colorKey);
     return SoftCard(
-      onTap: () => context.push('/search', extra: specialty.name),
-      color: accent.background,
+      onTap: () => context.push('/search', extra: category.name),
+      color: Colors.white,
       padding: const EdgeInsets.all(10),
       borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: accent.foreground.withValues(alpha: 0.35), width: 1.2),
+      borderSide: BorderSide(color: accent.foreground.withValues(alpha: 0.2), width: 1.2),
       child: SizedBox(
         width: width,
         child: Column(
@@ -45,29 +50,29 @@ class CategoryCard extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: accent.background, shape: BoxShape.circle),
               child: Icon(
-                categoryIcons[specialty.name] ?? Icons.local_hospital,
+                iconForKey[category.iconKey] ?? Icons.local_hospital,
                 color: accent.foreground,
                 size: 20,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              specialty.name,
+              category.name,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
-                color: accent.foreground,
+                color: Colors.black87,
               ),
             ),
             if (showCount)
               Text(
-                '${specialty.count} doctor${specialty.count == 1 ? '' : 's'}',
-                style: TextStyle(fontSize: 10, color: accent.foreground.withValues(alpha: 0.8)),
+                '$count doctor${count == 1 ? '' : 's'}',
+                style: TextStyle(fontSize: 10, color: Colors.black54),
               ),
           ],
         ),

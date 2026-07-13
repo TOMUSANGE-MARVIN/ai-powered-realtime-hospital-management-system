@@ -11,6 +11,8 @@ import type {
   Prescription,
   SupportTicket,
   Feedback,
+  Category,
+  CategoryOptions,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -478,6 +480,73 @@ export const updateSetting = async ({
     credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to update settings");
+  return res.json();
+};
+
+// --- Categories ---
+
+export const getCategories = async (
+  includeInactive = false,
+): Promise<Category[]> => {
+  const query = includeInactive ? "?includeInactive=true" : "";
+  const res = await fetch(`${API_URL}/categories${query}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch categories");
+  return res.json();
+};
+
+export const getCategoryOptions = async (): Promise<CategoryOptions> => {
+  const res = await fetch(`${API_URL}/categories/options`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch category options");
+  return res.json();
+};
+
+export const createCategory = async (data: Partial<Category>) => {
+  const res = await fetch(`${API_URL}/categories`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || "Failed to add category");
+  }
+  return res.json();
+};
+
+export const updateCategory = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: Partial<Category>;
+}) => {
+  const res = await fetch(`${API_URL}/categories/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || "Failed to update category");
+  }
+  return res.json();
+};
+
+export const deleteCategory = async (id: string) => {
+  const res = await fetch(`${API_URL}/categories/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || "Failed to delete category");
+  }
   return res.json();
 };
 

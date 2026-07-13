@@ -26,7 +26,7 @@ class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final specialtiesAsync = ref.watch(specialtiesProvider);
+    final categoriesAsync = ref.watch(categoriesWithCountsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Categories')),
@@ -54,12 +54,12 @@ class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
             ),
           ),
           Expanded(
-            child: specialtiesAsync.when(
-              data: (specialties) {
+            child: categoriesAsync.when(
+              data: (categories) {
                 final filtered = _query.isEmpty
-                    ? specialties
-                    : specialties
-                        .where((s) => s.name.toLowerCase().contains(_query))
+                    ? categories
+                    : categories
+                        .where((c) => c.category.name.toLowerCase().contains(_query))
                         .toList();
                 if (filtered.isEmpty) {
                   return const Center(child: Text('No categories match your search'));
@@ -74,7 +74,8 @@ class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
                   ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) => CategoryCard(
-                    specialty: filtered[index],
+                    category: filtered[index].category,
+                    count: filtered[index].count,
                     width: double.infinity,
                     showCount: true,
                   ),

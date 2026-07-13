@@ -6,6 +6,17 @@ const ADMIN_PASSWORD = "ChangeMe123!";
 const SEED_PASSWORD = "DoctorPass123!";
 const REVIEWER_PASSWORD = "PatientPass123!";
 
+const CATEGORIES = [
+  { name: "Internal Medicine", iconKey: "internal_medicine", colorKey: "blue", department: "Internal Medicine" },
+  { name: "Pediatrics", iconKey: "pediatrics", colorKey: "teal", department: "Pediatrics" },
+  { name: "Orthopedic Surgery", iconKey: "orthopedics", colorKey: "orange", department: "Orthopedics" },
+  { name: "Cardiology", iconKey: "cardiology", colorKey: "red", department: "Cardiology" },
+  { name: "Obstetrics & Gynecology", iconKey: "obstetrics_gynecology", colorKey: "pink", department: "Maternity" },
+  { name: "Emergency Medicine", iconKey: "emergency_medicine", colorKey: "amber", department: "Emergency" },
+  { name: "Neurology", iconKey: "neurology", colorKey: "indigo", department: "Neurology" },
+  { name: "Dermatology", iconKey: "dermatology", colorKey: "purple", department: "Dermatology" },
+];
+
 const DOCTORS = [
   {
     name: "Dr. Grace Nakato",
@@ -118,6 +129,15 @@ async function upsertAuthUser(name: string, email: string, password: string) {
 }
 
 async function main() {
+  console.log("Seeding categories...");
+  for (const category of CATEGORIES) {
+    await prisma.category.upsert({
+      where: { name: category.name },
+      update: {},
+      create: category,
+    });
+  }
+
   console.log("Seeding admin...");
   const admin = await upsertAuthUser("Admin", ADMIN_EMAIL, ADMIN_PASSWORD);
   await prisma.user.update({ where: { id: admin.id }, data: { role: "admin", status: "active" } });

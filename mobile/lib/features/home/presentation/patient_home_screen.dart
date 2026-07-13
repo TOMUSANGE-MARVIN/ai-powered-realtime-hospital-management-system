@@ -18,7 +18,7 @@ class PatientHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
-    final specialtiesAsync = ref.watch(specialtiesProvider);
+    final categoriesAsync = ref.watch(categoriesWithCountsProvider);
     final featuredAsync = ref.watch(featuredDoctorsProvider);
     final firstName = (user?.name ?? '').trim().split(RegExp(r'\s+')).first;
 
@@ -26,7 +26,7 @@ class PatientHomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            ref.invalidate(specialtiesProvider);
+            ref.invalidate(categoriesWithCountsProvider);
             ref.invalidate(featuredDoctorsProvider);
           },
           child: ListView(
@@ -98,14 +98,16 @@ class PatientHomeScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               SizedBox(
                 height: 100,
-                child: specialtiesAsync.when(
-                  data: (specialties) => ListView.separated(
+                child: categoriesAsync.when(
+                  data: (categories) => ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: specialties.length,
+                    itemCount: categories.length,
                     separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) =>
-                        CategoryCard(specialty: specialties[index]),
+                    itemBuilder: (context, index) => CategoryCard(
+                      category: categories[index].category,
+                      count: categories[index].count,
+                    ),
                   ),
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (_, _) => const Center(child: Text('Could not load categories')),

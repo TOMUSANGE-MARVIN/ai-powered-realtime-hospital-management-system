@@ -28,15 +28,19 @@ import {
   type UserValues,
   GENDER_OPTIONS,
   BLOOD_GROUP_OPTIONS,
-  SPECIALIZATION_OPTIONS,
   PATIENT_STATUS_OPTIONS,
   STAFF_STATUS_OPTIONS,
   userSchema,
 } from "./create-user-schema";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import { createActityLog, triggerAdmission, updateUser } from "@/lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  createActityLog,
+  getCategories,
+  triggerAdmission,
+  updateUser,
+} from "@/lib/api";
 import { socket } from "@/lib/socket";
 
 interface UserModalProps {
@@ -101,6 +105,12 @@ const CreateUserModal = ({ role, user, loading }: UserModalProps) => {
     }
   }, [open, user, form, role]);
   //   console.log(user);
+
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => getCategories(),
+    enabled: open && role === "doctor",
+  });
 
   // Mutation for patient admission trigger
   const admitMutation = useMutation({
@@ -278,7 +288,11 @@ const CreateUserModal = ({ role, user, loading }: UserModalProps) => {
                 name="specialization"
                 label="Specialization"
                 placeholder="Select Specialization"
-                options={SPECIALIZATION_OPTIONS}
+                options={(categories || []).map((c) => ({
+                  label: c.name,
+                  value: c.name,
+                }))}
+                loading={categoriesLoading}
               />
               <CustomInput
                 control={form.control}

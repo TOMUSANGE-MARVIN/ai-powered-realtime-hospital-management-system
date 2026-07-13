@@ -42,6 +42,7 @@ export default [
     route("settings/general", "routes/protected/settings/General.tsx"),
     route("settings/roles", "routes/protected/settings/Roles.tsx"),
     route("settings/billing", "routes/protected/settings/Billing.tsx"),
+    route("settings/categories", "routes/protected/settings/Categories.tsx"),
     route("support", "routes/protected/Support.tsx"),
     route("feedback", "routes/protected/Feedback.tsx"),
   ]),

@@ -143,6 +143,22 @@ export interface appointment {
   createdAt: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  iconKey: string;
+  colorKey: string;
+  department?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryOptions {
+  icons: { key: string; label: string }[];
+  colors: { key: string; label: string }[];
+}
+
 export interface Medication {
   id: string;
   name: string;

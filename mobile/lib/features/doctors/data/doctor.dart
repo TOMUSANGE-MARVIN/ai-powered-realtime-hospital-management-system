@@ -42,6 +42,32 @@ class Doctor {
   }
 }
 
+class Category {
+  Category({
+    required this.id,
+    required this.name,
+    required this.iconKey,
+    required this.colorKey,
+    this.department,
+  });
+
+  final String id;
+  final String name;
+  final String iconKey;
+  final String colorKey;
+  final String? department;
+
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      iconKey: json['iconKey'] as String? ?? 'general',
+      colorKey: json['colorKey'] as String? ?? 'lavender',
+      department: json['department'] as String?,
+    );
+  }
+}
+
 class Specialty {
   Specialty({required this.name, required this.count});
 

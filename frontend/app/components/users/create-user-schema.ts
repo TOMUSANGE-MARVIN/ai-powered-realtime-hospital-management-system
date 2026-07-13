@@ -57,14 +57,6 @@ export const BLOOD_GROUP_OPTIONS = [
   { label: "O-", value: "O-" },
 ];
 
-export const SPECIALIZATION_OPTIONS = [
-  { label: "Cardiology", value: "Cardiology" },
-  { label: "Neurology", value: "Neurology" },
-  { label: "Pediatrics", value: "Pediatrics" },
-  { label: "General Practice", value: "General" },
-  { label: "Dermatology", value: "Dermatology" },
-];
-
 // --- NEW STATUS OPTIONS ---
 export const PATIENT_STATUS_OPTIONS = [
   { label: "Admitted", value: "admitted" },

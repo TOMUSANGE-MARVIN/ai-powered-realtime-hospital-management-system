@@ -39,6 +39,15 @@ class DoctorRepository {
         .toList();
   }
 
+  Future<List<Category>> listCategories() async {
+    final response = await _dio.get('/api/categories');
+    ApiException.checkStatus(response);
+    final results = response.data as List;
+    return results
+        .map((json) => Category.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<Doctor> getDoctor(String id) async {
     final response = await _dio.get('/api/doctors/$id');
     ApiException.checkStatus(response);

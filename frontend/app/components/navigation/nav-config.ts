@@ -126,6 +126,7 @@ export const navConfig: {
         { title: "General", url: "/settings/general" },
         { title: "Roles & Permissions", url: "/settings/roles" },
         { title: "Billing", url: "/settings/billing" },
+        { title: "Categories", url: "/settings/categories" },
       ],
     },
   ],

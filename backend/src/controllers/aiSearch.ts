@@ -4,15 +4,6 @@ import { prisma } from "../lib/prisma";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY!);
 
-const KNOWN_SPECIALTIES = [
-  "Internal Medicine",
-  "Pediatrics",
-  "Orthopedic Surgery",
-  "Cardiology",
-  "Obstetrics & Gynecology",
-  "Emergency Medicine",
-];
-
 // Patient describes symptoms in free text; Gemini maps them to the
 // specialties we actually have doctors in, same model/pattern as the
 // admission-triage and X-ray analysis AI features in inngest/functions.ts.
@@ -22,6 +13,12 @@ export const aiSymptomSearch = async (req: Request, res: Response) => {
     if (!symptoms || !symptoms.trim()) {
       return res.status(400).json({ message: "Please describe your symptoms" });
     }
+
+    const categories = await prisma.category.findMany({
+      where: { isActive: true },
+      select: { name: true },
+    });
+    const KNOWN_SPECIALTIES = categories.map((c) => c.name);
 
     let matches: { specialty: string; reason: string }[];
     try {

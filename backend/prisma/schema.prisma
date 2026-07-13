@@ -314,6 +314,19 @@ model Medication {
   @@map("medication")
 }
 
+model Category {
+  id         String   @id @default(cuid())
+  name       String   @unique @db.VarChar(191)
+  iconKey    String   @default("general")
+  colorKey   String   @default("lavender")
+  department String?  @db.Text
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("category")
+}
+
 enum NotificationType {
   system
   assignment

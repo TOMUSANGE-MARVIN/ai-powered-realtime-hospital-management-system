@@ -3,6 +3,15 @@ import { logActivity } from "../lib/activity";
 import { inngest } from "../inngest/client";
 import { polarClient } from "../lib/auth";
 import { prisma } from "../lib/prisma";
+import { isUserOnline } from "../lib/socket";
+
+// Whether a user currently has a live Socket.IO connection — not sensitive
+// data, so no role restriction (used for the chat header and the caller's
+// "Calling…" vs "Ringing…" wording).
+export const getUserOnlineStatus = async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  res.json({ online: isUserOnline(id) });
+};
 
 export const getUserById = async (req: Request, res: Response) => {
   try {

@@ -184,15 +184,17 @@ model Message {
 }
 
 model CallLog {
-  id         String   @id @default(cuid())
-  callerId   String
-  callerName String
-  calleeId   String
-  calleeName String
-  // "voice" | "video" — no real media connects yet (UI-only stub), this
-  // just records that a call was attempted, same as WhatsApp's call log.
-  type       String
-  createdAt  DateTime @default(now())
+  id              String   @id @default(cuid())
+  callerId        String
+  callerName      String
+  calleeId        String
+  calleeName      String
+  // "voice" | "video"
+  type            String
+  // "answered" | "missed" | "declined" | "busy" | "cancelled"
+  status          String   @default("answered")
+  durationSeconds Int?
+  createdAt       DateTime @default(now())
 
   @@index([callerId])
   @@index([calleeId])

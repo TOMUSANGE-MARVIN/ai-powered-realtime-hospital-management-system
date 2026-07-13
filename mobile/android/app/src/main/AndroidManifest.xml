@@ -1,6 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Required by flutter_webrtc's native NetworkMonitor (queries
+         ConnectivityManager) and for Bluetooth headset audio routing during
+         calls — without ACCESS_NETWORK_STATE specifically, a Java
+         SecurityException querying ConnectivityManager can cross the JNI
+         boundary uncleared and abort the process natively (SIGABRT) instead
+         of surfacing as a catchable Dart/Java exception. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <application
         android:label="ask_musawo"
         android:name="${applicationName}"

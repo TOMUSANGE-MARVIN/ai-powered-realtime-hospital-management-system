@@ -8,11 +8,21 @@ class CallRepository {
 
   final Dio _dio;
 
-  /// Logs a call attempt. Voice/video calling itself is a UI-only stub for
-  /// now (see chat_screen.dart) — this just records that it was attempted,
-  /// so the Calls tab has real history.
-  Future<void> recordCall({required String calleeId, required String type}) async {
-    final response = await _dio.post('/api/calls', data: {'calleeId': calleeId, 'type': type});
+  /// Logs the outcome of a call — called once, by the caller's device,
+  /// once the terminal outcome/duration is known (see
+  /// [CallController._finish]), so the Calls tab shows real history.
+  Future<void> recordCall({
+    required String calleeId,
+    required String type,
+    String status = 'answered',
+    int? durationSeconds,
+  }) async {
+    final response = await _dio.post('/api/calls', data: {
+      'calleeId': calleeId,
+      'type': type,
+      'status': status,
+      'durationSeconds': ?durationSeconds,
+    });
     ApiException.checkStatus(response);
   }
 

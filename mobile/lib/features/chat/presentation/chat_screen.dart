@@ -12,9 +12,10 @@ import 'package:record/record.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/api/providers.dart';
+import '../../../core/presence/presence_providers.dart';
 import '../../../core/realtime/socket_providers.dart';
 import '../../auth/state/auth_controller.dart';
-import '../../calls/state/call_providers.dart';
+import '../../calls/state/call_controller.dart';
 import '../data/chat_message.dart';
 import '../state/chat_providers.dart';
 import 'chat_list_screen.dart';
@@ -354,20 +355,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (action == 'delete') _deleteMessage(message);
   }
 
-  Future<void> _placeCall(String type, String label) async {
-    // Voice/video calling itself is a UI-only stub for now — no real
-    // WebRTC connects — but the attempt is still logged so the Calls tab
-    // has genuine history, matching how a real call log behaves.
-    try {
-      await ref.read(callRepositoryProvider).recordCall(calleeId: widget.otherUserId, type: type);
-    } catch (_) {
-      // Logging is best-effort — don't block the "coming soon" message on it.
-    }
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$label calls are coming soon!')),
-      );
-    }
+  void _placeCall({required bool isVideo}) {
+    ref.read(callControllerProvider.notifier).startOutgoingCall(
+          widget.otherUserId,
+          widget.otherUserName,
+          isVideo: isVideo,
+          peerImage: widget.otherUserImage,
+        );
   }
 
   @override
@@ -387,9 +381,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                widget.otherUserName,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.otherUserName,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  ref.watch(presenceProvider(widget.otherUserId)).maybeWhen(
+                        data: (isOnline) => Text(
+                          isOnline ? 'Online' : 'Offline',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isOnline ? Colors.green : Colors.grey,
+                          ),
+                        ),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
+                ],
               ),
             ),
           ],
@@ -398,12 +408,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.call_outlined),
             tooltip: 'Voice call',
-            onPressed: () => _placeCall('voice', 'Voice'),
+            onPressed: () => _placeCall(isVideo: false),
           ),
           IconButton(
             icon: const Icon(Icons.videocam_outlined),
             tooltip: 'Video call',
-            onPressed: () => _placeCall('video', 'Video'),
+            onPressed: () => _placeCall(isVideo: true),
           ),
         ],
       ),

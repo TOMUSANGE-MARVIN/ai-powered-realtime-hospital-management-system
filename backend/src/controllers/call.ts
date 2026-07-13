@@ -1,16 +1,22 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 
-// Records that a call was attempted — there's no real WebRTC connection
-// yet (voice/video buttons are a UI-only stub), but the log itself is real
-// so the Calls tab has genuine history, same as any missed/placed call log.
+const VALID_STATUSES = ["answered", "missed", "declined", "busy", "cancelled"];
+
+// Records the outcome of a call (voice calls now connect via WebRTC,
+// signaled over Socket.IO — see lib/socket.ts's call:* events; the mobile
+// app calls this once per call, from the caller's device, once the
+// terminal outcome/duration is known) so the Calls tab has real history.
 export const recordCall = async (req: Request, res: Response) => {
   try {
     const me = (req as any).user;
-    const { calleeId, type } = req.body;
+    const { calleeId, type, status, durationSeconds } = req.body;
 
     if (!calleeId || (type !== "voice" && type !== "video")) {
       return res.status(400).json({ message: "calleeId and a valid type are required" });
+    }
+    if (status !== undefined && !VALID_STATUSES.includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
     }
 
     const callee = await prisma.user.findUnique({ where: { id: calleeId } });
@@ -25,6 +31,9 @@ export const recordCall = async (req: Request, res: Response) => {
         calleeId,
         calleeName: callee.name,
         type,
+        status: status || "answered",
+        durationSeconds:
+          typeof durationSeconds === "number" ? durationSeconds : null,
       },
     });
 
@@ -49,6 +58,8 @@ export const getMyCalls = async (req: Request, res: Response) => {
     const results = calls.map((call) => ({
       id: call.id,
       type: call.type,
+      status: call.status,
+      durationSeconds: call.durationSeconds,
       createdAt: call.createdAt,
       isOutgoing: call.callerId === me.id,
       otherUserId: call.callerId === me.id ? call.calleeId : call.callerId,

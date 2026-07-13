@@ -7,6 +7,7 @@ import 'core/realtime/socket_providers.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'features/calls/presentation/call_overlay.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,7 @@ class AskMusawoApp extends ConsumerWidget {
       darkTheme: buildDarkTheme(),
       themeMode: themeMode,
       routerConfig: router,
+      builder: (context, child) => CallOverlay(child: child),
     );
   }
 }

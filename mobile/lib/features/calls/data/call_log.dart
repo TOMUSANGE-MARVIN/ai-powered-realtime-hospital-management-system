@@ -6,6 +6,8 @@ class CallLogEntry {
     required this.isOutgoing,
     required this.otherUserId,
     required this.otherUserName,
+    this.status = 'answered',
+    this.durationSeconds,
   });
 
   final String id;
@@ -14,6 +16,8 @@ class CallLogEntry {
   final bool isOutgoing;
   final String otherUserId;
   final String otherUserName;
+  final String status;
+  final int? durationSeconds;
 
   bool get isVideo => type == 'video';
 
@@ -25,6 +29,8 @@ class CallLogEntry {
       isOutgoing: json['isOutgoing'] as bool? ?? false,
       otherUserId: json['otherUserId'] as String,
       otherUserName: json['otherUserName'] as String? ?? 'Unknown',
+      status: json['status'] as String? ?? 'answered',
+      durationSeconds: json['durationSeconds'] as int?,
     );
   }
 }

@@ -50,6 +50,26 @@ class _CallTile extends StatelessWidget {
 
   final CallLogEntry call;
 
+  String _statusLabel(CallLogEntry call) {
+    switch (call.status) {
+      case 'missed':
+        return 'Missed';
+      case 'declined':
+        return call.isOutgoing ? 'Declined' : 'You declined';
+      case 'busy':
+        return 'Busy';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        final duration = call.durationSeconds;
+        final base = call.isOutgoing ? 'Outgoing' : 'Incoming';
+        if (duration == null || duration <= 0) return base;
+        final minutes = duration ~/ 60;
+        final seconds = duration % 60;
+        return '$base · ${minutes > 0 ? '${minutes}m ' : ''}${seconds}s';
+    }
+  }
+
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
     final isToday = now.year == dateTime.year && now.month == dateTime.month && now.day == dateTime.day;
@@ -74,12 +94,18 @@ class _CallTile extends StatelessWidget {
       subtitle: Row(
         children: [
           Icon(
-            call.isOutgoing ? Icons.call_made : Icons.call_received,
+            call.status == 'missed' || call.status == 'declined'
+                ? Icons.call_missed
+                : call.isOutgoing
+                    ? Icons.call_made
+                    : Icons.call_received,
             size: 15,
-            color: directionColor,
+            color: call.status == 'missed' || call.status == 'declined'
+                ? Colors.red
+                : directionColor,
           ),
           const SizedBox(width: 4),
-          Text(call.isOutgoing ? 'Outgoing' : 'Incoming'),
+          Text(_statusLabel(call)),
         ],
       ),
       trailing: Column(

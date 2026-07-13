@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,10 +38,16 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   }
 }
 
+/// Lets code outside any specific screen's `BuildContext` (see
+/// `CallOverlay`, which pushes the full-screen in-call UI as a real route)
+/// push/pop on the app's root Navigator.
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _AuthRefreshNotifier(ref);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: refreshNotifier,
     redirect: (context, state) {

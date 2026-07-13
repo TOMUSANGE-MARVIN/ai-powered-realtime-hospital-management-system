@@ -35,6 +35,22 @@ class CallController extends Notifier<CallState> {
   bool _wasCaller = false;
   DateTime? _connectedAt;
 
+  /// ICE candidates that arrived over the socket before this device had a
+  /// [WebRtcService] instance ready for their `callId` — e.g. the caller's
+  /// fast local "host" candidates can reach the callee before its
+  /// `call:incoming` handling has even run. Without this buffer they'd be
+  /// silently dropped (same-callId check failing) and same-LAN calls would
+  /// hang forever in "Connecting…" for lack of a usable candidate pair.
+  final _earlyIceCandidates = <String, List<RTCIceCandidate>>{};
+
+  void _flushEarlyIceCandidates(String callId) {
+    final pending = _earlyIceCandidates.remove(callId);
+    if (pending == null || _rtc == null) return;
+    for (final candidate in pending) {
+      _rtc!.addRemoteIceCandidate(candidate);
+    }
+  }
+
   final _ringbackPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.loop);
   final _ringtonePlayer = AudioPlayer()..setReleaseMode(ReleaseMode.loop);
 
@@ -120,6 +136,7 @@ class CallController extends Notifier<CallState> {
     rtc.onIceCandidate = (c) => _sendIceCandidate(callId, peerId, c);
     rtc.onConnectionState = _onPeerConnectionState;
     _rtc = rtc;
+    _flushEarlyIceCandidates(callId);
 
     final offer = await _rtc!.createOffer(video: isVideo);
 
@@ -185,6 +202,7 @@ class CallController extends Notifier<CallState> {
     rtc.onIceCandidate = (c) => _sendIceCandidate(callId, peerId, c);
     rtc.onConnectionState = _onPeerConnectionState;
     _rtc = rtc;
+    _flushEarlyIceCandidates(callId);
 
     final answer = await _rtc!.createAnswer(
       video: current.isVideo,
@@ -205,6 +223,7 @@ class CallController extends Notifier<CallState> {
     if (current is! CallIncomingRinging) return;
     _stopRingingSounds();
     ref.read(socketServiceProvider).emitCallDecline({'callId': current.callId});
+    _earlyIceCandidates.remove(current.callId);
     _cleanupRtc();
     state = const CallIdle();
   }
@@ -276,15 +295,22 @@ class CallController extends Notifier<CallState> {
   }
 
   void _onRemoteIceCandidate(Map<String, dynamic> data) {
-    if (data['callId'] != _callId) return;
+    final callId = data['callId'] as String?;
+    if (callId == null) return;
     final c = data['candidate'] as Map;
-    _rtc?.addRemoteIceCandidate(
-      RTCIceCandidate(
-        c['candidate'] as String?,
-        c['sdpMid'] as String?,
-        c['sdpMLineIndex'] as int?,
-      ),
+    final candidate = RTCIceCandidate(
+      c['candidate'] as String?,
+      c['sdpMid'] as String?,
+      c['sdpMLineIndex'] as int?,
     );
+    if (callId == _callId && _rtc != null) {
+      _rtc!.addRemoteIceCandidate(candidate);
+    } else {
+      // No matching call context yet (or not yet this device's active
+      // call) — queue it; whichever of startOutgoingCall/acceptIncomingCall
+      // ends up creating a WebRtcService for this callId flushes it.
+      (_earlyIceCandidates[callId] ??= []).add(candidate);
+    }
   }
 
   void toggleMute() {
@@ -318,6 +344,8 @@ class CallController extends Notifier<CallState> {
 
   void _finish(CallEndReason reason) {
     _stopRingingSounds();
+    final callId = _callId;
+    if (callId != null) _earlyIceCandidates.remove(callId);
     final wasInProgress = state is CallInProgress;
     final duration = wasInProgress ? DateTime.now().difference(_connectedAt!) : null;
 

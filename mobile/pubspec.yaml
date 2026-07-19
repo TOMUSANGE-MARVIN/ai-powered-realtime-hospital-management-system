@@ -115,7 +115,7 @@ flutter_launcher_icons:
   android: true
   ios: false
   image_path: "assets/images/logo/ask-musawo-logo-master.png"
-  adaptive_icon_background: "#128A8B"
+  adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/logo/ask-musawo-adaptive-fg.png"
   web:
     generate: true

@@ -40,7 +40,7 @@ class PillNavBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(kPillRadius),
             boxShadow: [
               BoxShadow(
-                color: seedPurple.withValues(alpha: 0.18),
+                color: seedTeal.withValues(alpha: 0.18),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),

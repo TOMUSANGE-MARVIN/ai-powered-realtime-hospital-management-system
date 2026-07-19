@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
-
-import '../../../core/theme/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.local_hospital, size: 56, color: seedPurple),
-            SizedBox(height: 16),
-            Text('Ask Musawo', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-            SizedBox(height: 24),
-            CircularProgressIndicator(),
+            SizedBox(
+              width: 96,
+              height: 96,
+              child: SvgPicture.asset('assets/images/ask-musawo-logo.svg'),
+            ),
+            const SizedBox(height: 16),
+            const Text('Ask Musawo', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
           ],
         ),
       ),

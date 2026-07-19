@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 
-/// Shared visual constants for the purple/lavender design language.
+/// Shared visual constants for the teal brand design language, derived from
+/// the Ask Musawo logo (assets/images/ask-musawo-logo.svg).
 const kCardRadius = 22.0;
 const kPillRadius = 999.0;
 
-const seedPurple = Color(0xFF6C5DD3);
-const lavenderBackground = Color(0xFFF4F2FC);
-const darkPurpleBackground = Color(0xFF1A1730);
+const seedTeal = Color(0xFF128A8B);
+const tealBackground = Color(0xFFF2FAFA);
+const darkTealBackground = Color(0xFF102828);
 
-/// The reference design's signature pink→purple diagonal hero gradient.
+/// The brand's coral→teal diagonal hero gradient.
 const heroGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
-  colors: [Color(0xFFFF8FB1), Color(0xFF6C5DD3)],
+  colors: [Color(0xFFF47C7B), Color(0xFF128A8B)],
 );
 
 class SpecialtyAccent {
@@ -31,11 +32,11 @@ const _specialtyAccents = <String, SpecialtyAccent>{
   'Emergency Medicine': SpecialtyAccent(Color(0xFFFFE3E3), Color(0xFFF44336)),
 };
 
-const _defaultAccent = SpecialtyAccent(Color(0xFFEDEBFA), seedPurple);
+const _defaultAccent = SpecialtyAccent(Color(0xFFE0F2F2), seedTeal);
 
 /// Distinct pastel-background/vivid-icon color pair per specialty, matching
 /// the reference design's colorful category chips. Falls back to a neutral
-/// lavender for any specialty not in the seeded set.
+/// teal tint for any specialty not in the seeded set.
 SpecialtyAccent specialtyAccent(String? specialty) {
   if (specialty == null) return _defaultAccent;
   return _specialtyAccents[specialty] ?? _defaultAccent;

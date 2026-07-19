@@ -211,7 +211,7 @@ class _PromoSliderState extends State<_PromoSlider> {
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF6C5DD3), Color(0xFF4834D4)],
+        colors: [Color(0xFF16ADA3), Color(0xFF0F747E)],
       ),
     ),
   ];
@@ -257,7 +257,7 @@ class _PromoSliderState extends State<_PromoSlider> {
                   borderRadius: BorderRadius.circular(kCardRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: seedPurple.withValues(alpha: 0.25),
+                      color: seedTeal.withValues(alpha: 0.25),
                       blurRadius: 16,
                       offset: const Offset(0, 8),
                     ),

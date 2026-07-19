@@ -5,10 +5,10 @@ import 'app_colors.dart';
 ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   final isDark = brightness == Brightness.dark;
   final colorScheme = ColorScheme.fromSeed(
-    seedColor: seedPurple,
+    seedColor: seedTeal,
     brightness: brightness,
   );
-  final backgroundColor = isDark ? darkPurpleBackground : lavenderBackground;
+  final backgroundColor = isDark ? darkTealBackground : tealBackground;
 
   return ThemeData(
     useMaterial3: true,
@@ -30,7 +30,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       elevation: 0,
       color: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
-      shadowColor: seedPurple.withValues(alpha: 0.15),
+      shadowColor: seedTeal.withValues(alpha: 0.15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
     ),
     filledButtonTheme: FilledButtonThemeData(

@@ -33,7 +33,7 @@ class SoftCard extends StatelessWidget {
         borderRadius: radius,
         boxShadow: [
           BoxShadow(
-            color: seedPurple.withValues(alpha: 0.08),
+            color: seedTeal.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),

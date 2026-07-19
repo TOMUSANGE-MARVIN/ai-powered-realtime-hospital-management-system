@@ -1,8 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat(reverse: true);
+
+  late final Animation<double> _scale = Tween(begin: 0.94, end: 1.04).animate(
+    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+  );
+
+  late final Animation<double> _opacity = Tween(begin: 0.75, end: 1.0).animate(
+    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,15 +35,20 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 96,
-              height: 96,
-              child: SvgPicture.asset('assets/images/ask-musawo-logo.svg'),
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) => Opacity(
+                opacity: _opacity.value,
+                child: Transform.scale(scale: _scale.value, child: child),
+              ),
+              child: SizedBox(
+                width: 96,
+                height: 96,
+                child: SvgPicture.asset('assets/images/ask-musawo-logo.svg'),
+              ),
             ),
             const SizedBox(height: 16),
             const Text('Ask Musawo', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(),
           ],
         ),
       ),

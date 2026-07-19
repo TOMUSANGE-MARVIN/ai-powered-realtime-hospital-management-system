@@ -1,11 +1,11 @@
 {
-    "name": "ask_musawo",
-    "short_name": "ask_musawo",
+    "name": "Ask Musawo",
+    "short_name": "Ask Musawo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#128A8B",
     "theme_color": "#128A8B",
-    "description": "A new Flutter project.",
+    "description": "Ask Musawo",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

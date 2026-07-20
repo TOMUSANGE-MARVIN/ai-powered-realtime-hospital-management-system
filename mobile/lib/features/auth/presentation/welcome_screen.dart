@@ -77,11 +77,18 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                         opacity: opacity.clamp(0.0, 1.0),
                         child: Transform.scale(
                           scale: scale,
-                          child: SvgPicture.asset(
-                            _welcomeIllustrations[index],
-                            // 4x the illustration's original display size.
+                          // A fixed width AND height box (not just width) so
+                          // every illustration is fit into an identical
+                          // footprint — otherwise SVGs with different aspect
+                          // ratios end up visually different sizes even with
+                          // the same nominal width.
+                          child: SizedBox(
                             width: 360,
-                            fit: BoxFit.contain,
+                            height: 360,
+                            child: SvgPicture.asset(
+                              _welcomeIllustrations[index],
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),

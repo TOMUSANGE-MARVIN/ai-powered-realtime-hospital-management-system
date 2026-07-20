@@ -46,10 +46,12 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 itemCount: _welcomeIllustrations.length,
                 onPageChanged: (index) => setState(() => _page = index),
                 itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  child: SvgPicture.asset(
-                    _welcomeIllustrations[index],
-                    fit: BoxFit.contain,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                  child: SizedBox.expand(
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: SvgPicture.asset(_welcomeIllustrations[index]),
+                    ),
                   ),
                 ),
               ),

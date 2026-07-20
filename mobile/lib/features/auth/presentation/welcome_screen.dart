@@ -10,6 +10,8 @@ import '../state/onboarding_controller.dart';
 /// behavior already scale to however many are listed.
 const _welcomeIllustrations = <String>[
   'assets/images/illustrations/welcome-screen-illustration.svg',
+  'assets/images/illustrations/welcome-screen-illustration-2.svg',
+  'assets/images/illustrations/welcome-screen-illustration-3.svg',
 ];
 
 class WelcomeScreen extends ConsumerStatefulWidget {
@@ -20,11 +22,18 @@ class WelcomeScreen extends ConsumerStatefulWidget {
 }
 
 class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
-  final _pageController = PageController();
+  late final _pageController = PageController()..addListener(_onScroll);
   int _page = 0;
+
+  void _onScroll() {
+    // Drives the illustration scale/fade and dot morph continuously as the
+    // user drags, rather than snapping only once a page fully settles.
+    setState(() {});
+  }
 
   @override
   void dispose() {
+    _pageController.removeListener(_onScroll);
     _pageController.dispose();
     super.dispose();
   }
@@ -34,8 +43,17 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     context.go(location);
   }
 
+  double get _currentPagePosition {
+    if (!_pageController.hasClients || !_pageController.position.haveDimensions) {
+      return _page.toDouble();
+    }
+    return _pageController.page ?? _page.toDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final pagePosition = _currentPagePosition;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -45,20 +63,34 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 controller: _pageController,
                 itemCount: _welcomeIllustrations.length,
                 onPageChanged: (index) => setState(() => _page = index),
-                itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  child: Center(
-                    child: SvgPicture.asset(
-                      _welcomeIllustrations[index],
-                      // 4x the illustration's original display size.
-                      width: 360,
-                      fit: BoxFit.contain,
+                itemBuilder: (context, index) {
+                  // Distance from this page to the current scroll position:
+                  // 0 when centered, ±1 when a full page away. Powers a
+                  // subtle native-feeling scale + fade as pages slide past.
+                  final delta = (pagePosition - index).clamp(-1.0, 1.0);
+                  final scale = 1 - (delta.abs() * 0.15);
+                  final opacity = 1 - (delta.abs() * 0.4);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    child: Center(
+                      child: Opacity(
+                        opacity: opacity.clamp(0.0, 1.0),
+                        child: Transform.scale(
+                          scale: scale,
+                          child: SvgPicture.asset(
+                            _welcomeIllustrations[index],
+                            // 4x the illustration's original display size.
+                            width: 360,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
-            _DotIndicator(count: _welcomeIllustrations.length, activeIndex: _page),
+            _DotIndicator(count: _welcomeIllustrations.length, pagePosition: pagePosition),
             const SizedBox(height: 28),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -121,10 +153,13 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 }
 
 class _DotIndicator extends StatelessWidget {
-  const _DotIndicator({required this.count, required this.activeIndex});
+  const _DotIndicator({required this.count, required this.pagePosition});
 
   final int count;
-  final int activeIndex;
+  /// Continuous scroll position from the [PageController], e.g. 1.35 while
+  /// dragging from page 1 to 2. Lets each dot morph its width/opacity in
+  /// lockstep with the swipe instead of snapping only on page settle.
+  final double pagePosition;
 
   @override
   Widget build(BuildContext context) {
@@ -132,15 +167,20 @@ class _DotIndicator extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (index) {
-        final isActive = index == activeIndex;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
+        // 1 when this dot is fully active, 0 when a full page away.
+        final closeness = (1 - (pagePosition - index).abs()).clamp(0.0, 1.0);
+        final width = 8 + (12 * closeness);
+        final color = Color.lerp(
+          activeColor.withValues(alpha: 0.25),
+          activeColor,
+          closeness,
+        );
+        return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: isActive ? 20 : 8,
+          width: width,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive ? activeColor : activeColor.withValues(alpha: 0.25),
+            color: color,
             borderRadius: BorderRadius.circular(4),
           ),
         );

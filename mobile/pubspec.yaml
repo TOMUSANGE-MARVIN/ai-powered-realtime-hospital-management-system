@@ -80,6 +80,8 @@ flutter:
     - assets/images/healthcare_illustration.webp
     - assets/images/illustrations/ask-musawo-logo.svg
     - assets/images/illustrations/welcome-screen-illustration.svg
+    - assets/images/illustrations/welcome-screen-illustration-2.svg
+    - assets/images/illustrations/welcome-screen-illustration-3.svg
     - assets/images/logo/
     - assets/sounds/ringback.m4a
     - assets/sounds/ringtone.m4a

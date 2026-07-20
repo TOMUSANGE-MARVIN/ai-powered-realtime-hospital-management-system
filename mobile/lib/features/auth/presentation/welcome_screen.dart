@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,6 +26,26 @@ class WelcomeScreen extends ConsumerStatefulWidget {
 class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   late final _pageController = PageController()..addListener(_onScroll);
   int _page = 0;
+  Timer? _autoAdvanceTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoAdvance();
+  }
+
+  void _startAutoAdvance() {
+    _autoAdvanceTimer?.cancel();
+    _autoAdvanceTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!_pageController.hasClients) return;
+      final nextPage = (_page + 1) % _welcomeIllustrations.length;
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
 
   void _onScroll() {
     // Drives the illustration scale/fade and dot morph continuously as the
@@ -33,6 +55,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
   @override
   void dispose() {
+    _autoAdvanceTimer?.cancel();
     _pageController.removeListener(_onScroll);
     _pageController.dispose();
     super.dispose();
@@ -62,7 +85,13 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: _welcomeIllustrations.length,
-                onPageChanged: (index) => setState(() => _page = index),
+                onPageChanged: (index) {
+                  setState(() => _page = index);
+                  // A manual swipe counts as a fresh 2s window before the
+                  // next auto-advance, so it doesn't fight the user's own
+                  // gesture by jumping again right away.
+                  _startAutoAdvance();
+                },
                 itemBuilder: (context, index) {
                   // Distance from this page to the current scroll position:
                   // 0 when centered, ±1 when a full page away. Powers a

@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: SizedBox(
                 width: 140,
                 height: 140,
-                child: SvgPicture.asset('assets/images/ask-musawo-logo.svg'),
+                child: SvgPicture.asset('assets/images/illustrations/ask-musawo-logo.svg'),
               ),
             ),
             const SizedBox(height: 20),

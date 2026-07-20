@@ -7,7 +7,9 @@ import '../../features/appointments/presentation/my_appointments_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/state/auth_controller.dart';
+import '../../features/auth/state/onboarding_controller.dart';
 import '../../features/calls/presentation/calls_screen.dart';
 import '../../features/chat/data/chat_args.dart';
 import '../../features/chat/presentation/chat_list_screen.dart';
@@ -35,6 +37,7 @@ import '../../features/profile/presentation/settings_screen.dart';
 class _AuthRefreshNotifier extends ChangeNotifier {
   _AuthRefreshNotifier(Ref ref) {
     ref.listen(authControllerProvider, (_, _) => notifyListeners());
+    ref.listen(onboardingControllerProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -52,8 +55,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshNotifier,
     redirect: (context, state) {
       final authState = ref.read(authControllerProvider);
+      final hasSeenWelcome = ref.read(onboardingControllerProvider);
       final location = state.matchedLocation;
-      const publicRoutes = {'/login', '/register'};
+      const publicRoutes = {'/welcome', '/login', '/register'};
 
       if (authState.isLoading) {
         // Only bounce to the splash screen for the initial session check on
@@ -68,6 +72,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       final user = authState.value;
       final isLoggedIn = user != null;
       if (!isLoggedIn) {
+        // First-time install: show the welcome carousel instead of dropping
+        // straight into the login screen.
+        if (!hasSeenWelcome) {
+          return location == '/welcome' ? null : '/welcome';
+        }
+        if (location == '/welcome') return '/login';
         return publicRoutes.contains(location) ? null : '/login';
       }
 
@@ -84,6 +94,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+      GoRoute(path: '/welcome', builder: (context, state) => const WelcomeScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
       GoRoute(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Shared visual constants for the teal brand design language, derived from
-/// the Ask Musawo logo (assets/images/ask-musawo-logo.svg).
+/// the Ask Musawo logo (assets/images/illustrations/ask-musawo-logo.svg).
 const kCardRadius = 22.0;
 const kPillRadius = 999.0;
 

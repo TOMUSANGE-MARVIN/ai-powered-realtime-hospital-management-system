@@ -78,7 +78,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/healthcare_illustration.webp
-    - assets/images/ask-musawo-logo.svg
+    - assets/images/illustrations/ask-musawo-logo.svg
+    - assets/images/illustrations/welcome-screen-illustration.svg
     - assets/images/logo/
     - assets/sounds/ringback.m4a
     - assets/sounds/ringtone.m4a

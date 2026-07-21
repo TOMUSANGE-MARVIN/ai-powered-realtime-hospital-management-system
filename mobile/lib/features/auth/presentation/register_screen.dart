@@ -64,7 +64,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SizedBox(
-                    height: 200,
+                    height: 300,
                     child: SvgPicture.asset(
                       'assets/images/illustrations/creaate-account-illustration.svg',
                       fit: BoxFit.contain,

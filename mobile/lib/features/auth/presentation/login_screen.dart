@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../state/auth_controller.dart';
@@ -58,7 +59,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset('assets/images/healthcare_illustration.webp', height: 160),
+                  SizedBox(
+                    height: 300,
+                    child: SvgPicture.asset(
+                      'assets/images/illustrations/login-illustration.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Welcome back',

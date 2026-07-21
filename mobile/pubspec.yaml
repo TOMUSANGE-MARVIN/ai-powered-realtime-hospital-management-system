@@ -79,6 +79,7 @@ flutter:
   assets:
     - assets/images/healthcare_illustration.webp
     - assets/images/illustrations/ask-musawo-logo.svg
+    - assets/images/illustrations/creaate-account-illustration.svg
     - assets/images/illustrations/welcome-screen-illustration.svg
     - assets/images/illustrations/welcome-screen-illustration-2.svg
     - assets/images/illustrations/welcome-screen-illustration-3.svg

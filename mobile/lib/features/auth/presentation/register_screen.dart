@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../state/auth_controller.dart';
@@ -62,6 +63,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  SizedBox(
+                    height: 200,
+                    child: SvgPicture.asset(
+                      'assets/images/illustrations/creaate-account-illustration.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     'Book consultations and manage your care from your phone',
                     style: Theme.of(context).textTheme.bodyMedium,

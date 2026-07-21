@@ -21,11 +21,15 @@ class AuthRepository {
   }
 
   Future<AppUser> signIn({required String email, required String password}) async {
-    final response = await _dio.post(
-      '/api/auth/sign-in/email',
-      data: {'email': email, 'password': password},
-    );
-    return _userFromAuthResponse(response);
+    try {
+      final response = await _dio.post(
+        '/api/auth/sign-in/email',
+        data: {'email': email, 'password': password},
+      );
+      return _userFromAuthResponse(response);
+    } on DioException catch (error) {
+      throw ApiException.fromDioError(error);
+    }
   }
 
   Future<AppUser> signUp({
@@ -33,15 +37,23 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    final response = await _dio.post(
-      '/api/auth/sign-up/email',
-      data: {'name': name, 'email': email, 'password': password},
-    );
-    return _userFromAuthResponse(response);
+    try {
+      final response = await _dio.post(
+        '/api/auth/sign-up/email',
+        data: {'name': name, 'email': email, 'password': password},
+      );
+      return _userFromAuthResponse(response);
+    } on DioException catch (error) {
+      throw ApiException.fromDioError(error);
+    }
   }
 
   Future<void> signOut() async {
-    await _dio.post('/api/auth/sign-out');
+    try {
+      await _dio.post('/api/auth/sign-out');
+    } on DioException catch (error) {
+      throw ApiException.fromDioError(error);
+    }
   }
 
   AppUser _userFromAuthResponse(Response response) {

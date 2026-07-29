@@ -78,13 +78,21 @@ class ApiClient {
         InterceptorsWrapper(
           onError: (error, handler) async {
             final alreadyRetried = error.requestOptions.extra['retried'] == true;
+            debugPrint(
+              '[Dio retry interceptor] type=${error.type} '
+              'alreadyRetried=$alreadyRetried '
+              'url=${error.requestOptions.uri}',
+            );
             if (!alreadyRetried && error.type == DioExceptionType.connectionError) {
               try {
+                debugPrint('[Dio retry interceptor] retrying request...');
                 final retryOptions = error.requestOptions
                   ..extra['retried'] = true;
                 final response = await dio.fetch(retryOptions);
+                debugPrint('[Dio retry interceptor] retry succeeded, status=${response.statusCode}');
                 return handler.resolve(response);
               } on DioException catch (retryError) {
+                debugPrint('[Dio retry interceptor] retry failed too: type=${retryError.type} message=${retryError.message}');
                 return handler.next(retryError);
               }
             }

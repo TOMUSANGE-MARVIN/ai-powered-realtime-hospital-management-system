@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Normalizes backend error responses (`{ "message": "..." }`) and network
 /// failures into a single user-displayable string.
@@ -8,6 +9,16 @@ class ApiException implements Exception {
   final String message;
 
   factory ApiException.fromDioError(DioException error) {
+    // TEMPORARY DIAGNOSTIC LOGGING — remove once the connectivity-error
+    // reporting bug is confirmed fixed. Prints to logcat (tag: flutter).
+    debugPrint(
+      '[ApiException.fromDioError] type=${error.type} '
+      'url=${error.requestOptions.uri} '
+      'message=${error.message} '
+      'error=${error.error} '
+      'errorRuntimeType=${error.error?.runtimeType} '
+      'statusCode=${error.response?.statusCode}',
+    );
     final data = error.response?.data;
     if (data is Map && data['message'] is String) {
       return ApiException(data['message'] as String);

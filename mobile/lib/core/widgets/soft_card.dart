@@ -15,6 +15,7 @@ class SoftCard extends StatelessWidget {
     this.borderRadius,
     this.borderSide,
     this.onTap,
+    this.showShadow = true,
   });
 
   final Widget child;
@@ -23,6 +24,7 @@ class SoftCard extends StatelessWidget {
   final BorderRadius? borderRadius;
   final BorderSide? borderSide;
   final VoidCallback? onTap;
+  final bool showShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +33,15 @@ class SoftCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: radius,
-        boxShadow: [
-          BoxShadow(
-            color: seedTeal.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: showShadow
+            ? [
+                BoxShadow(
+                  color: seedTeal.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: color ?? scheme.surface,

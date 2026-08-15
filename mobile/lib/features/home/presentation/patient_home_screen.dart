@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/soft_card.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
@@ -126,13 +125,17 @@ class _SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-              color: scheme.onSurface,
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
+                color: scheme.onSurface,
+              ),
             ),
           ),
           if (onSeeAll != null)
@@ -181,15 +184,8 @@ class _HeroHeader extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        gradient: heroGradient,
+        color: seedTeal,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: seedTeal.withValues(alpha: 0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(28),
@@ -287,27 +283,13 @@ class _HeroAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(2.5),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: CircleAvatar(
-        radius: 25,
-        backgroundColor: Colors.white,
-        backgroundImage: image != null ? NetworkImage(image!) : null,
-        child: image == null
-            ? const Icon(Icons.person_rounded, size: 28, color: seedTeal)
-            : null,
-      ),
+    return CircleAvatar(
+      radius: 27.5,
+      backgroundColor: Colors.white,
+      backgroundImage: image != null ? NetworkImage(image!) : null,
+      child: image == null
+          ? const Icon(Icons.person_rounded, size: 30, color: seedTeal)
+          : null,
     );
   }
 }
@@ -321,13 +303,7 @@ class _HeroSearchBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        border: Border.all(color: seedTeal.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
@@ -349,7 +325,7 @@ class _HeroSearchBar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                gradient: heroGradient,
+                color: seedTeal,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Row(
@@ -439,73 +415,59 @@ class _UpcomingAppointmentCard extends StatelessWidget {
     final dateLabel = DateFormat('EEE, MMM d').format(appointment.date);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GestureDetector(
+      child: _FlatCard(
+        padding: const EdgeInsets.all(18),
         onTap: () => context.push('/home/appointments'),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                scheme.primary.withValues(alpha: 0.12),
-                scheme.primary.withValues(alpha: 0.03),
-              ],
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: seedTeal,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Icon(
+                appointment.isVirtual
+                    ? Icons.videocam_rounded
+                    : Icons.medical_services_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
             ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: scheme.primary.withValues(alpha: 0.18)),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  gradient: heroGradient,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(
-                  appointment.isVirtual
-                      ? Icons.videocam_rounded
-                      : Icons.medical_services_rounded,
-                  color: Colors.white,
-                  size: 26,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      appointment.doctorName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurface,
-                      ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    appointment.doctorName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '${appointment.time ?? 'Time to be confirmed'} · $dateLabel',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                        color: scheme.onSurfaceVariant,
-                      ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${appointment.time ?? 'Time to be confirmed'} · $dateLabel',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: scheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: 8),
-                    _StatusChip(label: _statusLabel),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  _StatusChip(label: _statusLabel),
+                ],
               ),
-              const SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
-            ],
-          ),
+            ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
+          ],
         ),
       ),
     );
@@ -552,16 +514,16 @@ class _NoAppointmentCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: SoftCard(
-        onTap: () => context.push('/search'),
+      child: _FlatCard(
         padding: const EdgeInsets.all(18),
+        onTap: () => context.push('/search'),
         child: Row(
           children: [
             Container(
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                gradient: heroGradient,
+                color: seedTeal,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: const Icon(
@@ -606,6 +568,35 @@ class _NoAppointmentCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _FlatCard extends StatelessWidget {
+  const _FlatCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+    this.onTap,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
@@ -713,9 +704,9 @@ class _FeaturedDoctorCard extends StatelessWidget {
     final rating = doctor.rating;
     return SizedBox(
       width: 168,
-      child: SoftCard(
-        onTap: () => context.push('/doctors/${doctor.id}'),
+      child: _FlatCard(
         padding: const EdgeInsets.all(14),
+        onTap: () => context.push('/doctors/${doctor.id}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -724,7 +715,7 @@ class _FeaturedDoctorCard extends StatelessWidget {
                 padding: const EdgeInsets.all(3),
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: heroGradient,
+                  color: seedTeal,
                 ),
                 child: CircleAvatar(
                   radius: 30,
@@ -758,39 +749,51 @@ class _FeaturedDoctorCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.star_rounded, size: 13, color: Colors.amber),
-                      const SizedBox(width: 3),
-                      Text(
-                        rating != null
-                            ? '${rating.toStringAsFixed(1)} (${doctor.reviewCount})'
-                            : 'New',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF8A5A00),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, size: 13, color: Colors.amber),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            rating != null
+                                ? '${rating.toStringAsFixed(1)} (${doctor.reviewCount})'
+                                : 'New',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF8A5A00),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (doctor.consultationFee != null)
-                  Text(
-                    'UGX ${feeFormat.format(doctor.consultationFee)}',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.primary,
+                      ],
                     ),
                   ),
+                ),
+                if (doctor.consultationFee != null) ...[
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'UGX ${feeFormat.format(doctor.consultationFee)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             const Spacer(),

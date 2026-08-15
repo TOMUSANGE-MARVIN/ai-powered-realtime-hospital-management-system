@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../chat/data/chat_args.dart';
 import '../data/doctor.dart';
 import '../data/review.dart';
 import '../state/doctor_providers.dart';
+import 'doctor_card.dart';
 
 class DoctorDetailScreen extends ConsumerWidget {
   const DoctorDetailScreen({super.key, required this.doctorId});
@@ -38,7 +41,6 @@ class _DoctorDetailBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reviewsAsync = ref.watch(doctorReviewsProvider(doctor.id));
-    final feeFormat = NumberFormat.decimalPattern();
 
     return Column(
       children: [
@@ -46,90 +48,113 @@ class _DoctorDetailBody extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              Center(
-                child: Column(
+              SoftCard(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      radius: 44,
-                      backgroundImage:
-                          doctor.image != null ? NetworkImage(doctor.image!) : null,
-                      child: doctor.image == null
-                          ? const Icon(Icons.person, size: 40)
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(doctor.name, style: Theme.of(context).textTheme.titleLarge),
-                    if (doctor.specialization != null)
-                      Text(
-                        doctor.specialization!,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: Theme.of(context).colorScheme.primary),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: SizedBox(
+                        width: 96,
+                        height: 116,
+                        child: DoctorImage(url: doctor.image, name: doctor.name),
                       ),
-                    if (doctor.hospitalName != null) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.location_on_outlined,
-                              size: 15, color: Theme.of(context).colorScheme.outline),
-                          const SizedBox(width: 3),
-                          Flexible(
-                            child: Text(
-                              doctor.hospitalName!,
-                              style: Theme.of(context).textTheme.bodySmall,
+                          Text(
+                            doctor.name,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          if (doctor.specialization != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              doctor.specialization!,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
                             ),
+                          ],
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _StatPill(
+                                  label: 'Rating',
+                                  value: doctor.rating != null
+                                      ? doctor.rating!.toStringAsFixed(1)
+                                      : '—',
+                                  child: _StarRow(rating: doctor.rating),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _StatPill(
+                                  label: 'Reviews',
+                                  value: '${doctor.reviewCount}',
+                                  child: Icon(
+                                    Icons.people_alt_rounded,
+                                    size: 16,
+                                    color: seedTeal,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  _StatCard(
-                    icon: Icons.star,
-                    iconColor: Colors.amber,
-                    value: doctor.rating != null
-                        ? doctor.rating!.toStringAsFixed(1)
-                        : '—',
-                    label: 'Rating',
-                  ),
-                  const SizedBox(width: 10),
-                  _StatCard(
-                    icon: Icons.reviews_outlined,
-                    value: '${doctor.reviewCount}',
-                    label: 'Reviews',
-                  ),
-                  const SizedBox(width: 10),
-                  _StatCard(
-                    icon: Icons.payments_outlined,
-                    value: doctor.consultationFee != null
-                        ? 'UGX ${feeFormat.format(doctor.consultationFee)}'
-                        : 'Free',
-                    label: 'Fee',
-                  ),
-                ],
-              ),
               if (doctor.bio != null && doctor.bio!.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                Text('About',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(doctor.bio!, style: Theme.of(context).textTheme.bodyMedium),
-              ],
-              const SizedBox(height: 24),
-              Text('Reviews',
+                Text(
+                  'About',
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  doctor.bio!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                ),
+              ],
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Reviews',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  reviewsAsync.maybeWhen(
+                    data: (data) => data.totalReviews > 2
+                        ? TextButton.icon(
+                            onPressed: () => _showAllReviews(context, doctor.name, data),
+                            label: const Text('See all'),
+                            icon: const Icon(Icons.chevron_right_rounded, size: 18),
+                            iconAlignment: IconAlignment.end,
+                          )
+                        : const SizedBox.shrink(),
+                    orElse: () => const SizedBox.shrink(),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               reviewsAsync.when(
                 data: (data) {
@@ -139,23 +164,41 @@ class _DoctorDetailBody extends ConsumerWidget {
                       child: Text('No reviews yet.'),
                     );
                   }
-                  final visible = data.reviews.take(3).toList();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ...visible.map((r) => _ReviewTile(review: r)),
-                      if (data.totalReviews > visible.length)
-                        TextButton(
-                          onPressed: () =>
-                              _showAllReviews(context, doctor.name, data),
-                          child: Text('See all ${data.totalReviews} reviews'),
-                        ),
-                    ],
+                  return SizedBox(
+                    height: 128,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: data.reviews.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 10),
+                      itemBuilder: (context, index) =>
+                          _ReviewCard(review: data.reviews[index]),
+                    ),
                   );
                 },
-                loading: () => const SkeletonCardList(count: 2, cardHeight: 64),
+                loading: () => const SizedBox(
+                  height: 128,
+                  child: Row(
+                    children: [
+                      Expanded(child: SkeletonBox(width: double.infinity, height: 128, borderRadius: 16)),
+                      SizedBox(width: 10),
+                      Expanded(child: SkeletonBox(width: double.infinity, height: 128, borderRadius: 16)),
+                    ],
+                  ),
+                ),
                 error: (_, _) => const Text('Could not load reviews'),
               ),
+              if (doctor.hospitalName != null) ...[
+                const SizedBox(height: 24),
+                Text(
+                  'Hospital',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                _HospitalTile(doctor: doctor),
+              ],
               const SizedBox(height: 12),
             ],
           ),
@@ -223,38 +266,219 @@ class _DoctorDetailBody extends ConsumerWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.value,
-    required this.label,
-    this.iconColor,
-  });
+/// A small stat pill (e.g. "Rating 4.5" / "Reviews 128") — an icon/star row,
+/// the value, and a caption label, matching the doctor profile's header
+/// card.
+class _StatPill extends StatelessWidget {
+  const _StatPill({required this.label, required this.value, required this.child});
 
-  final IconData icon;
-  final String value;
   final String label;
-  final Color? iconColor;
+  final String value;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: SoftCard(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        child: Column(
-          children: [
-            Icon(icon, size: 20, color: iconColor ?? Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      decoration: BoxDecoration(
+        color: seedTeal.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.4,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 3),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+/// Five small stars reflecting a doctor's average rating (rounded to the
+/// nearest whole star) — used inside the Rating stat pill.
+class _StarRow extends StatelessWidget {
+  const _StarRow({required this.rating});
+
+  final double? rating;
+
+  @override
+  Widget build(BuildContext context) {
+    final filled = rating != null ? rating!.round().clamp(0, 5) : 0;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        5,
+        (i) => Icon(
+          i < filled ? Icons.star_rounded : Icons.star_outline_rounded,
+          size: 13,
+          color: Colors.amber,
+        ),
+      ),
+    );
+  }
+}
+
+/// A compact horizontally-scrolled review card — reviewer initials avatar,
+/// name, star rating, and comment snippet.
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({required this.review});
+
+  final Review review;
+
+  String get _initials {
+    final parts =
+        review.patientName.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+    final first = parts.first[0];
+    final last = parts.length > 1 ? parts.last[0] : '';
+    return (first + last).toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 220,
+      child: SoftCard(
+        padding: const EdgeInsets.all(12),
+        showShadow: false,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: seedTeal.withValues(alpha: 0.15),
+                  child: Text(
+                    _initials,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: seedTeal,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    review.patientName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ...List.generate(
+                  5,
+                  (i) => Icon(
+                    i < review.rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    size: 13,
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  DateFormat('MMM d').format(review.createdAt),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+            if (review.comment != null && review.comment!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Expanded(
+                child: Text(
+                  review.comment!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The doctor's hospital name + address as a tappable row — opens the
+/// address in a maps app when tapped.
+class _HospitalTile extends StatelessWidget {
+  const _HospitalTile({required this.doctor});
+
+  final Doctor doctor;
+
+  Future<void> _openMap() async {
+    final query = Uri.encodeComponent(
+      [doctor.hospitalName, doctor.hospitalAddress].whereType<String>().join(', '),
+    );
+    final uri = Uri.parse('https://maps.google.com/?q=$query');
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      padding: const EdgeInsets.all(12),
+      onTap: doctor.hospitalAddress != null ? _openMap : null,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: seedTeal.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.location_on_rounded, size: 20, color: seedTeal),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  doctor.hospitalName!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                ),
+                if (doctor.hospitalAddress != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    doctor.hospitalAddress!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (doctor.hospitalAddress != null)
+            Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.outline),
+        ],
       ),
     );
   }

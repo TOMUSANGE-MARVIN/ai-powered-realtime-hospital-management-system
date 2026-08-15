@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter only injects INTERNET into the debug/ and profile/ manifests,
+         so it must be declared here for release builds. Without it the app
+         has no `inet` gid and every DNS lookup fails with EAI_NODATA
+         ("Failed host lookup ... errno = 7"), which looks exactly like the
+         device being offline even when it isn't. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- Required by flutter_webrtc's native NetworkMonitor (queries

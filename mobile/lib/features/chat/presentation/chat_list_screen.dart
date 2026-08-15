@@ -7,7 +7,7 @@ import '../data/chat_args.dart';
 import '../data/conversation.dart';
 import '../state/chat_providers.dart';
 
-final conversationsProvider = FutureProvider.autoDispose<List<Conversation>>((ref) {
+final conversationsProvider = FutureProvider<List<Conversation>>((ref) {
   return ref.watch(chatRepositoryProvider).listConversations();
 });
 

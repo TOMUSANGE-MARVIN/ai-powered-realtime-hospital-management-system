@@ -8,7 +8,7 @@ final earningsRepositoryProvider = Provider<EarningsRepository>((ref) {
   return EarningsRepository(ref.watch(dioProvider));
 });
 
-final earningsProvider = FutureProvider.autoDispose((ref) {
+final earningsProvider = FutureProvider((ref) {
   return ref.watch(earningsRepositoryProvider).getMine();
 });
 

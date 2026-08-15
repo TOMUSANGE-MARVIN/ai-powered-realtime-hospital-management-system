@@ -62,8 +62,11 @@ final doctorDetailProvider = FutureProvider.autoDispose.family<Doctor, String>((
   return ref.watch(doctorRepositoryProvider).getDoctor(id);
 });
 
-/// Top-rated doctors for the home dashboard's featured carousel.
-final featuredDoctorsProvider = FutureProvider.autoDispose<List<Doctor>>((ref) {
+/// Top-rated doctors for the home dashboard's featured carousel. Not
+/// autoDispose: this is unparameterized "my session" data that should stay
+/// cached across navigation instead of re-fetching (with a loading spinner)
+/// every time the home screen remounts.
+final featuredDoctorsProvider = FutureProvider<List<Doctor>>((ref) {
   return ref.watch(doctorRepositoryProvider).listDoctors(featured: true, limit: 10);
 });
 

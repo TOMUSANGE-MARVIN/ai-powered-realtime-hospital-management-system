@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../doctors/data/review.dart';
 import '../../doctors/state/doctor_providers.dart';
 
-final myReviewsProvider = FutureProvider.autoDispose((ref) {
+final myReviewsProvider = FutureProvider((ref) {
   return ref.watch(reviewRepositoryProvider).listMine();
 });
 

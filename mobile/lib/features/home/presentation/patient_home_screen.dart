@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/soft_card.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
@@ -84,7 +85,7 @@ class PatientHomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 218,
+                height: 300,
                 child: featuredAsync.when(
                   data: (doctors) {
                     if (doctors.isEmpty) {
@@ -94,7 +95,7 @@ class PatientHomeScreen extends ConsumerWidget {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: doctors.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      separatorBuilder: (_, _) => const SizedBox(width: 14),
                       itemBuilder: (context, index) =>
                           _FeaturedDoctorCard(doctor: doctors[index]),
                     );
@@ -692,6 +693,32 @@ class _QuickActionTile extends StatelessWidget {
   }
 }
 
+/// Maps a doctor's specialization/department text to a representative icon
+/// for the small badge on their featured card. Best-effort keyword match
+/// against real doctor data — falls back to a generic medical icon rather
+/// than inventing a specialty.
+IconData _iconForSpecialization(String? specialization, String? department) {
+  final text = (specialization ?? department ?? '').toLowerCase();
+  if (text.contains('cardio')) return Icons.favorite_rounded;
+  if (text.contains('pediatric') || text.contains('paediatric')) {
+    return Icons.child_care_rounded;
+  }
+  if (text.contains('orthop')) return Icons.accessibility_new_rounded;
+  if (text.contains('obstetric') || text.contains('gynec') || text.contains('gynaec')) {
+    return Icons.pregnant_woman_rounded;
+  }
+  if (text.contains('emergency')) return Icons.emergency_rounded;
+  if (text.contains('neuro')) return Icons.psychology_rounded;
+  if (text.contains('derma')) return Icons.face_retouching_natural_rounded;
+  if (text.contains('dental') || text.contains('dentist')) {
+    return Icons.sentiment_satisfied_alt_rounded;
+  }
+  if (text.contains('internal medicine') || text.contains('general')) {
+    return Icons.monitor_heart_rounded;
+  }
+  return Icons.local_hospital_rounded;
+}
+
 class _FeaturedDoctorCard extends StatelessWidget {
   const _FeaturedDoctorCard({required this.doctor});
 
@@ -702,114 +729,199 @@ class _FeaturedDoctorCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final feeFormat = NumberFormat.decimalPattern();
     final rating = doctor.rating;
+    final specialtyLabel = doctor.specialization ?? doctor.department ?? 'General';
+    final accent = specialtyAccent(doctor.specialization);
+
     return SizedBox(
-      width: 168,
-      child: _FlatCard(
-        padding: const EdgeInsets.all(14),
+      width: 196,
+      child: SoftCard(
+        padding: EdgeInsets.zero,
         onTap: () => context.push('/doctors/${doctor.id}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: seedTeal,
-                ),
-                child: CircleAvatar(
-                  radius: 30,
-                  backgroundColor: scheme.surfaceContainerHighest,
-                  backgroundImage:
-                      doctor.image != null ? NetworkImage(doctor.image!) : null,
-                  child: doctor.image == null
-                      ? const Icon(Icons.person, size: 30)
-                      : null,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              doctor.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              doctor.specialization ?? doctor.department ?? 'General',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(8),
+            AspectRatio(
+              aspectRatio: 1.05,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(kCardRadius)),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _DoctorImage(url: doctor.image, name: doctor.name),
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: accent.background,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          _iconForSpecialization(doctor.specialization, doctor.department),
+                          size: 16,
+                          color: accent.foreground,
+                        ),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.star_rounded, size: 13, color: Colors.amber),
-                        const SizedBox(width: 3),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    doctor.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14.5,
+                      letterSpacing: -0.2,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    specialtyLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded, size: 13, color: Colors.amber),
+                            const SizedBox(width: 3),
+                            Text(
+                              rating != null
+                                  ? '${rating.toStringAsFixed(1)} (${doctor.reviewCount})'
+                                  : 'New',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF8A5A00),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      if (doctor.consultationFee != null)
                         Flexible(
                           child: Text(
-                            rating != null
-                                ? '${rating.toStringAsFixed(1)} (${doctor.reviewCount})'
-                                : 'New',
+                            'UGX ${feeFormat.format(doctor.consultationFee)}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF8A5A00),
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: scheme.primary,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
-                ),
-                if (doctor.consultationFee != null) ...[
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'UGX ${feeFormat.format(doctor.consultationFee)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.primary,
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 38,
+                    child: FilledButton.icon(
+                      onPressed: () => context.push('/doctors/${doctor.id}'),
+                      style: FilledButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
                       ),
+                      icon: const Icon(Icons.calendar_month_rounded, size: 16),
+                      label: const Text('Book Appointment'),
                     ),
                   ),
                 ],
-              ],
-            ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 34,
-              child: FilledButton(
-                onPressed: () => context.push('/doctors/${doctor.id}'),
-                style: FilledButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-                ),
-                child: const Text('Book'),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Renders a doctor's uploaded profile photo, or a neutral initials avatar
+/// when no image has been set (or it fails to load) — never a stock photo.
+class _DoctorImage extends StatelessWidget {
+  const _DoctorImage({required this.url, required this.name});
+
+  final String? url;
+  final String name;
+
+  String get _initials {
+    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+    final first = parts.first[0];
+    final last = parts.length > 1 ? parts.last[0] : '';
+    return (first + last).toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (url == null || url!.isEmpty) return _fallback();
+    return Image.network(
+      url!,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return Container(
+          color: seedTeal.withValues(alpha: 0.08),
+          child: const Center(
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2, color: seedTeal),
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) => _fallback(),
+    );
+  }
+
+  Widget _fallback() {
+    return Container(
+      color: seedTeal.withValues(alpha: 0.12),
+      alignment: Alignment.center,
+      child: Text(
+        _initials,
+        style: const TextStyle(
+          fontSize: 30,
+          fontWeight: FontWeight.w800,
+          color: seedTeal,
         ),
       ),
     );

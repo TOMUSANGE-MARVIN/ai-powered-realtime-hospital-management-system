@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../chat/data/chat_args.dart';
@@ -59,7 +60,10 @@ class _DoctorAppointmentsScreenState extends ConsumerState<DoctorAppointmentsScr
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Padding(
+                padding: EdgeInsets.all(16),
+                child: SkeletonCardList(cardHeight: 110),
+              ),
               error: (error, _) => Center(child: Text(error.toString())),
             ),
           ),

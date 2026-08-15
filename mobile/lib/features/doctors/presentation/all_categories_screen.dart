@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/skeleton.dart';
 import '../state/doctor_providers.dart';
 import 'category_card.dart';
 
@@ -81,7 +82,7 @@ class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonGrid(),
               error: (error, _) => Center(child: Text(error.toString())),
             ),
           ),

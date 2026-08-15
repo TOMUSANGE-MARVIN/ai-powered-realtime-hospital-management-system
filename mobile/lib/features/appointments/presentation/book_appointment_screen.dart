@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../doctors/data/doctor.dart';
 import '../../doctors/state/doctor_providers.dart';
 import '../../payments/state/payment_providers.dart';
@@ -122,7 +123,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(doctorAsync.value?.name ?? 'Book appointment')),
       body: doctorAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SkeletonForm(),
         error: (error, _) => Center(child: Text(error.toString())),
         data: (doctor) => SingleChildScrollView(
           padding: const EdgeInsets.all(20),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../chat/data/chat_args.dart';
 import '../data/doctor.dart';
@@ -22,7 +23,7 @@ class DoctorDetailScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Doctor profile')),
       body: doctorAsync.when(
         data: (doctor) => _DoctorDetailBody(doctor: doctor),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SkeletonForm(fieldCount: 3),
         error: (error, _) => Center(child: Text(error.toString())),
       ),
     );
@@ -152,12 +153,7 @@ class _DoctorDetailBody extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
+                loading: () => const SkeletonCardList(count: 2, cardHeight: 64),
                 error: (_, _) => const Text('Could not load reviews'),
               ),
               const SizedBox(height: 12),

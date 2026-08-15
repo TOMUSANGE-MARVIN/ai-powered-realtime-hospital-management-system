@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/dashboard_gate.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
@@ -41,6 +42,7 @@ class PatientHomeScreen extends ConsumerWidget {
           },
           child: DashboardGate(
             values: [categoriesAsync, featuredAsync, appointmentsAsync],
+            loadingBuilder: (context) => const _PatientHomeSkeleton(),
             builder: (context) => ListView(
               padding: const EdgeInsets.only(top: 12, bottom: 96),
               children: [
@@ -112,6 +114,97 @@ class PatientHomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Mirrors [PatientHomeScreen]'s real layout — hero header, next-appointment
+/// card, quick actions, a categories row, a featured-doctors row — so the
+/// first-load wait reads as "this page is here, filling in" rather than a
+/// generic spinner.
+class _PatientHomeSkeleton extends StatelessWidget {
+  const _PatientHomeSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.only(top: 12, bottom: 96),
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: SkeletonBox(
+            width: double.infinity,
+            height: 168,
+            borderRadius: 28,
+          ),
+        ),
+        const SizedBox(height: 26),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: SkeletonBox(width: 140, height: 18),
+        ),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: SkeletonBox(width: double.infinity, height: 88, borderRadius: 24),
+        ),
+        const SizedBox(height: 28),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: List.generate(
+              4,
+              (i) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: i == 3 ? 0 : 12),
+                  child: const SkeletonBox(
+                    width: double.infinity,
+                    height: 56,
+                    borderRadius: 18,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 28),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: SkeletonBox(width: 160, height: 18),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 108,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: 4,
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            itemBuilder: (context, index) =>
+                const SkeletonBox(width: 86, height: 108, borderRadius: 16),
+          ),
+        ),
+        const SizedBox(height: 28),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: SkeletonBox(width: 160, height: 18),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 316,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: 3,
+            separatorBuilder: (_, _) => const SizedBox(width: 14),
+            itemBuilder: (context, index) =>
+                const SkeletonBox(width: 196, height: 316, borderRadius: 22),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -387,7 +480,7 @@ class _NextAppointmentCard extends StatelessWidget {
       },
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
-        child: SizedBox(height: 118, child: Center(child: CircularProgressIndicator())),
+        child: SkeletonBox(width: double.infinity, height: 118, borderRadius: 24),
       ),
       error: (_, _) => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),

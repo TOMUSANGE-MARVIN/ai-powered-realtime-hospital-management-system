@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/skeleton.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../doctors/data/doctor.dart';
@@ -96,7 +97,7 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
                 },
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const SkeletonList(padding: EdgeInsets.symmetric(vertical: 8)),
             error: (error, _) => Center(child: Text(error.toString())),
           ),
         ),
@@ -143,7 +144,7 @@ class _PatientPicker extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SkeletonList(padding: EdgeInsets.symmetric(vertical: 8)),
       error: (error, _) => Center(child: Text(error.toString())),
     );
   }

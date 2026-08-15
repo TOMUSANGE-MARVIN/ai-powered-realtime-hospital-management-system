@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../data/doctor.dart';
 import '../state/doctor_providers.dart';
 
@@ -116,7 +117,7 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonList(),
               error: (error, _) => Center(child: Text(error.toString())),
             ),
           ),

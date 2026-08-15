@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'skeleton.dart';
+
 /// Gates a dashboard-style screen (several independent providers feeding
 /// different sections) behind a single loading state, so the whole screen
 /// appears at once instead of each section popping in with its own spinner
@@ -16,11 +18,17 @@ class DashboardGate extends StatelessWidget {
     required this.values,
     required this.builder,
     this.errorBuilder,
+    this.loadingBuilder,
   });
 
   final List<AsyncValue<Object?>> values;
   final WidgetBuilder builder;
   final Widget Function(BuildContext context, Object error)? errorBuilder;
+
+  /// Skeleton shown while [values] are still loading. Defaults to a generic
+  /// list skeleton; pass a screen-shaped skeleton for a closer match to the
+  /// real layout underneath.
+  final WidgetBuilder? loadingBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +36,7 @@ class DashboardGate extends StatelessWidget {
     // so this only blocks on the very first fetch of each provider.
     final stillLoading = values.any((v) => v.isLoading && !v.hasValue && !v.hasError);
     if (stillLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return loadingBuilder?.call(context) ?? const SkeletonList();
     }
     final firstError = values.where((v) => v.hasError && !v.hasValue).firstOrNull;
     if (firstError != null && errorBuilder != null) {

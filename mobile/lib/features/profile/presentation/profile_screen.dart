@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/widgets/dashboard_gate.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
@@ -42,6 +43,7 @@ class ProfileScreen extends ConsumerWidget {
       ),
       body: DashboardGate(
         values: [userAsync, ...patientOnlyAsyncs],
+        loadingBuilder: (context) => const _ProfileSkeleton(),
         builder: (context) {
           final user = userAsync.value;
           if (user == null) return const SizedBox.shrink();
@@ -120,6 +122,44 @@ class ProfileScreen extends ConsumerWidget {
       const SizedBox(height: 16),
       _EmergencyContactSection(),
     ];
+  }
+}
+
+/// Mirrors [ProfileScreen]'s real layout — avatar header, then a stack of
+/// section cards — so the first-load wait reads as "this page is here,
+/// filling in" rather than a generic spinner.
+class _ProfileSkeleton extends StatelessWidget {
+  const _ProfileSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        Center(
+          child: Column(
+            children: [
+              const SkeletonBox.circle(size: 80),
+              const SizedBox(height: 12),
+              const SkeletonBox(width: 140, height: 18),
+              const SizedBox(height: 6),
+              const SkeletonBox(width: 180, height: 13),
+              const SizedBox(height: 12),
+              const SkeletonBox(width: 120, height: 34, borderRadius: 10),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        ...List.generate(
+          4,
+          (_) => const Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: SkeletonBox(width: double.infinity, height: 90, borderRadius: 14),
+          ),
+        ),
+      ],
+    );
   }
 }
 

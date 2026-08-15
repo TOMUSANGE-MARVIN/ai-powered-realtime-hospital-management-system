@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/skeleton.dart';
 import '../data/earnings.dart';
 import '../state/doctor_providers.dart';
 
@@ -172,9 +173,44 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const _EarningsSkeleton(),
         error: (error, _) => Center(child: Text(error.toString())),
       ),
+    );
+  }
+}
+
+/// Mirrors [DoctorEarningsScreen]'s real layout — stat card row, a
+/// withdraw/overview card, then a couple of list-shaped blocks — so the
+/// first-load wait reads as "this page is here, filling in" rather than a
+/// generic spinner.
+class _EarningsSkeleton extends StatelessWidget {
+  const _EarningsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        Row(
+          children: const [
+            Expanded(child: SkeletonBox(width: double.infinity, height: 64, borderRadius: 14)),
+            SizedBox(width: 12),
+            Expanded(child: SkeletonBox(width: double.infinity, height: 64, borderRadius: 14)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        const SkeletonBox(width: double.infinity, height: 130, borderRadius: 14),
+        const SizedBox(height: 24),
+        const SkeletonBox(width: 160, height: 16),
+        const SizedBox(height: 12),
+        const SkeletonBox(width: double.infinity, height: 80, borderRadius: 14),
+        const SizedBox(height: 24),
+        const SkeletonBox(width: 160, height: 16),
+        const SizedBox(height: 12),
+        const SkeletonBox(width: double.infinity, height: 150, borderRadius: 14),
+      ],
     );
   }
 }

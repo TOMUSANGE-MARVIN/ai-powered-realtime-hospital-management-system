@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/widgets/dashboard_gate.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
@@ -45,6 +46,7 @@ class DoctorDashboardScreen extends ConsumerWidget {
         },
         child: DashboardGate(
           values: [earningsAsync, todaysAsync, requestsAsync],
+          loadingBuilder: (context) => const _DoctorDashboardSkeleton(),
           builder: (context) => ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -128,6 +130,44 @@ class DoctorDashboardScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Mirrors [DoctorDashboardScreen]'s real layout — earnings card, today's
+/// appointments, appointment requests — so the first-load wait reads as
+/// "this page is here, filling in" rather than a generic spinner.
+class _DoctorDashboardSkeleton extends StatelessWidget {
+  const _DoctorDashboardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        const SkeletonBox(width: double.infinity, height: 108, borderRadius: 12),
+        const SizedBox(height: 24),
+        const SkeletonBox(width: 180, height: 18),
+        const SizedBox(height: 12),
+        ...List.generate(
+          2,
+          (_) => const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: SkeletonListTile(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const SkeletonBox(width: 200, height: 18),
+        const SizedBox(height: 12),
+        ...List.generate(
+          2,
+          (_) => const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: SkeletonListTile(),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/skeleton.dart';
 import '../data/chat_args.dart';
 import '../data/conversation.dart';
 import '../state/chat_providers.dart';
@@ -104,7 +105,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonList(),
               error: (error, _) => Center(child: Text(error.toString())),
             ),
           ),

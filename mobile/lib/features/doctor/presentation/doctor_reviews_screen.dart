@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/skeleton.dart';
 import '../../doctors/data/review.dart';
 import '../../doctors/state/doctor_providers.dart';
 
@@ -52,9 +53,29 @@ class DoctorReviewsScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const _ReviewsSkeleton(),
         error: (error, _) => Center(child: Text(error.toString())),
       ),
+    );
+  }
+}
+
+/// Mirrors [DoctorReviewsScreen]'s real layout — a rating summary card
+/// followed by review cards — so the first-load wait reads as "this page is
+/// here, filling in" rather than a generic spinner.
+class _ReviewsSkeleton extends StatelessWidget {
+  const _ReviewsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      physics: const NeverScrollableScrollPhysics(),
+      children: const [
+        SkeletonBox(width: double.infinity, height: 72, borderRadius: 14),
+        SizedBox(height: 16),
+        SkeletonCardList(count: 4, cardHeight: 90),
+      ],
     );
   }
 }

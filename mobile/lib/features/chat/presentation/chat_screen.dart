@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/api/providers.dart';
 import '../../../core/presence/presence_providers.dart';
 import '../../../core/realtime/socket_providers.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../calls/state/call_controller.dart';
 import '../data/chat_message.dart';
@@ -509,7 +510,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
     final messages = _messages;
     if (messages == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const SkeletonChat();
     }
     if (messages.isEmpty) {
       return const Center(child: Text('Say hello 👋'));

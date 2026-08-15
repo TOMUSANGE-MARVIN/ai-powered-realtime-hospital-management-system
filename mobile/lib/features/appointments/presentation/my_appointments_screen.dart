@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../chat/data/chat_args.dart';
 import '../../doctors/state/doctor_providers.dart';
 import '../data/appointment.dart';
@@ -38,7 +39,10 @@ class MyAppointmentsScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Padding(
+          padding: EdgeInsets.all(16),
+          child: SkeletonCardList(cardHeight: 128),
+        ),
         error: (error, _) => Center(child: Text(error.toString())),
       ),
     );

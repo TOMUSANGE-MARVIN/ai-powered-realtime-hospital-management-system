@@ -39,7 +39,7 @@ class PatientHomeScreen extends ConsumerWidget {
             ref.invalidate(myAppointmentsProvider);
           },
           child: ListView(
-            padding: const EdgeInsets.only(top: 12, bottom: 28),
+            padding: const EdgeInsets.only(top: 12, bottom: 96),
             children: [
               _HeroHeader(
                 greeting: _greetingFor(DateTime.now()),
@@ -85,7 +85,7 @@ class PatientHomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 300,
+                height: 316,
                 child: featuredAsync.when(
                   data: (doctors) {
                     if (doctors.isEmpty) {
@@ -741,7 +741,7 @@ class _FeaturedDoctorCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: 1.05,
+              aspectRatio: 1.25,
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(kCardRadius)),
                 child: Stack(
@@ -780,31 +780,39 @@ class _FeaturedDoctorCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    doctor.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14.5,
-                      letterSpacing: -0.2,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    specialtyLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              doctor.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14.5,
+                                letterSpacing: -0.2,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              specialtyLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                         decoration: BoxDecoration(
@@ -829,24 +837,30 @@ class _FeaturedDoctorCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const Spacer(),
-                      if (doctor.consultationFee != null)
-                        Flexible(
+                    ],
+                  ),
+                  if (doctor.consultationFee != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.sell_rounded, size: 14, color: scheme.primary),
+                        const SizedBox(width: 4),
+                        Expanded(
                           child: Text(
                             'UGX ${feeFormat.format(doctor.consultationFee)}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.right,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: FontWeight.w800,
                               color: scheme.primary,
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
                     height: 38,

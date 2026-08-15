@@ -169,18 +169,21 @@ class _SpecialtyChip extends StatelessWidget {
   }
 }
 
-class _DoctorTile extends StatelessWidget {
+class _DoctorTile extends ConsumerWidget {
   const _DoctorTile({required this.doctor});
 
   final Doctor doctor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final feeFormat = NumberFormat.decimalPattern();
     return Card(
       margin: EdgeInsets.zero,
       child: ListTile(
-        onTap: () => context.push('/doctors/${doctor.id}'),
+        onTap: () {
+          prefetchDoctorDetail(ref, doctor.id);
+          context.push('/doctors/${doctor.id}');
+        },
         leading: CircleAvatar(
           radius: 26,
           backgroundImage: doctor.image != null ? NetworkImage(doctor.image!) : null,

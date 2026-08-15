@@ -185,7 +185,10 @@ class _DoctorDetailBody extends ConsumerWidget {
                   child: FilledButton.icon(
                     icon: const Icon(Icons.calendar_month),
                     label: const Text('Book'),
-                    onPressed: () => context.push('/book/${doctor.id}'),
+                    onPressed: () {
+                      prefetchDoctorDetail(ref, doctor.id);
+                      context.push('/book/${doctor.id}');
+                    },
                   ),
                 ),
               ],

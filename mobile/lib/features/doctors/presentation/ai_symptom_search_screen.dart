@@ -207,18 +207,21 @@ class _MatchCard extends StatelessWidget {
   }
 }
 
-class _DoctorResultTile extends StatelessWidget {
+class _DoctorResultTile extends ConsumerWidget {
   const _DoctorResultTile({required this.doctor});
 
   final Doctor doctor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final feeFormat = NumberFormat.decimalPattern();
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        onTap: () => context.push('/doctors/${doctor.id}'),
+        onTap: () {
+          prefetchDoctorDetail(ref, doctor.id);
+          context.push('/doctors/${doctor.id}');
+        },
         leading: CircleAvatar(
           backgroundImage: doctor.image != null ? NetworkImage(doctor.image!) : null,
           child: doctor.image == null ? const Icon(Icons.person) : null,

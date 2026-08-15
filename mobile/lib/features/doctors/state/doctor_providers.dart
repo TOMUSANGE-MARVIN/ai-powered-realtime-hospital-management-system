@@ -74,3 +74,17 @@ final doctorReviewsProvider =
     FutureProvider.autoDispose.family<DoctorReviews, String>((ref, doctorId) {
   return ref.watch(reviewRepositoryProvider).listForDoctor(doctorId);
 });
+
+/// Kicks off the doctor detail + reviews fetches for [doctorId] without
+/// waiting for them, so the network round-trip overlaps with the page
+/// transition instead of starting only once `DoctorDetailScreen` mounts.
+/// Call this from a list tile/card's `onTap` right before `context.push`
+/// to a `/doctors/:id` (or `/book/:doctorId`) route — the destination
+/// screen's own `ref.watch(doctorDetailProvider(...))` picks up the same
+/// in-flight (or already-resolved) future instead of re-fetching.
+void prefetchDoctorDetail(WidgetRef ref, String doctorId) {
+  ref.read(doctorDetailProvider(doctorId).future).then(
+        (doctor) => ref.read(doctorReviewsProvider(doctorId).future),
+        onError: (_) {},
+      );
+}

@@ -723,13 +723,18 @@ IconData _iconForSpecialization(String? specialization, String? department) {
   return Icons.local_hospital_rounded;
 }
 
-class _FeaturedDoctorCard extends StatelessWidget {
+class _FeaturedDoctorCard extends ConsumerWidget {
   const _FeaturedDoctorCard({required this.doctor});
 
   final Doctor doctor;
 
+  void _openDoctor(BuildContext context, WidgetRef ref) {
+    prefetchDoctorDetail(ref, doctor.id);
+    context.push('/doctors/${doctor.id}');
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final feeFormat = NumberFormat.decimalPattern();
     final rating = doctor.rating;
@@ -740,7 +745,7 @@ class _FeaturedDoctorCard extends StatelessWidget {
       width: 196,
       child: SoftCard(
         padding: EdgeInsets.zero,
-        onTap: () => context.push('/doctors/${doctor.id}'),
+        onTap: () => _openDoctor(context, ref),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -869,7 +874,7 @@ class _FeaturedDoctorCard extends StatelessWidget {
                     width: double.infinity,
                     height: 38,
                     child: FilledButton.icon(
-                      onPressed: () => context.push('/doctors/${doctor.id}'),
+                      onPressed: () => _openDoctor(context, ref),
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/widgets/dashboard_gate.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
@@ -42,96 +43,89 @@ class DoctorDashboardScreen extends ConsumerWidget {
           ref.invalidate(todaysAssignedAppointmentsProvider);
           ref.invalidate(assignedRequestsProvider);
         },
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Card(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Earnings today',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+        child: DashboardGate(
+          values: [earningsAsync, todaysAsync, requestsAsync],
+          builder: (context) => ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Earnings today',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    earningsAsync.when(
-                      data: (earnings) => Text(
-                        'UGX ${currencyFormat.format(earnings.today)}',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      const SizedBox(height: 8),
+                      earningsAsync.when(
+                        data: (earnings) => Text(
+                          'UGX ${currencyFormat.format(earnings.today)}',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, _) => const Text('—'),
                       ),
-                      loading: () => const SizedBox(
-                        height: 28,
-                        width: 28,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      error: (_, _) => const Text('—'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Today's Appointments", style: Theme.of(context).textTheme.titleMedium),
-                TextButton(
-                  onPressed: () => context.go('/doctor-home/appointments'),
-                  child: const Text('View all'),
-                ),
-              ],
-            ),
-            todaysAsync.when(
-              data: (appointments) {
-                if (appointments.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No appointments scheduled for today.'),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Today's Appointments", style: Theme.of(context).textTheme.titleMedium),
+                  TextButton(
+                    onPressed: () => context.go('/doctor-home/appointments'),
+                    child: const Text('View all'),
+                  ),
+                ],
+              ),
+              todaysAsync.when(
+                data: (appointments) {
+                  if (appointments.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text('No appointments scheduled for today.'),
+                    );
+                  }
+                  return Column(
+                    children: appointments
+                        .map((a) => _AppointmentTile(appointment: a))
+                        .toList(),
                   );
-                }
-                return Column(
-                  children: appointments
-                      .map((a) => _AppointmentTile(appointment: a))
-                      .toList(),
-                );
-              },
-              loading: () => const Center(child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
-              )),
-              error: (error, _) => Text(error.toString()),
-            ),
-            const SizedBox(height: 24),
-            Text('Appointment Requests', style: Theme.of(context).textTheme.titleMedium),
-            requestsAsync.when(
-              data: (requests) {
-                if (requests.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No pending requests.'),
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (error, _) => Text(error.toString()),
+              ),
+              const SizedBox(height: 24),
+              Text('Appointment Requests', style: Theme.of(context).textTheme.titleMedium),
+              requestsAsync.when(
+                data: (requests) {
+                  if (requests.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text('No pending requests.'),
+                    );
+                  }
+                  return Column(
+                    children: requests
+                        .map((a) => _RequestTile(appointment: a))
+                        .toList(),
                   );
-                }
-                return Column(
-                  children: requests
-                      .map((a) => _RequestTile(appointment: a))
-                      .toList(),
-                );
-              },
-              loading: () => const Center(child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
-              )),
-              error: (error, _) => Text(error.toString()),
-            ),
-          ],
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (error, _) => Text(error.toString()),
+              ),
+            ],
+          ),
         ),
       ),
     );

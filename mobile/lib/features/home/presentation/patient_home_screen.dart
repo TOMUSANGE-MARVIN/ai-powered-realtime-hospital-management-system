@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/dashboard_gate.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
@@ -38,73 +39,76 @@ class PatientHomeScreen extends ConsumerWidget {
             ref.invalidate(featuredDoctorsProvider);
             ref.invalidate(myAppointmentsProvider);
           },
-          child: ListView(
-            padding: const EdgeInsets.only(top: 12, bottom: 96),
-            children: [
-              _HeroHeader(
-                greeting: _greetingFor(DateTime.now()),
-                firstName: firstName.isEmpty ? 'there' : firstName,
-                image: user?.image,
-              ),
-              const SizedBox(height: 26),
-              _SectionHeader(
-                title: 'Next appointment',
-                onSeeAll: () => context.push('/home/appointments'),
-              ),
-              const SizedBox(height: 10),
-              _NextAppointmentCard(appointmentsAsync: appointmentsAsync),
-              const SizedBox(height: 28),
-              const _QuickActions(),
-              const SizedBox(height: 28),
-              _SectionHeader(
-                title: 'Browse specialties',
-                onSeeAll: () => context.push('/categories'),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 108,
-                child: categoriesAsync.when(
-                  data: (categories) => ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: categories.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) => CategoryCard(
-                      category: categories[index].category,
-                      count: categories[index].count,
-                    ),
-                  ),
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => const Center(child: Text('Could not load categories')),
+          child: DashboardGate(
+            values: [categoriesAsync, featuredAsync, appointmentsAsync],
+            builder: (context) => ListView(
+              padding: const EdgeInsets.only(top: 12, bottom: 96),
+              children: [
+                _HeroHeader(
+                  greeting: _greetingFor(DateTime.now()),
+                  firstName: firstName.isEmpty ? 'there' : firstName,
+                  image: user?.image,
                 ),
-              ),
-              const SizedBox(height: 28),
-              _SectionHeader(
-                title: 'Featured doctors',
-                onSeeAll: () => context.push('/search'),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 316,
-                child: featuredAsync.when(
-                  data: (doctors) {
-                    if (doctors.isEmpty) {
-                      return const Center(child: Text('No doctors available yet'));
-                    }
-                    return ListView.separated(
+                const SizedBox(height: 26),
+                _SectionHeader(
+                  title: 'Next appointment',
+                  onSeeAll: () => context.push('/home/appointments'),
+                ),
+                const SizedBox(height: 10),
+                _NextAppointmentCard(appointmentsAsync: appointmentsAsync),
+                const SizedBox(height: 28),
+                const _QuickActions(),
+                const SizedBox(height: 28),
+                _SectionHeader(
+                  title: 'Browse specialties',
+                  onSeeAll: () => context.push('/categories'),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 108,
+                  child: categoriesAsync.when(
+                    data: (categories) => ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: doctors.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 14),
-                      itemBuilder: (context, index) =>
-                          _FeaturedDoctorCard(doctor: doctors[index]),
-                    );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, _) => Center(child: Text(error.toString())),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) => CategoryCard(
+                        category: categories[index].category,
+                        count: categories[index].count,
+                      ),
+                    ),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const Center(child: Text('Could not load categories')),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 28),
+                _SectionHeader(
+                  title: 'Featured doctors',
+                  onSeeAll: () => context.push('/search'),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 316,
+                  child: featuredAsync.when(
+                    data: (doctors) {
+                      if (doctors.isEmpty) {
+                        return const Center(child: Text('No doctors available yet'));
+                      }
+                      return ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: doctors.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 14),
+                        itemBuilder: (context, index) =>
+                            _FeaturedDoctorCard(doctor: doctors[index]),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (error, _) => Center(child: Text(error.toString())),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

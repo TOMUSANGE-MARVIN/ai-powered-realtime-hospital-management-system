@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/widgets/dashboard_gate.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
@@ -15,6 +16,19 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(authControllerProvider);
+    final isDoctor = userAsync.value?.role == 'doctor';
+
+    // The patient-only sections each have their own provider; only wait on
+    // them when they'll actually be shown, so a doctor's profile doesn't
+    // block on providers it never queries.
+    final patientOnlyAsyncs = isDoctor
+        ? const <AsyncValue<Object?>>[]
+        : [
+            ref.watch(myConsultationHistoryProvider),
+            ref.watch(myPrescriptionsProvider),
+            ref.watch(myActiveInvoiceProvider),
+            ref.watch(myMedicalDocumentsProvider),
+          ];
 
     return Scaffold(
       appBar: AppBar(
@@ -26,8 +40,10 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: userAsync.when(
-        data: (user) {
+      body: DashboardGate(
+        values: [userAsync, ...patientOnlyAsyncs],
+        builder: (context) {
+          final user = userAsync.value;
           if (user == null) return const SizedBox.shrink();
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -44,8 +60,7 @@ class ProfileScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(error.toString())),
+        errorBuilder: (context, error) => Center(child: Text(error.toString())),
       ),
     );
   }
@@ -236,7 +251,7 @@ class _ConsultationHistorySection extends ConsumerWidget {
                 .toList(),
           );
         },
-        loading: () => const LinearProgressIndicator(),
+        loading: () => const SizedBox.shrink(),
         error: (error, _) => Text(error.toString()),
       ),
     );
@@ -285,7 +300,7 @@ class _PrescriptionsSection extends ConsumerWidget {
                 .toList(),
           );
         },
-        loading: () => const LinearProgressIndicator(),
+        loading: () => const SizedBox.shrink(),
         error: (error, _) => Text(error.toString()),
       ),
     );
@@ -310,7 +325,7 @@ class _BillingSection extends ConsumerWidget {
             ),
           ],
         ),
-        loading: () => const LinearProgressIndicator(),
+        loading: () => const SizedBox.shrink(),
         error: (_, _) => const Text('UGX 0'),
       ),
     );
@@ -345,7 +360,7 @@ class _MedicalDocumentsSection extends ConsumerWidget {
                 .toList(),
           );
         },
-        loading: () => const LinearProgressIndicator(),
+        loading: () => const SizedBox.shrink(),
         error: (error, _) => Text(error.toString()),
       ),
     );

@@ -4,6 +4,7 @@ class Conversation {
     required this.otherUserName,
     this.otherUserImage,
     this.otherUserRole,
+    this.otherUserOnline = false,
     required this.lastMessageText,
     this.lastMessageAttachmentType,
     required this.lastMessageAt,
@@ -15,6 +16,7 @@ class Conversation {
   final String otherUserName;
   final String? otherUserImage;
   final String? otherUserRole;
+  final bool otherUserOnline;
   final String lastMessageText;
   final String? lastMessageAttachmentType;
   final DateTime lastMessageAt;
@@ -43,6 +45,7 @@ class Conversation {
       otherUserName: json['otherUserName'] as String? ?? 'Unknown',
       otherUserImage: json['otherUserImage'] as String?,
       otherUserRole: json['otherUserRole'] as String?,
+      otherUserOnline: json['otherUserOnline'] as bool? ?? false,
       lastMessageText: json['lastMessageText'] as String? ?? '',
       lastMessageAttachmentType: json['lastMessageAttachmentType'] as String?,
       lastMessageAt:

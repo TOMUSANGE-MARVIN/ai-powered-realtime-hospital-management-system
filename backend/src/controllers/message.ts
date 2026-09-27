@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { isUserOnline } from "../lib/socket";
 
 // Inbox: one row per counterpart the user has ever messaged, most recent
 // conversation first — the WhatsApp-style chat list.
@@ -50,6 +51,7 @@ export const getConversations = async (req: Request, res: Response) => {
           otherUserName: user?.name ?? "Unknown",
           otherUserImage: user?.image ?? null,
           otherUserRole: user?.role ?? null,
+          otherUserOnline: isUserOnline(id),
           lastMessageText: last.text,
           lastMessageAttachmentType: last.attachmentType,
           lastMessageAt: last.createdAt,

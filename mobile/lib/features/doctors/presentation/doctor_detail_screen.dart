@@ -252,28 +252,19 @@ class _HeaderInfo extends StatelessWidget {
               const SizedBox(height: 8),
               _RatingLine(doctor: doctor),
               const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (doctor.hospitalName != null)
-                    Expanded(
-                      child: _MiniInfo(
-                        icon: Icons.location_on_outlined,
-                        title: doctor.hospitalName!,
-                        subtitle: doctor.hospitalAddress,
-                      ),
-                    ),
-                  if (doctor.hospitalName != null && specialty != null) const SizedBox(width: 8),
-                  if (specialty != null)
-                    Expanded(
-                      child: _MiniInfo(
-                        icon: Icons.medical_services_outlined,
-                        title: 'Consults in:\n$specialty',
-                        subtitle: doctor.treatments.isEmpty ? null : doctor.treatments.join(' • '),
-                      ),
-                    ),
-                ],
-              ),
+              if (doctor.hospitalName != null)
+                _MiniInfo(
+                  icon: Icons.location_on_outlined,
+                  title: doctor.hospitalName!,
+                  subtitle: doctor.hospitalAddress,
+                ),
+              if (doctor.hospitalName != null && specialty != null) const SizedBox(height: 8),
+              if (specialty != null)
+                _MiniInfo(
+                  icon: Icons.medical_services_outlined,
+                  title: 'Consults in: $specialty',
+                  subtitle: doctor.treatments.isEmpty ? null : doctor.treatments.join(' • '),
+                ),
             ],
           ),
         ),
@@ -334,7 +325,7 @@ class _MiniInfo extends StatelessWidget {
           decoration: const BoxDecoration(color: _tealTint, shape: BoxShape.circle),
           child: Icon(icon, size: 16, color: seedTeal),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,7 +335,7 @@ class _MiniInfo extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: _ink,
                   height: 1.25,
@@ -354,9 +345,9 @@ class _MiniInfo extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle!,
-                  maxLines: 3,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 10.5, color: _muted, height: 1.3),
+                  style: const TextStyle(fontSize: 11.5, color: _muted, height: 1.3),
                 ),
               ],
             ],

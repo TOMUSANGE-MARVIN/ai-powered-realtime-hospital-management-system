@@ -56,18 +56,44 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
     final selectedSpecialty = ref.watch(selectedSpecialtyProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Search')),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Search'),
+        titleTextStyle: const TextStyle(
+          color: Colors.black,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search doctors by name',
-                prefixIcon: Icon(Icons.search),
-                isDense: true,
+                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+                prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
+                isDense: false,
+                filled: true,
+                fillColor: const Color(0xFFF5F6F8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           ),
@@ -75,22 +101,22 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
             data: (specialties) {
               if (specialties.isEmpty) return const SizedBox.shrink();
               return SizedBox(
-                height: 48,
+                height: 68,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   children: [
                     _SpecialtyChip(
                       label: 'All',
+                      icon: Icons.calendar_today_rounded,
                       selected: selectedSpecialty == null,
-                      accent: null,
                       onTap: () => ref.read(selectedSpecialtyProvider.notifier).state = null,
                     ),
                     ...specialties.map(
                       (s) => _SpecialtyChip(
                         label: '${s.name} (${s.count})',
+                        icon: null,
                         selected: selectedSpecialty == s.name,
-                        accent: specialtyAccent(s.name),
                         onTap: () => ref.read(selectedSpecialtyProvider.notifier).state = s.name,
                       ),
                     ),
@@ -110,9 +136,9 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                 return RefreshIndicator(
                   onRefresh: () => ref.refresh(doctorsListProvider.future),
                   child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                     itemCount: doctors.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 14),
                     itemBuilder: (context, index) => _DoctorTile(doctor: doctors[index]),
                   ),
                 );
@@ -130,39 +156,45 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
 class _SpecialtyChip extends StatelessWidget {
   const _SpecialtyChip({
     required this.label,
+    required this.icon,
     required this.selected,
-    required this.accent,
     required this.onTap,
   });
 
   final String label;
+  final IconData? icon;
   final bool selected;
-  final SpecialtyAccent? accent;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final fg = accent?.foreground ?? scheme.primary;
-    final bg = accent?.background ?? scheme.surfaceContainerHighest;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: InkWell(
         borderRadius: BorderRadius.circular(kPillRadius),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? fg : bg,
+            color: selected ? seedTeal : const Color(0xFFEDEEF3),
             borderRadius: BorderRadius.circular(kPillRadius),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: selected ? Colors.white : fg,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 15, color: selected ? Colors.white : Colors.black87),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -186,16 +218,17 @@ class _DoctorTile extends ConsumerWidget {
     final specialtyLabel = doctor.specialization ?? doctor.department ?? 'General';
 
     return Material(
-      color: scheme.surface,
+      color: Colors.white,
       borderRadius: BorderRadius.circular(kCardRadius),
+      elevation: 1,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
       child: InkWell(
         borderRadius: BorderRadius.circular(kCardRadius),
         onTap: () => _openDetails(context, ref),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(kCardRadius),
-            border: Border.all(color: scheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,15 +282,15 @@ class _DoctorTile extends ConsumerWidget {
               const SizedBox(height: 14),
               Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded, size: 15, color: scheme.onSurfaceVariant),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.location_on, size: 16, color: seedTeal),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       doctor.hospitalName ?? 'Available for consultation',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: scheme.onSurfaceVariant,
                       ),

@@ -11,6 +11,13 @@ class Doctor {
     this.consultationFee,
     this.rating,
     this.reviewCount = 0,
+    this.yearsOfExperience,
+    this.qualifications,
+    this.boardCertified = false,
+    this.treatments = const [],
+    this.availabilityDays,
+    this.availabilityHours,
+    this.availableToday = false,
   });
 
   final String id;
@@ -24,6 +31,13 @@ class Doctor {
   final int? consultationFee;
   final double? rating;
   final int reviewCount;
+  final int? yearsOfExperience;
+  final String? qualifications;
+  final bool boardCertified;
+  final List<String> treatments;
+  final String? availabilityDays;
+  final String? availabilityHours;
+  final bool availableToday;
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
@@ -38,6 +52,18 @@ class Doctor {
       consultationFee: (json['consultationFee'] as num?)?.toInt(),
       rating: (json['rating'] as num?)?.toDouble(),
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+      yearsOfExperience: (json['yearsOfExperience'] as num?)?.toInt(),
+      qualifications: json['qualifications'] as String?,
+      boardCertified: json['boardCertified'] as bool? ?? false,
+      treatments: (json['treatments'] as String?)
+              ?.split(',')
+              .map((t) => t.trim())
+              .where((t) => t.isNotEmpty)
+              .toList() ??
+          const [],
+      availabilityDays: json['availabilityDays'] as String?,
+      availabilityHours: json['availabilityHours'] as String?,
+      availableToday: json['availableToday'] as bool? ?? false,
     );
   }
 }

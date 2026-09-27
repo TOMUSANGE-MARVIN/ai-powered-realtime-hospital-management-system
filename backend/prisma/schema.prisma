@@ -42,6 +42,13 @@ model User {
   hospitalName             String?   @db.Text
   hospitalAddress          String?   @db.Text
   consultationFee          Int?
+  yearsOfExperience        Int?
+  qualifications           String?   @db.Text
+  boardCertified           Boolean?  @default(false)
+  treatments               String?   @db.Text
+  availabilityDays         String?   @db.Text
+  availabilityHours        String?   @db.Text
+  availableToday           Boolean?  @default(false)
   emergencyContactName     String?   @db.Text
   emergencyContactPhone    String?   @db.Text
   emergencyContactRelation String?   @db.Text

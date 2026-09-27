@@ -4,15 +4,36 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// The subtle medical-doodle backdrop behind a chat thread — a loose,
-/// repeating scatter of care-themed glyphs (pill bottle, stethoscope,
-/// thermometer, heart, syringe, clipboard) tinted into the brand's teal
-/// background, mirroring WhatsApp's printed-wallpaper chat background but
-/// themed to Ask Musawo instead of a generic doodle set.
+/// WhatsApp-style doodle wallpaper for chat threads, themed with medical
+/// glyphs in the brand teal.
 class ChatBackground extends StatelessWidget {
   const ChatBackground({super.key, required this.child});
 
   final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFE6F4F3), Color(0xFFDDEFEE)],
+        ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const RepaintBoundary(child: CustomPaint(painter: _DoodlePainter())),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _DoodlePainter extends CustomPainter {
+  const _DoodlePainter();
 
   static const _icons = [
     Icons.medication_liquid_outlined,
@@ -25,57 +46,52 @@ class ChatBackground extends StatelessWidget {
     Icons.assignment_outlined,
     Icons.monitor_heart_outlined,
     Icons.medication_outlined,
+    Icons.chat_bubble_outline,
+    Icons.sentiment_satisfied_outlined,
+    Icons.calendar_today_outlined,
+    Icons.local_pharmacy_outlined,
+    Icons.bloodtype_outlined,
+    Icons.health_and_safety_outlined,
+    Icons.coronavirus_outlined,
+    Icons.science_outlined,
+    Icons.biotech_outlined,
+    Icons.masks_outlined,
+    Icons.spa_outlined,
+    Icons.water_drop_outlined,
+    Icons.clean_hands_outlined,
+    Icons.psychology_outlined,
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: tealBackground,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          CustomPaint(painter: _DoodlePainter(icons: _icons)),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _DoodlePainter extends CustomPainter {
-  _DoodlePainter({required this.icons});
-
-  final List<IconData> icons;
-
-  static const _cell = 84.0;
-  static const _iconSize = 26.0;
-  static const _opacity = 0.07;
+  static const _cell = 62.0;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final random = math.Random(7);
-    final color = seedTeal.withValues(alpha: _opacity);
+    final random = math.Random(11);
+    final iconColor = seedTeal.withValues(alpha: 0.13);
+    final fillerPaint = Paint()
+      ..color = seedTeal.withValues(alpha: 0.10)
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
 
     final cols = (size.width / _cell).ceil() + 1;
     final rows = (size.height / _cell).ceil() + 1;
 
-    var iconIndex = 0;
     for (var row = 0; row < rows; row++) {
       for (var col = 0; col < cols; col++) {
-        final jitterX = (random.nextDouble() - 0.5) * 18;
-        final jitterY = (random.nextDouble() - 0.5) * 18;
-        final offsetX = col * _cell + (row.isOdd ? _cell / 2 : 0) + jitterX;
-        final offsetY = row * _cell + jitterY;
+        final cx = col * _cell + (row.isOdd ? _cell / 2 : 0) + (random.nextDouble() - 0.5) * 16;
+        final cy = row * _cell + (random.nextDouble() - 0.5) * 16;
 
-        final icon = icons[iconIndex % icons.length];
-        iconIndex++;
+        final icon = _icons[random.nextInt(_icons.length)];
+        final iconSize = 22.0 + random.nextDouble() * 12;
+        final angle = (random.nextDouble() - 0.5) * 0.9;
 
         final painter = TextPainter(
           text: TextSpan(
             text: String.fromCharCode(icon.codePoint),
             style: TextStyle(
-              color: color,
-              fontSize: _iconSize,
+              color: iconColor,
+              fontSize: iconSize,
               fontFamily: icon.fontFamily,
               package: icon.fontPackage,
             ),
@@ -83,7 +99,26 @@ class _DoodlePainter extends CustomPainter {
           textDirection: TextDirection.ltr,
         )..layout();
 
-        painter.paint(canvas, Offset(offsetX, offsetY));
+        canvas
+          ..save()
+          ..translate(cx, cy)
+          ..rotate(angle);
+        painter.paint(canvas, Offset(-painter.width / 2, -painter.height / 2));
+        canvas.restore();
+
+        // Small filler marks between glyphs, like printed doodle wallpaper.
+        final fx = cx + _cell / 2 + (random.nextDouble() - 0.5) * 10;
+        final fy = cy + _cell / 2 + (random.nextDouble() - 0.5) * 10;
+        switch (random.nextInt(3)) {
+          case 0:
+            canvas.drawCircle(Offset(fx, fy), 2.2, fillerPaint);
+          case 1:
+            canvas
+              ..drawLine(Offset(fx - 3.5, fy), Offset(fx + 3.5, fy), fillerPaint)
+              ..drawLine(Offset(fx, fy - 3.5), Offset(fx, fy + 3.5), fillerPaint);
+          default:
+            break;
+        }
       }
     }
   }

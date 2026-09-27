@@ -272,6 +272,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  Future<void> _pickFromCamera() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
+    if (picked == null) return;
+    await _uploadAndSend(filePath: picked.path, attachmentType: 'image', attachmentName: picked.name);
+  }
+
   Future<void> _uploadAndSend({
     required String filePath,
     required String attachmentType,
@@ -452,25 +458,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _buildInputRow() {
     final hasText = _textController.text.trim().isNotEmpty;
+    const iconColor = Color(0xFF3B4254);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(color: Color(0xFFE0F2F2), shape: BoxShape.circle),
+          child: IconButton(
+            icon: const Icon(Icons.add, color: seedTeal),
+            onPressed: _uploadingAttachment ? null : _pickAttachment,
+          ),
+        ),
+        const SizedBox(width: 8),
         Expanded(
           child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.only(left: 16, right: 2),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(26),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
-              ],
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFE3E7EC)),
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                IconButton(
-                  icon: Icon(Icons.add, color: seedTeal),
-                  onPressed: _uploadingAttachment ? null : _pickAttachment,
-                ),
                 Expanded(
                   child: TextField(
                     controller: _textController,
@@ -478,24 +491,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     maxLines: 4,
                     textInputAction: TextInputAction.send,
                     onSubmitted: (_) => _send(),
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message...',
+                    style: const TextStyle(fontSize: 15),
+                    decoration: InputDecoration(
+                      hintText: 'Message',
+                      hintMaxLines: 1,
+                      hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+                      filled: false,
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.camera_alt_outlined, color: seedTeal),
-                  onPressed: _uploadingAttachment ? null : _pickAttachment,
-                ),
+                if (!hasText) ...[
+                  _InputIcon(
+                    icon: Icons.attach_file,
+                    color: iconColor,
+                    onTap: _uploadingAttachment ? null : _pickAttachment,
+                  ),
+                  _InputIcon(
+                    icon: Icons.camera_alt_outlined,
+                    color: iconColor,
+                    onTap: _uploadingAttachment ? null : _pickFromCamera,
+                  ),
+                ],
               ],
             ),
           ),
         ),
         const SizedBox(width: 8),
         Container(
+          width: 44,
+          height: 44,
           decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
           child: IconButton(
             icon: _sending
@@ -585,6 +614,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           onLongPress: message.isDeleted ? null : () => _showMessageActions(message, isMine),
         );
       },
+    );
+  }
+}
+
+class _InputIcon extends StatelessWidget {
+  const _InputIcon({required this.icon, required this.color, required this.onTap});
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(icon, color: color, size: 22),
+      onPressed: onTap,
+      visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.all(6),
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
     );
   }
 }

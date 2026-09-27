@@ -14,6 +14,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/api/providers.dart';
 import '../../../core/presence/presence_providers.dart';
 import '../../../core/realtime/socket_providers.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/chat_background.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../calls/state/call_controller.dart';
@@ -370,12 +372,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final myId = ref.watch(authControllerProvider).value?.id;
 
     return Scaffold(
+      backgroundColor: tealBackground,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
         titleSpacing: 0,
         title: Row(
           children: [
             CircleAvatar(
               radius: 18,
+              backgroundColor: const Color(0xFFE3F2F1),
               backgroundImage:
                   widget.otherUserImage != null ? NetworkImage(widget.otherUserImage!) : null,
               child: widget.otherUserImage == null ? const Icon(Icons.person, size: 18) : null,
@@ -389,13 +396,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Text(
                     widget.otherUserName,
                     overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
                   ),
                   ref.watch(presenceProvider(widget.otherUserId)).maybeWhen(
                         data: (isOnline) => Text(
                           isOnline ? 'Online' : 'Offline',
                           style: TextStyle(
                             fontSize: 12,
-                            color: isOnline ? Colors.green : Colors.grey,
+                            color: isOnline ? const Color(0xFF3BB273) : Colors.grey.shade500,
                           ),
                         ),
                         orElse: () => const SizedBox.shrink(),
@@ -407,36 +415,37 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.call_outlined),
+            icon: Icon(Icons.call_outlined, color: seedTeal),
             tooltip: 'Voice call',
             onPressed: () => _placeCall(isVideo: false),
           ),
           IconButton(
-            icon: const Icon(Icons.videocam_outlined),
+            icon: Icon(Icons.videocam_outlined, color: seedTeal),
             tooltip: 'Video call',
             onPressed: () => _placeCall(isVideo: true),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(child: _buildBody(myId)),
-          if (_uploadingAttachment)
-            const LinearProgressIndicator(minHeight: 2),
-          if (_replyingTo != null) _ReplyPreviewBar(
-            message: _replyingTo!,
-            isMine: _replyingTo!.senderId == myId,
-            otherUserName: widget.otherUserName,
-            onCancel: () => setState(() => _replyingTo = null),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 12, 12),
-              child: _isRecording ? _buildRecordingBar() : _buildInputRow(),
+      body: ChatBackground(
+        child: Column(
+          children: [
+            Expanded(child: _buildBody(myId)),
+            if (_uploadingAttachment) const LinearProgressIndicator(minHeight: 2),
+            if (_replyingTo != null) _ReplyPreviewBar(
+              message: _replyingTo!,
+              isMine: _replyingTo!.senderId == myId,
+              otherUserName: widget.otherUserName,
+              onCancel: () => setState(() => _replyingTo = null),
             ),
-          ),
-        ],
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 12, 12),
+                child: _isRecording ? _buildRecordingBar() : _buildInputRow(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -444,36 +453,62 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildInputRow() {
     final hasText = _textController.text.trim().isNotEmpty;
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        IconButton(
-          icon: const Icon(Icons.attach_file),
-          onPressed: _uploadingAttachment ? null : _pickAttachment,
-        ),
         Expanded(
-          child: TextField(
-            controller: _textController,
-            minLines: 1,
-            maxLines: 4,
-            textInputAction: TextInputAction.send,
-            onSubmitted: (_) => _send(),
-            decoration: const InputDecoration(
-              hintText: 'Type a message',
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.add, color: seedTeal),
+                  onPressed: _uploadingAttachment ? null : _pickAttachment,
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _textController,
+                    minLines: 1,
+                    maxLines: 4,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _send(),
+                    decoration: const InputDecoration(
+                      hintText: 'Type a message...',
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.camera_alt_outlined, color: seedTeal),
+                  onPressed: _uploadingAttachment ? null : _pickAttachment,
+                ),
+              ],
             ),
           ),
         ),
         const SizedBox(width: 8),
-        IconButton.filled(
-          icon: _sending
-              ? const SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : Icon(hasText ? Icons.send : Icons.mic),
-          onPressed: _sending || _uploadingAttachment
-              ? null
-              : (hasText ? _send : _startRecording),
+        Container(
+          decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
+          child: IconButton(
+            icon: _sending
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Icon(hasText ? Icons.send : Icons.mic, color: Colors.white),
+            onPressed: _sending || _uploadingAttachment
+                ? null
+                : (hasText ? _send : _startRecording),
+          ),
         ),
       ],
     );
@@ -482,23 +517,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildRecordingBar() {
     return Row(
       children: [
-        IconButton(
-          icon: const Icon(Icons.delete_outline),
-          tooltip: 'Cancel',
-          onPressed: _cancelRecording,
-        ),
-        const Icon(Icons.fiber_manual_record, color: Colors.red, size: 16),
-        const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            _formatDuration(_recordingDuration),
-            style: const TextStyle(fontWeight: FontWeight.w600),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
+              ],
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                  tooltip: 'Cancel',
+                  onPressed: _cancelRecording,
+                ),
+                const Icon(Icons.fiber_manual_record, color: Colors.red, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _formatDuration(_recordingDuration),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        IconButton.filled(
-          icon: const Icon(Icons.send),
-          tooltip: 'Send voice note',
-          onPressed: _finishRecording,
+        const SizedBox(width: 8),
+        Container(
+          decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
+          child: IconButton(
+            icon: const Icon(Icons.send, color: Colors.white),
+            tooltip: 'Send voice note',
+            onPressed: _finishRecording,
+          ),
         ),
       ],
     );
@@ -609,9 +664,8 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final bubbleColor = isMine ? scheme.primary : scheme.surfaceContainerHighest;
-    final textColor = isMine ? scheme.onPrimary : scheme.onSurfaceVariant;
+    final bubbleColor = isMine ? seedTeal : Colors.white;
+    final textColor = isMine ? Colors.white : const Color(0xFF12172B);
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -629,6 +683,9 @@ class _MessageBubble extends StatelessWidget {
               bottomLeft: Radius.circular(isMine ? 16 : 4),
               bottomRight: Radius.circular(isMine ? 4 : 16),
             ),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,

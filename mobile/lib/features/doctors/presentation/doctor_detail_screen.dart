@@ -66,139 +66,58 @@ class _SaveDoctorButtonState extends State<_SaveDoctorButton> {
   }
 }
 
-class _DoctorDetailBody extends ConsumerStatefulWidget {
+class _DoctorDetailBody extends StatelessWidget {
   const _DoctorDetailBody({required this.doctor});
 
   final Doctor doctor;
 
   @override
-  ConsumerState<_DoctorDetailBody> createState() => _DoctorDetailBodyState();
-}
-
-class _DoctorDetailBodyState extends ConsumerState<_DoctorDetailBody> {
-  final _scrollController = ScrollController();
-  final _aboutKey = GlobalKey();
-  final _reviewsKey = GlobalKey();
-  final _treatmentsKey = GlobalKey();
-  final _experienceKey = GlobalKey();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _jumpTo(GlobalKey key) {
-    final context = key.currentContext;
-    if (context == null) return;
-    Scrollable.ensureVisible(
-      context,
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeInOut,
-      alignment: 0,
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final doctor = widget.doctor;
-    return SingleChildScrollView(
-      controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+    return DefaultTabController(
+      length: 4,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _HeaderCard(doctor: doctor),
-          const SizedBox(height: 16),
-          _ActionRow(doctor: doctor),
-          const SizedBox(height: 20),
-          _SectionTabBar(
-            onAboutTap: () => _jumpTo(_aboutKey),
-            onReviewsTap: () => _jumpTo(_reviewsKey),
-            onTreatmentsTap: () => _jumpTo(_treatmentsKey),
-            onExperienceTap: () => _jumpTo(_experienceKey),
-          ),
-          const Divider(height: 1),
-          const SizedBox(height: 16),
-          _AboutSection(key: _aboutKey, doctor: doctor),
-          const SizedBox(height: 24),
-          _ReviewsSection(key: _reviewsKey, doctor: doctor),
-          const SizedBox(height: 24),
-          _TreatmentsSection(key: _treatmentsKey, doctor: doctor),
-          const SizedBox(height: 24),
-          _ExperienceSection(key: _experienceKey, doctor: doctor),
-        ],
-      ),
-    );
-  }
-}
-
-/// A jump-scroll section nav — visually a tab bar, but each tab scrolls the
-/// page to the matching section instead of swapping content, since the
-/// reference design shows all sections stacked on one continuous page.
-class _SectionTabBar extends StatefulWidget {
-  const _SectionTabBar({
-    required this.onAboutTap,
-    required this.onReviewsTap,
-    required this.onTreatmentsTap,
-    required this.onExperienceTap,
-  });
-
-  final VoidCallback onAboutTap;
-  final VoidCallback onReviewsTap;
-  final VoidCallback onTreatmentsTap;
-  final VoidCallback onExperienceTap;
-
-  @override
-  State<_SectionTabBar> createState() => _SectionTabBarState();
-}
-
-class _SectionTabBarState extends State<_SectionTabBar> {
-  int _selected = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final labels = ['About', 'Reviews', 'Treatments', 'Experience'];
-    final callbacks = [
-      widget.onAboutTap,
-      widget.onReviewsTap,
-      widget.onTreatmentsTap,
-      widget.onExperienceTap,
-    ];
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: labels.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 24),
-        itemBuilder: (context, index) {
-          final selected = _selected == index;
-          return InkWell(
-            onTap: () {
-              setState(() => _selected = index);
-              callbacks[index]();
-            },
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  labels[index],
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                    color: selected ? seedTeal : Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  height: 2.5,
-                  width: 44,
-                  color: selected ? seedTeal : Colors.transparent,
-                ),
+                _HeaderCard(doctor: doctor),
+                const SizedBox(height: 16),
+                _ActionRow(doctor: doctor),
+                const SizedBox(height: 12),
               ],
             ),
-          );
-        },
+          ),
+          const TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelColor: seedTeal,
+            unselectedLabelColor: Colors.black54,
+            indicatorColor: seedTeal,
+            indicatorSize: TabBarIndicatorSize.label,
+            labelPadding: EdgeInsets.symmetric(horizontal: 16),
+            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+            unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 14.5),
+            tabs: [
+              Tab(text: 'About'),
+              Tab(text: 'Reviews'),
+              Tab(text: 'Treatments'),
+              Tab(text: 'Experience'),
+            ],
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _AboutSection(doctor: doctor),
+                _ReviewsSection(doctor: doctor),
+                _TreatmentsSection(doctor: doctor),
+                _ExperienceSection(doctor: doctor),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -411,7 +330,7 @@ class _ActionRow extends ConsumerWidget {
 }
 
 class _AboutSection extends StatelessWidget {
-  const _AboutSection({super.key, required this.doctor});
+  const _AboutSection({required this.doctor});
 
   final Doctor doctor;
 
@@ -427,8 +346,8 @@ class _AboutSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final specialtyLabel = doctor.specialization ?? doctor.department ?? 'General';
     final feeFormat = NumberFormat.decimalPattern();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
         SoftCard(
           child: Column(
@@ -610,57 +529,17 @@ class _QuickInfoRow extends StatelessWidget {
 }
 
 class _ReviewsSection extends ConsumerWidget {
-  const _ReviewsSection({super.key, required this.doctor});
+  const _ReviewsSection({required this.doctor});
 
   final Doctor doctor;
-
-  void _showAllReviews(BuildContext context, String doctorName, DoctorReviews data) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.7,
-        builder: (context, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-          children: [
-            Text(
-              'Reviews for $doctorName',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            ...data.reviews.map((r) => _ReviewTile(review: r)),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reviewsAsync = ref.watch(doctorReviewsProvider(doctor.id));
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Reviews', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            reviewsAsync.maybeWhen(
-              data: (data) => data.totalReviews > 2
-                  ? TextButton.icon(
-                      onPressed: () => _showAllReviews(context, doctor.name, data),
-                      label: const Text('See all'),
-                      icon: const Icon(Icons.chevron_right_rounded, size: 18),
-                      iconAlignment: IconAlignment.end,
-                    )
-                  : const SizedBox.shrink(),
-              orElse: () => const SizedBox.shrink(),
-            ),
-          ],
-        ),
+        const Text('Reviews', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         reviewsAsync.when(
           data: (data) {
@@ -671,7 +550,7 @@ class _ReviewsSection extends ConsumerWidget {
               );
             }
             return Column(
-              children: data.reviews.take(3).map((r) => _ReviewTile(review: r)).toList(),
+              children: data.reviews.map((r) => _ReviewTile(review: r)).toList(),
             );
           },
           loading: () => const Padding(
@@ -686,14 +565,14 @@ class _ReviewsSection extends ConsumerWidget {
 }
 
 class _TreatmentsSection extends StatelessWidget {
-  const _TreatmentsSection({super.key, required this.doctor});
+  const _TreatmentsSection({required this.doctor});
 
   final Doctor doctor;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
         const Text('Treatments', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
@@ -725,7 +604,7 @@ class _TreatmentsSection extends StatelessWidget {
 }
 
 class _ExperienceSection extends StatelessWidget {
-  const _ExperienceSection({super.key, required this.doctor});
+  const _ExperienceSection({required this.doctor});
 
   final Doctor doctor;
 
@@ -733,8 +612,8 @@ class _ExperienceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasExperience = doctor.yearsOfExperience != null;
     final hasQualifications = doctor.qualifications != null && doctor.qualifications!.isNotEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
         const Text('Experience', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),

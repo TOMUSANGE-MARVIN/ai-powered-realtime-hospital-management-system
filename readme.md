@@ -80,18 +80,62 @@ Use:
 
 Create a cohesive visual system across the screen.
 
-Establish:
+**Use the Ask Musawo brand palette below exactly as specified — do not
+substitute, invent, or "improve" these colors. Every screen must be
+generated using this same palette so the whole app stays visually
+consistent.**
 
-* One strong primary brand color
-* Supporting accent colors where appropriate
-* Professional neutral surfaces
-* Clear semantic colors for states
+**Primary brand color — Teal**
+`#128A8B` (`seedTeal`)
+Use for: primary buttons, selected states, active tab/nav indicators,
+links, FAB, focus rings, key icons, progress/loading indicators.
+
+**Primary surface tint — Teal background**
+`#F2FAFA` (`tealBackground`)
+Use for: light section backgrounds, selected-row highlight, subtle
+teal-tinted cards/chips.
+
+**Primary dark tint — Deep teal**
+`#102828` (`darkTealBackground`)
+Use for: dark-mode surfaces, high-contrast teal text/icons on light
+backgrounds when needed.
+
+**Hero gradient**
+Diagonal coral → teal: `#F47C7B` → `#128A8B` (top-left to bottom-right)
+Use sparingly for: hero banners, onboarding, featured/promo cards —
+never for standard UI chrome.
+
+**Specialty / category accent pairs** (pastel background + vivid
+foreground, used for category chips, specialty tags, and status
+badges):
+
+| Key | Background | Foreground |
+|---|---|---|
+| Blue | `#E3F2FD` | `#2196F3` |
+| Teal | `#E0F7F4` | `#12B8A6` |
+| Orange | `#FFF3E0` | `#FF9800` |
+| Pink | `#FDE3EC` | `#E91E63` |
+| Purple | `#F3E5FF` | `#9C27B0` |
+| Red | `#FFE3E3` | `#F44336` |
+| Indigo | `#E8EAF6` | `#3F51B5` |
+| Amber | `#FFF8E1` | `#FFA000` |
+| Default/fallback | `#E0F2F2` | `#128A8B` |
+
+Neutral surfaces, ink, and semantic colors:
+
+* Professional neutral surfaces (white, light greys) for cards and page backgrounds
+* Clear semantic colors for states (success, warning, error, info) — pick these to feel harmonious with the teal primary, not generic red/green/blue defaults
 * A refined typography hierarchy
 * Consistent iconography
 * Consistent component sizing
 * Consistent spacing scale
 * Consistent border radius
 * Consistent elevation/shadow treatment
+
+Do not introduce a second, competing "primary" color (e.g. blue, indigo,
+purple) anywhere in the interface — teal (`#128A8B`) is the only primary.
+Accent colors are for categorization/status only, never for primary
+actions or navigation.
 
 Use color intentionally rather than decorating the interface.
 

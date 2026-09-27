@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../doctors/data/doctor.dart';
 import '../../doctors/state/doctor_providers.dart';
@@ -242,6 +243,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

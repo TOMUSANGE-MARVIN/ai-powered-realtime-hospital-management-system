@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../data/ai_search_result.dart';
 import '../data/doctor.dart';
@@ -97,6 +98,7 @@ class _AiSymptomSearchScreenState extends ConsumerState<AiSymptomSearchScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

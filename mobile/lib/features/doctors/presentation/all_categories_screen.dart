@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../state/doctor_providers.dart';
 import 'category_card.dart';
@@ -88,6 +89,7 @@ class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

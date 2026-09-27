@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
@@ -24,6 +25,7 @@ class NewChatScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('New chat')),
       body: isDoctor ? const _PatientPicker() : const _DoctorPicker(),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

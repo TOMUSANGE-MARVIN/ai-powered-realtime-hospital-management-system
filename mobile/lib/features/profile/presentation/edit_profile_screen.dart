@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
 
@@ -240,6 +241,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 

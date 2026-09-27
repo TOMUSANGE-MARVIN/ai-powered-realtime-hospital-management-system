@@ -5,6 +5,7 @@ import 'package:signature/signature.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../data/prescription_item_input.dart';
 import '../state/doctor_providers.dart';
 
@@ -180,6 +181,7 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 

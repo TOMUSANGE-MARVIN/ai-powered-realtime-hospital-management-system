@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../doctors/data/review.dart';
 import '../../doctors/state/doctor_providers.dart';
@@ -56,6 +57,7 @@ class DoctorReviewsScreen extends ConsumerWidget {
         loading: () => const _ReviewsSkeleton(),
         error: (error, _) => Center(child: Text(error.toString())),
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

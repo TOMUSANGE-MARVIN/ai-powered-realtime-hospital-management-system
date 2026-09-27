@@ -5,11 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/pill_nav_bar.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../chat/data/chat_args.dart';
-import '../../home/presentation/home_shell.dart';
 import '../data/doctor.dart';
 import '../data/review.dart';
 import '../state/doctor_providers.dart';
@@ -69,11 +68,7 @@ class _DoctorDetailScreenState extends ConsumerState<DoctorDetailScreen> {
         loading: () => const SkeletonForm(fieldCount: 3),
         error: (error, _) => Center(child: Text(error.toString())),
       ),
-      bottomNavigationBar: PillNavBar(
-        currentIndex: -1,
-        onTap: (index) => context.go(patientNavPaths[index]),
-        items: patientNavItems,
-      ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

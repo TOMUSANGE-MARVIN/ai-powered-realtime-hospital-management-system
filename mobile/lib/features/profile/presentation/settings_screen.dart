@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
 
@@ -162,6 +163,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../chat/data/chat_args.dart';
 import '../data/call_log.dart';
@@ -42,6 +43,7 @@ class CallsScreen extends ConsumerWidget {
         loading: () => const SkeletonList(padding: EdgeInsets.zero),
         error: (error, _) => Center(child: Text(error.toString())),
       ),
+      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }

@@ -138,7 +138,10 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                     itemCount: doctors.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 14),
+                    separatorBuilder: (_, _) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+                    ),
                     itemBuilder: (context, index) => _DoctorTile(doctor: doctors[index]),
                   ),
                 );

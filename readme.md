@@ -1,6 +1,6 @@
-Design a top-tier, production-ready UI/UX concept for a modern web application.
+Design a top-tier, production-ready UI/UX concept for a modern mobile application.
 
-Product: A web application that allows users to browse and book appointments with doctors.
+Product: A mobile application that allows users to browse and book appointments with doctors.
 Target users: Patients who want to schedule consultations with healthcare professionals.
 Primary goal of the screen: To provide users with a seamless experience to view a list of available doctors, filter them by specialty, and book appointments easily. 
 

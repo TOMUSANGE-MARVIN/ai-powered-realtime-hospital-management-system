@@ -52,7 +52,6 @@ class PatientHomeScreen extends ConsumerWidget {
                 _HeroHeader(
                   greeting: _greetingFor(DateTime.now()),
                   firstName: firstName.isEmpty ? 'there' : firstName,
-                  image: user?.image,
                 ),
                 const SizedBox(height: 26),
                 _SectionHeader(
@@ -290,15 +289,10 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _HeroHeader extends StatelessWidget {
-  const _HeroHeader({
-    required this.greeting,
-    required this.firstName,
-    this.image,
-  });
+  const _HeroHeader({required this.greeting, required this.firstName});
 
   final String greeting;
   final String firstName;
-  final String? image;
 
   @override
   Widget build(BuildContext context) {
@@ -306,7 +300,11 @@ class _HeroHeader extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: seedTeal,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0E6E6F), seedTeal],
+        ),
         borderRadius: BorderRadius.circular(kCardRadius),
       ),
       child: ClipRRect(
@@ -324,45 +322,33 @@ class _HeroHeader extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              greeting,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              firstName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              dateLabel,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      _HeroAvatar(image: image),
-                    ],
+                  Text(
+                    greeting,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    firstName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    dateLabel,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   _HeroSearchBar(),
@@ -390,24 +376,6 @@ class _DecorativeBlob extends StatelessWidget {
         shape: BoxShape.circle,
         color: Colors.white.withValues(alpha: 0.08),
       ),
-    );
-  }
-}
-
-class _HeroAvatar extends StatelessWidget {
-  const _HeroAvatar({this.image});
-
-  final String? image;
-
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 27.5,
-      backgroundColor: Colors.white,
-      backgroundImage: image != null ? NetworkImage(image!) : null,
-      child: image == null
-          ? const Icon(Icons.person_rounded, size: 30, color: seedTeal)
-          : null,
     );
   }
 }

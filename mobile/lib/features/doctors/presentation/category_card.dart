@@ -27,6 +27,7 @@ class CategoryCard extends StatelessWidget {
     this.count = 0,
     this.width = 86,
     this.showCount = false,
+    this.tinted = false,
   });
 
   final Category category;
@@ -34,15 +35,22 @@ class CategoryCard extends StatelessWidget {
   final double width;
   final bool showCount;
 
+  /// Home-dashboard style: pastel-tinted card, larger icon, doctor count.
+  final bool tinted;
+
   @override
   Widget build(BuildContext context) {
     final accent = accentForColorKey(category.colorKey);
+    if (tinted) return _buildTinted(context, accent);
     return SoftCard(
       onTap: () => context.push('/search', extra: category.name),
       color: Colors.white,
       padding: const EdgeInsets.all(10),
       borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: accent.foreground.withValues(alpha: 0.2), width: 1.2),
+      borderSide: BorderSide(
+        color: accent.foreground.withValues(alpha: 0.2),
+        width: 1.2,
+      ),
       showShadow: false,
       child: SizedBox(
         width: width,
@@ -51,7 +59,10 @@ class CategoryCard extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: accent.background, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: accent.background,
+                shape: BoxShape.circle,
+              ),
               child: Icon(
                 iconForKey[category.iconKey] ?? Icons.local_hospital,
                 color: accent.foreground,
@@ -75,6 +86,56 @@ class CategoryCard extends StatelessWidget {
                 '$count doctor${count == 1 ? '' : 's'}',
                 style: TextStyle(fontSize: 10, color: Colors.black54),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTinted(BuildContext context, SpecialtyAccent accent) {
+    return SoftCard(
+      onTap: () => context.push('/search', extra: category.name),
+      color: accent.background.withValues(alpha: 0.45),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+      borderRadius: BorderRadius.circular(20),
+      borderSide: BorderSide(color: accent.foreground.withValues(alpha: 0.18)),
+      showShadow: false,
+      child: SizedBox(
+        width: width,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: accent.background,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                iconForKey[category.iconKey] ?? Icons.local_hospital,
+                color: accent.foreground,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              category.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: darkTealBackground,
+                height: 1.15,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              '$count doctor${count == 1 ? '' : 's'}',
+              style: const TextStyle(fontSize: 11.5, color: Color(0xFF6B7A7A)),
+            ),
           ],
         ),
       ),

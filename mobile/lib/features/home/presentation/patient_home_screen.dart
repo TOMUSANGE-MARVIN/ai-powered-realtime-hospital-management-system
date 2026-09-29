@@ -34,8 +34,10 @@ class PatientHomeScreen extends ConsumerWidget {
     final firstName = (user?.name ?? '').trim().split(RegExp(r'\s+')).first;
 
     return Scaffold(
+      backgroundColor: tealBackground,
       body: SafeArea(
         child: RefreshIndicator(
+          color: seedTeal,
           onRefresh: () async {
             ref.invalidate(categoriesWithCountsProvider);
             ref.invalidate(featuredDoctorsProvider);
@@ -60,6 +62,8 @@ class PatientHomeScreen extends ConsumerWidget {
                 const SizedBox(height: 10),
                 _NextAppointmentCard(appointmentsAsync: appointmentsAsync),
                 const SizedBox(height: 28),
+                const _SectionHeader(title: 'Quick actions'),
+                const SizedBox(height: 12),
                 const _QuickActions(),
                 const SizedBox(height: 28),
                 _SectionHeader(
@@ -68,7 +72,7 @@ class PatientHomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 108,
+                  height: 140,
                   child: categoriesAsync.when(
                     data: (categories) => ListView.separated(
                       scrollDirection: Axis.horizontal,
@@ -78,10 +82,13 @@ class PatientHomeScreen extends ConsumerWidget {
                       itemBuilder: (context, index) => CategoryCard(
                         category: categories[index].category,
                         count: categories[index].count,
+                        width: 108,
+                        tinted: true,
                       ),
                     ),
                     loading: () => const SizedBox.shrink(),
-                    error: (_, _) => const Center(child: Text('Could not load categories')),
+                    error: (_, _) =>
+                        const Center(child: Text('Could not load categories')),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -95,7 +102,9 @@ class PatientHomeScreen extends ConsumerWidget {
                   child: featuredAsync.when(
                     data: (doctors) {
                       if (doctors.isEmpty) {
-                        return const Center(child: Text('No doctors available yet'));
+                        return const Center(
+                          child: Text('No doctors available yet'),
+                        );
                       }
                       return ListView.separated(
                         scrollDirection: Axis.horizontal,
@@ -148,7 +157,11 @@ class _PatientHomeSkeleton extends StatelessWidget {
         const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: SkeletonBox(width: double.infinity, height: 88, borderRadius: 24),
+          child: SkeletonBox(
+            width: double.infinity,
+            height: 88,
+            borderRadius: 24,
+          ),
         ),
         const SizedBox(height: 28),
         Padding(
@@ -176,7 +189,7 @@ class _PatientHomeSkeleton extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 108,
+          height: 140,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
@@ -184,7 +197,7 @@ class _PatientHomeSkeleton extends StatelessWidget {
             itemCount: 4,
             separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (context, index) =>
-                const SkeletonBox(width: 86, height: 108, borderRadius: 16),
+                const SkeletonBox(width: 108, height: 140, borderRadius: 20),
           ),
         ),
         const SizedBox(height: 28),
@@ -255,7 +268,11 @@ class _SectionHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 2),
-                    Icon(Icons.arrow_forward_rounded, size: 16, color: scheme.primary),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 16,
+                      color: scheme.primary,
+                    ),
                   ],
                 ),
               ),
@@ -290,11 +307,7 @@ class _HeroHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         child: Stack(
           children: [
-            Positioned(
-              top: -50,
-              right: -40,
-              child: _DecorativeBlob(size: 160),
-            ),
+            Positioned(top: -50, right: -40, child: _DecorativeBlob(size: 160)),
             Positioned(
               bottom: -70,
               left: -30,
@@ -459,10 +472,16 @@ class _NextAppointmentCard extends StatelessWidget {
   Appointment? _nextUpcoming(List<Appointment> appointments) {
     final today = DateTime.now();
     final dayStart = DateTime(today.year, today.month, today.day);
-    final active = appointments
-        .where((a) => a.status == 'confirmed' || a.status == 'scheduled' || a.status == 'requested')
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final active =
+        appointments
+            .where(
+              (a) =>
+                  a.status == 'confirmed' ||
+                  a.status == 'scheduled' ||
+                  a.status == 'requested',
+            )
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
     if (active.isEmpty) return null;
     return active.firstWhere(
       (a) => !a.date.isBefore(dayStart),
@@ -481,7 +500,11 @@ class _NextAppointmentCard extends StatelessWidget {
       },
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
-        child: SkeletonBox(width: double.infinity, height: 118, borderRadius: 24),
+        child: SkeletonBox(
+          width: double.infinity,
+          height: 118,
+          borderRadius: 24,
+        ),
       ),
       error: (_, _) => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -491,81 +514,174 @@ class _NextAppointmentCard extends StatelessWidget {
   }
 }
 
-class _UpcomingAppointmentCard extends StatelessWidget {
+class _UpcomingAppointmentCard extends ConsumerWidget {
   const _UpcomingAppointmentCard({required this.appointment});
 
   final Appointment appointment;
 
-  String get _statusLabel {
-    switch (appointment.status) {
-      case 'requested':
-        return 'Pending approval';
-      case 'confirmed':
-      case 'scheduled':
-        return 'Confirmed';
-      default:
-        return appointment.status.toUpperCase();
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final dateLabel = DateFormat('EEE, MMM d').format(appointment.date);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPending = appointment.status == 'requested';
+    final dateLabel = DateFormat('EEE, MMM d, yyyy').format(appointment.date);
+    final doctor = appointment.doctorId == null
+        ? null
+        : ref.watch(doctorDetailProvider(appointment.doctorId!)).asData?.value;
+    final specialty =
+        doctor?.specialization ?? doctor?.department ?? appointment.department;
+
+    final pillBg = isPending
+        ? const Color(0xFFFFF3E0)
+        : const Color(0xFFE0F7F4);
+    final pillFg = isPending
+        ? const Color(0xFF8A4B00)
+        : const Color(0xFF0B7A6E);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: _FlatCard(
-        padding: const EdgeInsets.all(18),
+      child: SoftCard(
+        padding: const EdgeInsets.all(14),
         onTap: () => context.push('/home/appointments'),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: seedTeal,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Icon(
-                appointment.isVirtual
-                    ? Icons.videocam_rounded
-                    : Icons.medical_services_rounded,
-                color: Colors.white,
-                size: 26,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 84,
+                  height: 96,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: DoctorImage(
+                      url: doctor?.image,
+                      name: appointment.doctorName,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: pillBg,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isPending
+                                    ? Icons.schedule_rounded
+                                    : Icons.event_available_rounded,
+                                size: 13,
+                                color: pillFg,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isPending ? 'Pending approval' : 'Confirmed',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: pillFg,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        appointment.doctorName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: darkTealBackground,
+                        ),
+                      ),
+                      if (specialty != null)
+                        Text(
+                          specialty,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            color: Color(0xFF6B7A7A),
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      _InfoLine(
+                        icon: Icons.calendar_month_outlined,
+                        text: dateLabel,
+                        bold: true,
+                      ),
+                      const SizedBox(height: 4),
+                      _InfoLine(
+                        icon: Icons.schedule_rounded,
+                        text: appointment.time ?? 'Time to be confirmed',
+                      ),
+                    ],
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 44),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: darkTealBackground,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6F5F4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
                 children: [
-                  Text(
-                    appointment.doctorName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface,
+                  const Icon(Icons.info_rounded, color: seedTeal, size: 22),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isPending
+                              ? 'Your appointment is awaiting confirmation.'
+                              : 'Your appointment is confirmed.',
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0B5F60),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isPending
+                              ? "We'll notify you once it's approved."
+                              : 'See you on $dateLabel.',
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF4A5A5A),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${appointment.time ?? 'Time to be confirmed'} · $dateLabel',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _StatusChip(label: _statusLabel),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
           ],
         ),
       ),
@@ -573,34 +689,32 @@ class _UpcomingAppointmentCard extends StatelessWidget {
   }
 }
 
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.label});
+class _InfoLine extends StatelessWidget {
+  const _InfoLine({required this.icon, required this.text, this.bold = false});
 
-  final String label;
+  final IconData icon;
+  final String text;
+  final bool bold;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final isPending = label == 'Pending approval';
-    final bg = isPending
-        ? Colors.amber.withValues(alpha: 0.18)
-        : scheme.primary.withValues(alpha: 0.12);
-    final fg = isPending ? const Color(0xFFB26A00) : scheme.primary;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.3,
-          color: fg,
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: seedTeal),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+              color: bold ? darkTealBackground : const Color(0xFF55605F),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -663,7 +777,11 @@ class _NoAppointmentCard extends StatelessWidget {
                 color: scheme.primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.arrow_forward_rounded, size: 18, color: scheme.primary),
+              child: Icon(
+                Icons.arrow_forward_rounded,
+                size: 18,
+                color: scheme.primary,
+              ),
             ),
           ],
         ),
@@ -708,36 +826,43 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          _QuickActionTile(
-            label: 'Book visit',
-            icon: Icons.calendar_month_rounded,
-            accent: accentForColorKey('teal'),
-            onTap: () => context.push('/search'),
-          ),
-          const SizedBox(width: 12),
-          _QuickActionTile(
-            label: 'AI assistant',
-            icon: Icons.auto_awesome_rounded,
-            accent: accentForColorKey('pink'),
-            onTap: () => context.push('/ai-search'),
-          ),
-          const SizedBox(width: 12),
-          _QuickActionTile(
-            label: 'Messages',
-            icon: Icons.chat_bubble_rounded,
-            accent: accentForColorKey('blue'),
-            onTap: () => context.push('/home/chats'),
-          ),
-          const SizedBox(width: 12),
-          _QuickActionTile(
-            label: 'Appointments',
-            icon: Icons.fact_check_rounded,
-            accent: accentForColorKey('purple'),
-            onTap: () => context.push('/home/appointments'),
-          ),
-        ],
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _QuickActionTile(
+              label: 'Book visit',
+              subtitle: 'Find and book a doctor',
+              icon: Icons.calendar_month_rounded,
+              accent: accentForColorKey('teal'),
+              onTap: () => context.push('/search'),
+            ),
+            const SizedBox(width: 10),
+            _QuickActionTile(
+              label: 'AI assistant',
+              subtitle: 'Get health advice',
+              icon: Icons.auto_awesome_rounded,
+              accent: accentForColorKey('pink'),
+              onTap: () => context.push('/ai-search'),
+            ),
+            const SizedBox(width: 10),
+            _QuickActionTile(
+              label: 'Messages',
+              subtitle: 'Chat with your doctor',
+              icon: Icons.chat_bubble_rounded,
+              accent: accentForColorKey('blue'),
+              onTap: () => context.push('/home/chats'),
+            ),
+            const SizedBox(width: 10),
+            _QuickActionTile(
+              label: 'Appointments',
+              subtitle: 'View and manage your visits',
+              icon: Icons.fact_check_rounded,
+              accent: accentForColorKey('purple'),
+              onTap: () => context.push('/home/appointments'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -746,12 +871,14 @@ class _QuickActions extends StatelessWidget {
 class _QuickActionTile extends StatelessWidget {
   const _QuickActionTile({
     required this.label,
+    required this.subtitle,
     required this.icon,
     required this.accent,
     required this.onTap,
   });
 
   final String label;
+  final String subtitle;
   final IconData icon;
   final SpecialtyAccent accent;
   final VoidCallback onTap;
@@ -759,32 +886,43 @@ class _QuickActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Column(
-          children: [
-            Container(
-              height: 56,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: accent.background,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Icon(icon, color: accent.foreground, size: 26),
+      child: Material(
+        color: accent.background.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 16, 4, 14),
+            child: Column(
+              children: [
+                Icon(icon, color: accent.foreground, size: 30),
+                const SizedBox(height: 12),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: darkTealBackground,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    height: 1.25,
+                    color: Color(0xFF5F6B6B),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -810,7 +948,8 @@ class _FeaturedDoctorCard extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final feeFormat = NumberFormat.decimalPattern();
     final rating = doctor.rating;
-    final specialtyLabel = doctor.specialization ?? doctor.department ?? 'General';
+    final specialtyLabel =
+        doctor.specialization ?? doctor.department ?? 'General';
     final accent = specialtyAccent(doctor.specialization);
 
     return SizedBox(
@@ -824,7 +963,9 @@ class _FeaturedDoctorCard extends ConsumerWidget {
             AspectRatio(
               aspectRatio: 1.25,
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(kCardRadius)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(kCardRadius),
+                ),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -846,7 +987,10 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                           ],
                         ),
                         child: Icon(
-                          iconForSpecialization(doctor.specialization, doctor.department),
+                          iconForSpecialization(
+                            doctor.specialization,
+                            doctor.department,
+                          ),
                           size: 16,
                           color: accent.foreground,
                         ),
@@ -895,7 +1039,10 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.amber.withValues(alpha: 0.16),
                           borderRadius: BorderRadius.circular(9),
@@ -903,7 +1050,11 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded, size: 13, color: Colors.amber),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 13,
+                              color: Colors.amber,
+                            ),
                             const SizedBox(width: 3),
                             Text(
                               rating != null
@@ -924,7 +1075,11 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.sell_rounded, size: 14, color: scheme.primary),
+                        Icon(
+                          Icons.sell_rounded,
+                          size: 14,
+                          color: scheme.primary,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -952,7 +1107,10 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                        textStyle: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       icon: const Icon(Icons.calendar_month_rounded, size: 16),
                       label: const Text('Book Appointment'),
@@ -967,4 +1125,3 @@ class _FeaturedDoctorCard extends ConsumerWidget {
     );
   }
 }
-

@@ -146,7 +146,7 @@ class _PatientHomeSkeleton extends StatelessWidget {
           child: SkeletonBox(
             width: double.infinity,
             height: 168,
-            borderRadius: 28,
+            borderRadius: kCardRadius,
           ),
         ),
         const SizedBox(height: 26),
@@ -160,7 +160,7 @@ class _PatientHomeSkeleton extends StatelessWidget {
           child: SkeletonBox(
             width: double.infinity,
             height: 88,
-            borderRadius: 24,
+            borderRadius: kCardRadius,
           ),
         ),
         const SizedBox(height: 28),
@@ -175,7 +175,7 @@ class _PatientHomeSkeleton extends StatelessWidget {
                   child: const SkeletonBox(
                     width: double.infinity,
                     height: 56,
-                    borderRadius: 18,
+                    borderRadius: kCardRadius,
                   ),
                 ),
               ),
@@ -196,8 +196,11 @@ class _PatientHomeSkeleton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: 4,
             separatorBuilder: (_, _) => const SizedBox(width: 12),
-            itemBuilder: (context, index) =>
-                const SkeletonBox(width: 108, height: 140, borderRadius: 20),
+            itemBuilder: (context, index) => const SkeletonBox(
+              width: 108,
+              height: 140,
+              borderRadius: kCardRadius,
+            ),
           ),
         ),
         const SizedBox(height: 28),
@@ -214,8 +217,11 @@ class _PatientHomeSkeleton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: 3,
             separatorBuilder: (_, _) => const SizedBox(width: 14),
-            itemBuilder: (context, index) =>
-                const SkeletonBox(width: 196, height: 316, borderRadius: 22),
+            itemBuilder: (context, index) => const SkeletonBox(
+              width: 196,
+              height: 316,
+              borderRadius: kCardRadius,
+            ),
           ),
         ),
       ],
@@ -253,7 +259,7 @@ class _SectionHeader extends StatelessWidget {
           if (onSeeAll != null)
             InkWell(
               onTap: onSeeAll,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(kCardRadius),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                 child: Row(
@@ -301,10 +307,10 @@ class _HeroHeader extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: seedTeal,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(kCardRadius),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(kCardRadius),
         child: Stack(
           children: [
             Positioned(top: -50, right: -40, child: _DecorativeBlob(size: 160)),
@@ -414,7 +420,7 @@ class _HeroSearchBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(color: seedTeal.withValues(alpha: 0.15)),
       ),
       child: Row(
@@ -438,7 +444,7 @@ class _HeroSearchBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: seedTeal,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(kCardRadius),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -503,7 +509,7 @@ class _NextAppointmentCard extends StatelessWidget {
         child: SkeletonBox(
           width: double.infinity,
           height: 118,
-          borderRadius: 24,
+          borderRadius: kCardRadius,
         ),
       ),
       error: (_, _) => const Padding(
@@ -546,7 +552,7 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
                   width: 84,
                   height: 96,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(kCardRadius),
                     child: DoctorImage(
                       url: doctor?.image,
                       name: appointment.doctorName,
@@ -567,7 +573,7 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: pillBg,
-                            borderRadius: BorderRadius.circular(999),
+                            borderRadius: BorderRadius.circular(kCardRadius),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -642,7 +648,7 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFFE6F5F4),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(kCardRadius),
               ),
               child: Row(
                 children: [
@@ -733,7 +739,7 @@ class _NoAppointmentCard extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 color: seedTeal,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(kCardRadius),
               ),
               child: const Icon(
                 Icons.calendar_month_rounded,
@@ -803,7 +809,7 @@ class _FlatCard extends StatelessWidget {
     return Material(
       color: scheme.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(kCardRadius),
         side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       clipBehavior: Clip.antiAlias,
@@ -884,7 +890,7 @@ class _QuickActionTile extends StatelessWidget {
     return Expanded(
       child: Material(
         color: accent.foreground,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(kCardRadius),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -1041,7 +1047,7 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                           color: Colors.amber.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(9),
+                          borderRadius: BorderRadius.circular(kCardRadius),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1101,7 +1107,7 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(kCardRadius),
                         ),
                         textStyle: const TextStyle(
                           fontSize: 12.5,

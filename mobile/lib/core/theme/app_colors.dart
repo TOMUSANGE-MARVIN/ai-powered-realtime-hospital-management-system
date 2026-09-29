@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 /// Shared visual constants for the teal brand design language, derived from
 /// the Ask Musawo logo (assets/images/illustrations/ask-musawo-logo.svg).
-const kCardRadius = 22.0;
-const kPillRadius = 999.0;
+/// Corner radius for every card, button, input, chip and pill — kept tight
+/// on purpose; only avatars and icon badges are fully round.
+const kCardRadius = 4.0;
+const kPillRadius = kCardRadius;
 
 const seedTeal = Color(0xFF128A8B);
 const tealBackground = Color(0xFFF2FAFA);

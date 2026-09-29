@@ -84,15 +84,15 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                 filled: true,
                 fillColor: const Color(0xFFF5F6F8),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -343,7 +343,7 @@ class _RatingChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.amber.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: BorderRadius.circular(kCardRadius),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

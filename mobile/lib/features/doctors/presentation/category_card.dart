@@ -46,7 +46,7 @@ class CategoryCard extends StatelessWidget {
       onTap: () => context.push('/search', extra: category.name),
       color: Colors.white,
       padding: const EdgeInsets.all(10),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(kCardRadius),
       borderSide: BorderSide(
         color: accent.foreground.withValues(alpha: 0.2),
         width: 1.2,
@@ -97,7 +97,7 @@ class CategoryCard extends StatelessWidget {
       onTap: () => context.push('/search', extra: category.name),
       color: accent.background.withValues(alpha: 0.45),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(kCardRadius),
       borderSide: BorderSide(color: accent.foreground.withValues(alpha: 0.18)),
       showShadow: false,
       child: SizedBox(

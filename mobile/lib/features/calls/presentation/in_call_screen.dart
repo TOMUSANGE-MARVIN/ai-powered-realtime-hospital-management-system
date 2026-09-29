@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../state/call_controller.dart';
 import '../state/call_state.dart';
 import 'duration_ticker.dart';
@@ -73,7 +74,7 @@ class InCallScreen extends ConsumerWidget {
                   width: 100,
                   height: 140,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(kCardRadius),
                     child: RTCVideoView(
                       localRenderer,
                       mirror: true,

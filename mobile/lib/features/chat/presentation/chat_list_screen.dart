@@ -115,7 +115,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -253,12 +253,12 @@ class _FilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(kCardRadius),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? _accent.withValues(alpha: 0.12) : _chipBg,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(kCardRadius),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -481,7 +481,7 @@ class _ConversationTile extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: hasUnread ? _accent.withValues(alpha: 0.06) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(kCardRadius),
           border: hasUnread ? null : Border.all(color: const Color(0xFFF0F1F5)),
         ),
         child: Row(
@@ -572,7 +572,7 @@ class _ConversationTile extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: _accent,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(kCardRadius),
                     ),
                     child: Text(
                       '${conversation.unreadCount}',

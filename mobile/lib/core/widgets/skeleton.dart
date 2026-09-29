@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 /// A gently shimmering gray placeholder box — the building block for screen
 /// skeletons. Shape it (via `width`/`height`/`borderRadius`) to roughly
 /// match the real content it's standing in for, so the loading state reads
@@ -142,7 +144,7 @@ class SkeletonForm extends StatelessWidget {
           fieldCount,
           (_) => const Padding(
             padding: EdgeInsets.only(bottom: 16),
-            child: SkeletonBox(width: double.infinity, height: 52, borderRadius: 12),
+            child: SkeletonBox(width: double.infinity, height: 52, borderRadius: kCardRadius),
           ),
         ),
       ],
@@ -170,7 +172,7 @@ class SkeletonCardList extends StatelessWidget {
       children: [
         for (var i = 0; i < count; i++) ...[
           if (i > 0) const SizedBox(height: 8),
-          SkeletonBox(width: double.infinity, height: cardHeight, borderRadius: 14),
+          SkeletonBox(width: double.infinity, height: cardHeight, borderRadius: kCardRadius),
         ],
       ],
     );
@@ -197,7 +199,7 @@ class SkeletonGrid extends StatelessWidget {
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) =>
-          const SkeletonBox(width: double.infinity, height: double.infinity, borderRadius: 16),
+          const SkeletonBox(width: double.infinity, height: double.infinity, borderRadius: kCardRadius),
     );
   }
 }
@@ -227,7 +229,7 @@ class SkeletonChat extends StatelessWidget {
             child: SkeletonBox(
               width: maxWidth * _widths[index],
               height: 36,
-              borderRadius: 16,
+              borderRadius: kCardRadius,
             ),
           ),
         );

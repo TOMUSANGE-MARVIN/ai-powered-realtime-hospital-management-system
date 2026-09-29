@@ -151,7 +151,7 @@ class _EmptyState extends StatelessWidget {
                 backgroundColor: seedTeal,
                 minimumSize: const Size(0, 48),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                 ),
               ),
               onPressed: () => context.go('/home'),
@@ -300,7 +300,7 @@ class _AppointmentCard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(kCardRadius),
         boxShadow: [
           BoxShadow(
             color: seedTeal.withValues(alpha: 0.08),
@@ -363,7 +363,7 @@ class _AppointmentCard extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: status.bg,
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -539,7 +539,7 @@ class _ActionButton extends StatelessWidget {
     return Material(
       color: background,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(kCardRadius),
         side: borderColor == null
             ? BorderSide.none
             : BorderSide(color: borderColor!),

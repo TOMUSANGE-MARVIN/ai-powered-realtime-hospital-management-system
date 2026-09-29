@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/dashboard_gate.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../auth/data/app_user.dart';
@@ -162,7 +163,7 @@ class _ProfileSkeleton extends StatelessWidget {
               const SizedBox(height: 6),
               const SkeletonBox(width: 180, height: 13),
               const SizedBox(height: 12),
-              const SkeletonBox(width: 120, height: 34, borderRadius: 10),
+              const SkeletonBox(width: 120, height: 34, borderRadius: kCardRadius),
             ],
           ),
         ),
@@ -174,7 +175,7 @@ class _ProfileSkeleton extends StatelessWidget {
             child: SkeletonBox(
               width: double.infinity,
               height: 90,
-              borderRadius: 14,
+              borderRadius: kCardRadius,
             ),
           ),
         ),

@@ -35,24 +35,24 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        shape: const StadiumBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        shape: const StadiumBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        shape: const StadiumBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       ),
     ),
     chipTheme: ChipThemeData(
-      shape: const StadiumBorder(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
       side: BorderSide.none,
       backgroundColor: colorScheme.surfaceContainerHighest,
       selectedColor: colorScheme.primary,

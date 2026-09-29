@@ -539,7 +539,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             padding: const EdgeInsets.only(left: 16, right: 2),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(kCardRadius),
               border: Border.all(color: const Color(0xFFE3E7EC)),
             ),
             child: Row(
@@ -621,7 +621,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(kCardRadius),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.06),
@@ -755,7 +755,7 @@ class _ReplyPreviewBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(kCardRadius),
         border: Border(
           left: BorderSide(
             color: Theme.of(context).colorScheme.primary,
@@ -824,10 +824,10 @@ class _MessageBubble extends StatelessWidget {
           decoration: BoxDecoration(
             color: bubbleColor,
             borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(16),
-              topRight: const Radius.circular(16),
-              bottomLeft: Radius.circular(isMine ? 16 : 4),
-              bottomRight: Radius.circular(isMine ? 4 : 16),
+              topLeft: const Radius.circular(kCardRadius),
+              topRight: const Radius.circular(kCardRadius),
+              bottomLeft: Radius.circular(kCardRadius),
+              bottomRight: Radius.circular(kCardRadius),
             ),
             boxShadow: [
               BoxShadow(
@@ -949,7 +949,7 @@ class _QuotedMessage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: textColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(kCardRadius),
         border: Border(
           left: BorderSide(color: textColor.withValues(alpha: 0.6), width: 3),
         ),
@@ -990,7 +990,7 @@ class _Attachment extends StatelessWidget {
   Widget build(BuildContext context) {
     if (message.isImage) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(kCardRadius),
         child: Image.network(
           message.attachmentUrl!,
           width: 200,

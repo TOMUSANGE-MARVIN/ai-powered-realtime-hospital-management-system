@@ -5,6 +5,7 @@ import 'package:signature/signature.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../data/prescription_item_input.dart';
 import '../state/doctor_providers.dart';
@@ -191,7 +192,7 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(kCardRadius),
             ),
             child: Signature(controller: _signatureController, height: 150),
           ),

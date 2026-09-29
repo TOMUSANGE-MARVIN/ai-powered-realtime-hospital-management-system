@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
@@ -205,7 +206,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   right: 0,
                   child: InkWell(
                     onTap: _uploadingPhoto ? null : _changePhoto,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(kCardRadius),
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(

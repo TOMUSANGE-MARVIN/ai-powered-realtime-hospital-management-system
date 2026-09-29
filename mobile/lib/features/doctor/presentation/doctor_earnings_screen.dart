@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../data/earnings.dart';
 import '../state/doctor_providers.dart';
@@ -242,7 +243,7 @@ class _EarningsSkeleton extends StatelessWidget {
               child: SkeletonBox(
                 width: double.infinity,
                 height: 64,
-                borderRadius: 14,
+                borderRadius: kCardRadius,
               ),
             ),
             SizedBox(width: 12),
@@ -250,7 +251,7 @@ class _EarningsSkeleton extends StatelessWidget {
               child: SkeletonBox(
                 width: double.infinity,
                 height: 64,
-                borderRadius: 14,
+                borderRadius: kCardRadius,
               ),
             ),
           ],
@@ -259,19 +260,19 @@ class _EarningsSkeleton extends StatelessWidget {
         const SkeletonBox(
           width: double.infinity,
           height: 130,
-          borderRadius: 14,
+          borderRadius: kCardRadius,
         ),
         const SizedBox(height: 24),
         const SkeletonBox(width: 160, height: 16),
         const SizedBox(height: 12),
-        const SkeletonBox(width: double.infinity, height: 80, borderRadius: 14),
+        const SkeletonBox(width: double.infinity, height: 80, borderRadius: kCardRadius),
         const SizedBox(height: 24),
         const SkeletonBox(width: 160, height: 16),
         const SizedBox(height: 12),
         const SkeletonBox(
           width: double.infinity,
           height: 150,
-          borderRadius: 14,
+          borderRadius: kCardRadius,
         ),
       ],
     );

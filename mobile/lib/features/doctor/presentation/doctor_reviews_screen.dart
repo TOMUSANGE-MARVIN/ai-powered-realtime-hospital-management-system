@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../doctors/data/review.dart';
@@ -77,7 +78,7 @@ class _ReviewsSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       physics: const NeverScrollableScrollPhysics(),
       children: const [
-        SkeletonBox(width: double.infinity, height: 72, borderRadius: 14),
+        SkeletonBox(width: double.infinity, height: 72, borderRadius: kCardRadius),
         SizedBox(height: 16),
         SkeletonCardList(count: 4, cardHeight: 90),
       ],
@@ -180,7 +181,7 @@ class _DoctorReviewCard extends ConsumerWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

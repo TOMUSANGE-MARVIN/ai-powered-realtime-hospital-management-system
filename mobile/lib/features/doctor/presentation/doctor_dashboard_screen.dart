@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/dashboard_gate.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../appointments/data/appointment.dart';
@@ -161,7 +162,7 @@ class _DoctorDashboardSkeleton extends StatelessWidget {
         const SkeletonBox(
           width: double.infinity,
           height: 108,
-          borderRadius: 12,
+          borderRadius: kCardRadius,
         ),
         const SizedBox(height: 24),
         const SkeletonBox(width: 180, height: 18),

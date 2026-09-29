@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../state/call_controller.dart';
 import '../state/call_state.dart';
 import 'duration_ticker.dart';
@@ -59,12 +60,12 @@ class MinimizedCallCard extends ConsumerWidget {
           child: Material(
             color: Colors.black87,
             borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(16),
+              bottom: Radius.circular(kCardRadius),
             ),
             child: InkWell(
               onTap: onTap,
               borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(16),
+                bottom: Radius.circular(kCardRadius),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(

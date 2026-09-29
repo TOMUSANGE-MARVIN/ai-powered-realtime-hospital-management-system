@@ -227,7 +227,7 @@ class _HeaderInfo extends StatelessWidget {
         Stack(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(kCardRadius),
               child: SizedBox(
                 width: 118,
                 height: 150,
@@ -463,7 +463,7 @@ class _ActionButtons extends ConsumerWidget {
               backgroundColor: seedTeal,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kCardRadius),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
@@ -538,7 +538,7 @@ class _OutlineAction extends StatelessWidget {
           foregroundColor: _ink,
           side: const BorderSide(color: Color(0xFFCBD6DC)),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(kCardRadius),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 8),
         ),
@@ -843,7 +843,7 @@ class _DirectionsLink extends StatelessWidget {
       padding: const EdgeInsets.only(top: 10),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(kCardRadius),
         child: const Padding(
           padding: EdgeInsets.all(4),
           child: Row(
@@ -1022,7 +1022,7 @@ class _ReviewRow extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(kCardRadius),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
@@ -1093,7 +1093,7 @@ class _ReviewRow extends StatelessWidget {
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: _pageBg,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(kCardRadius),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

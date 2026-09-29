@@ -17,7 +17,8 @@ class BookAppointmentScreen extends ConsumerStatefulWidget {
   final String doctorId;
 
   @override
-  ConsumerState<BookAppointmentScreen> createState() => _BookAppointmentScreenState();
+  ConsumerState<BookAppointmentScreen> createState() =>
+      _BookAppointmentScreenState();
 }
 
 class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
@@ -46,16 +47,19 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
     if (picked != null) setState(() => _time = picked);
   }
 
   Future<void> _submit(Doctor doctor) async {
     final date = _isEmergency ? DateTime.now() : _date;
     if (date == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please choose a date')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please choose a date')));
       return;
     }
 
@@ -74,11 +78,15 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
 
     setState(() => _submitting = true);
     try {
-      await ref.read(appointmentRepositoryProvider).book(
+      await ref
+          .read(appointmentRepositoryProvider)
+          .book(
             doctorId: widget.doctorId,
             date: date,
             time: _time?.format(context),
-            reason: _reasonController.text.trim().isEmpty ? null : _reasonController.text.trim(),
+            reason: _reasonController.text.trim().isEmpty
+                ? null
+                : _reasonController.text.trim(),
             consultationType: _consultationType,
             isEmergency: _isEmergency,
             paymentId: paymentId,
@@ -89,7 +97,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
         context: context,
         builder: (context) => AlertDialog(
           icon: const Icon(Icons.check_circle, color: Colors.green, size: 40),
-          title: Text(_isEmergency ? 'Emergency request sent' : 'Appointment requested'),
+          title: Text(
+            _isEmergency ? 'Emergency request sent' : 'Appointment requested',
+          ),
           content: Text(
             _isEmergency
                 ? "Your emergency request has been sent — the doctor's team will attend to you as soon as possible."
@@ -108,7 +118,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
       );
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -122,7 +134,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     final feeFormat = NumberFormat.decimalPattern();
 
     return Scaffold(
-      appBar: AppBar(title: Text(doctorAsync.value?.name ?? 'Book appointment')),
+      appBar: AppBar(
+        title: Text(doctorAsync.value?.name ?? 'Book appointment'),
+      ),
       body: doctorAsync.when(
         loading: () => const SkeletonForm(),
         error: (error, _) => Center(child: Text(error.toString())),
@@ -131,7 +145,10 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Consultation type', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                'Consultation type',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               SegmentedButton<String>(
                 segments: const [
@@ -183,7 +200,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.calendar_today_outlined),
-                  title: Text(_date == null ? 'Choose a date' : dateFormat.format(_date!)),
+                  title: Text(
+                    _date == null ? 'Choose a date' : dateFormat.format(_date!),
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _pickDate,
                 )
@@ -192,12 +211,18 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.calendar_today_outlined),
                   title: Text('Today, ${dateFormat.format(DateTime.now())}'),
-                  subtitle: const Text('Emergency bookings are always for today'),
+                  subtitle: const Text(
+                    'Emergency bookings are always for today',
+                  ),
                 ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.access_time),
-                title: Text(_time == null ? 'Choose a time (optional)' : _time!.format(context)),
+                title: Text(
+                  _time == null
+                      ? 'Choose a time (optional)'
+                      : _time!.format(context),
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _pickTime,
               ),
@@ -235,9 +260,16 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
-                    : Text(doctor.consultationFee != null ? 'Pay & Book' : 'Request appointment'),
+                    : Text(
+                        doctor.consultationFee != null
+                            ? 'Pay & Book'
+                            : 'Request appointment',
+                      ),
               ),
             ],
           ),
@@ -320,10 +352,9 @@ class _PaymentSheetState extends ConsumerState<_PaymentSheet> {
         children: [
           Text(
             'Pay consultation fee',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
@@ -364,7 +395,10 @@ class _PaymentSheetState extends ConsumerState<_PaymentSheet> {
                       SizedBox(
                         height: 18,
                         width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       ),
                       SizedBox(width: 12),
                       Text('Processing payment…'),

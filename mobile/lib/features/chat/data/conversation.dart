@@ -49,7 +49,8 @@ class Conversation {
       lastMessageText: json['lastMessageText'] as String? ?? '',
       lastMessageAttachmentType: json['lastMessageAttachmentType'] as String?,
       lastMessageAt:
-          DateTime.tryParse(json['lastMessageAt'] as String? ?? '') ?? DateTime.now(),
+          DateTime.tryParse(json['lastMessageAt'] as String? ?? '') ??
+          DateTime.now(),
       lastMessageFromMe: json['lastMessageFromMe'] as bool? ?? false,
       unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     );

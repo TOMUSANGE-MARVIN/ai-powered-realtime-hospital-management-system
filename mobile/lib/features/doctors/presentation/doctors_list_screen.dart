@@ -31,7 +31,8 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
     // Providers can't be written during build; defer to the next frame. Also
     // reset any stale filter left behind by a previous visit.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(selectedSpecialtyProvider.notifier).state = widget.initialSpecialty;
+      ref.read(selectedSpecialtyProvider.notifier).state =
+          widget.initialSpecialty;
       ref.read(doctorSearchQueryProvider.notifier).state = '';
     });
   }
@@ -111,14 +112,18 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                       label: 'All',
                       icon: Icons.calendar_today_rounded,
                       selected: selectedSpecialty == null,
-                      onTap: () => ref.read(selectedSpecialtyProvider.notifier).state = null,
+                      onTap: () =>
+                          ref.read(selectedSpecialtyProvider.notifier).state =
+                              null,
                     ),
                     ...specialties.map(
                       (s) => _SpecialtyChip(
                         label: '${s.name} (${s.count})',
                         icon: null,
                         selected: selectedSpecialty == s.name,
-                        onTap: () => ref.read(selectedSpecialtyProvider.notifier).state = s.name,
+                        onTap: () =>
+                            ref.read(selectedSpecialtyProvider.notifier).state =
+                                s.name,
                       ),
                     ),
                   ],
@@ -132,7 +137,9 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
             child: doctorsAsync.when(
               data: (doctors) {
                 if (doctors.isEmpty) {
-                  return const Center(child: Text('No doctors match your search'));
+                  return const Center(
+                    child: Text('No doctors match your search'),
+                  );
                 }
                 return RefreshIndicator(
                   onRefresh: () => ref.refresh(doctorsListProvider.future),
@@ -141,9 +148,14 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                     itemCount: doctors.length,
                     separatorBuilder: (_, _) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+                      child: Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Colors.grey.shade200,
+                      ),
                     ),
-                    itemBuilder: (context, index) => _DoctorTile(doctor: doctors[index]),
+                    itemBuilder: (context, index) =>
+                        _DoctorTile(doctor: doctors[index]),
                   ),
                 );
               },
@@ -188,7 +200,11 @@ class _SpecialtyChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 15, color: selected ? Colors.white : Colors.black87),
+                Icon(
+                  icon,
+                  size: 15,
+                  color: selected ? Colors.white : Colors.black87,
+                ),
                 const SizedBox(width: 6),
               ],
               Text(
@@ -220,7 +236,8 @@ class _DoctorTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    final specialtyLabel = doctor.specialization ?? doctor.department ?? 'General';
+    final specialtyLabel =
+        doctor.specialization ?? doctor.department ?? 'General';
 
     return Material(
       color: Colors.white,
@@ -281,7 +298,10 @@ class _DoctorTile extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _RatingChip(rating: doctor.rating, reviewCount: doctor.reviewCount),
+                  _RatingChip(
+                    rating: doctor.rating,
+                    reviewCount: doctor.reviewCount,
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -356,8 +376,11 @@ class _DoctorCardSkeleton extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: 6,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (context, index) =>
-          const SkeletonBox(width: double.infinity, height: 136, borderRadius: kCardRadius),
+      itemBuilder: (context, index) => const SkeletonBox(
+        width: double.infinity,
+        height: 136,
+        borderRadius: kCardRadius,
+      ),
     );
   }
 }

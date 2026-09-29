@@ -23,7 +23,9 @@ class Review {
       patientName: json['patientName'] as String? ?? 'Patient',
       rating: (json['rating'] as num?)?.toInt() ?? 0,
       comment: json['comment'] as String?,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
       doctorReply: json['doctorReply'] as String?,
       doctorRepliedAt: json['doctorRepliedAt'] != null
           ? DateTime.tryParse(json['doctorRepliedAt'] as String)

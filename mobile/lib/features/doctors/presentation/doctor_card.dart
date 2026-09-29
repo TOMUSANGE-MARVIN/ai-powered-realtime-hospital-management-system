@@ -13,7 +13,9 @@ IconData iconForSpecialization(String? specialization, String? department) {
     return Icons.child_care_rounded;
   }
   if (text.contains('orthop')) return Icons.accessibility_new_rounded;
-  if (text.contains('obstetric') || text.contains('gynec') || text.contains('gynaec')) {
+  if (text.contains('obstetric') ||
+      text.contains('gynec') ||
+      text.contains('gynaec')) {
     return Icons.pregnant_woman_rounded;
   }
   if (text.contains('emergency')) return Icons.emergency_rounded;
@@ -37,7 +39,11 @@ class DoctorImage extends StatelessWidget {
   final String name;
 
   String get _initials {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return '?';
     final first = parts.first[0];
     final last = parts.length > 1 ? parts.last[0] : '';

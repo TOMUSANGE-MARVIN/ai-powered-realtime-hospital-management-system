@@ -79,7 +79,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         elevation: 0,
         title: const Text(
           'Chats',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Color(0xFF12172B)),
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
+            color: Color(0xFF12172B),
+          ),
         ),
         actions: [
           IconButton(
@@ -99,7 +103,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: TextField(
               controller: _searchController,
-              onChanged: (value) => setState(() => _query = value.trim().toLowerCase()),
+              onChanged: (value) =>
+                  setState(() => _query = value.trim().toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search chats',
                 hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -152,15 +157,22 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 }
                 var filtered = conversations;
                 if (_query.isNotEmpty) {
-                  filtered =
-                      filtered.where((c) => c.otherUserName.toLowerCase().contains(_query)).toList();
+                  filtered = filtered
+                      .where(
+                        (c) => c.otherUserName.toLowerCase().contains(_query),
+                      )
+                      .toList();
                 }
                 switch (_filter) {
                   case _ChatFilter.unread:
-                    filtered = filtered.where((c) => c.unreadCount > 0).toList();
+                    filtered = filtered
+                        .where((c) => c.unreadCount > 0)
+                        .toList();
                     break;
                   case _ChatFilter.favorites:
-                    filtered = filtered.where((c) => _favoriteIds.contains(c.otherUserId)).toList();
+                    filtered = filtered
+                        .where((c) => _favoriteIds.contains(c.otherUserId))
+                        .toList();
                     break;
                   case _ChatFilter.all:
                     break;
@@ -198,7 +210,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         (c) => _ConversationTile(
                           conversation: c,
                           isFavorite: _favoriteIds.contains(c.otherUserId),
-                          onToggleFavorite: () => _toggleFavorite(c.otherUserId),
+                          onToggleFavorite: () =>
+                              _toggleFavorite(c.otherUserId),
                         ),
                       ),
                       const SizedBox(height: 88),
@@ -250,7 +263,11 @@ class _FilterChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: selected ? _accent : const Color(0xFF3B4254)),
+            Icon(
+              icon,
+              size: 16,
+              color: selected ? _accent : const Color(0xFF3B4254),
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -265,7 +282,10 @@ class _FilterChip extends StatelessWidget {
               Container(
                 width: 7,
                 height: 7,
-                decoration: const BoxDecoration(color: _accent, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: _accent,
+                  shape: BoxShape.circle,
+                ),
               ),
             ],
           ],
@@ -294,11 +314,18 @@ class _RecentContactsRow extends StatelessWidget {
             children: [
               const Text(
                 'Recent contacts',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF12172B)),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: Color(0xFF12172B),
+                ),
               ),
               Row(
                 children: [
-                  Text('See all', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  Text(
+                    'See all',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                  ),
                   const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
                 ],
               ),
@@ -328,7 +355,13 @@ class _RecentContactsRow extends StatelessWidget {
                         child: const Icon(Icons.add, color: _accent, size: 26),
                       ),
                       const SizedBox(height: 6),
-                      Text('Add', style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                      Text(
+                        'Add',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -337,7 +370,10 @@ class _RecentContactsRow extends StatelessWidget {
               return GestureDetector(
                 onTap: () => context.push(
                   '/chat/${c.otherUserId}',
-                  extra: ChatArgs(name: c.otherUserName, image: c.otherUserImage),
+                  extra: ChatArgs(
+                    name: c.otherUserName,
+                    image: c.otherUserImage,
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -346,9 +382,12 @@ class _RecentContactsRow extends StatelessWidget {
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: const Color(0xFFE3F2F1),
-                          backgroundImage:
-                              c.otherUserImage != null ? NetworkImage(c.otherUserImage!) : null,
-                          child: c.otherUserImage == null ? const Icon(Icons.person) : null,
+                          backgroundImage: c.otherUserImage != null
+                              ? NetworkImage(c.otherUserImage!)
+                              : null,
+                          child: c.otherUserImage == null
+                              ? const Icon(Icons.person)
+                              : null,
                         ),
                         Positioned(
                           right: 0,
@@ -357,7 +396,9 @@ class _RecentContactsRow extends StatelessWidget {
                             width: 14,
                             height: 14,
                             decoration: BoxDecoration(
-                              color: c.otherUserOnline ? _onlineGreen : _offlineGrey,
+                              color: c.otherUserOnline
+                                  ? _onlineGreen
+                                  : _offlineGrey,
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                             ),
@@ -369,13 +410,20 @@ class _RecentContactsRow extends StatelessWidget {
                     SizedBox(
                       width: 64,
                       child: Text(
-                        c.otherUserName.startsWith('Dr.') || c.otherUserName.startsWith('Dr ')
-                            ? c.otherUserName.replaceFirst(RegExp(r'^Dr\.?\s*'), 'Dr. ')
+                        c.otherUserName.startsWith('Dr.') ||
+                                c.otherUserName.startsWith('Dr ')
+                            ? c.otherUserName.replaceFirst(
+                                RegExp(r'^Dr\.?\s*'),
+                                'Dr. ',
+                              )
                             : c.otherUserName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF3B4254)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF3B4254),
+                        ),
                       ),
                     ),
                   ],
@@ -402,11 +450,16 @@ class _ConversationTile extends StatelessWidget {
 
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
-    final isToday = now.year == dateTime.year && now.month == dateTime.month && now.day == dateTime.day;
+    final isToday =
+        now.year == dateTime.year &&
+        now.month == dateTime.month &&
+        now.day == dateTime.day;
     if (isToday) return DateFormat('HH:mm').format(dateTime);
     final yesterday = now.subtract(const Duration(days: 1));
     final isYesterday =
-        yesterday.year == dateTime.year && yesterday.month == dateTime.month && yesterday.day == dateTime.day;
+        yesterday.year == dateTime.year &&
+        yesterday.month == dateTime.month &&
+        yesterday.day == dateTime.day;
     if (isYesterday) return 'Yesterday';
     return DateFormat('MMM d').format(dateTime);
   }
@@ -417,7 +470,10 @@ class _ConversationTile extends StatelessWidget {
     return InkWell(
       onTap: () => context.push(
         '/chat/${conversation.otherUserId}',
-        extra: ChatArgs(name: conversation.otherUserName, image: conversation.otherUserImage),
+        extra: ChatArgs(
+          name: conversation.otherUserName,
+          image: conversation.otherUserImage,
+        ),
       ),
       onLongPress: onToggleFavorite,
       child: Container(
@@ -435,9 +491,12 @@ class _ConversationTile extends StatelessWidget {
                 CircleAvatar(
                   radius: 26,
                   backgroundColor: const Color(0xFFE3F2F1),
-                  backgroundImage:
-                      conversation.otherUserImage != null ? NetworkImage(conversation.otherUserImage!) : null,
-                  child: conversation.otherUserImage == null ? const Icon(Icons.person) : null,
+                  backgroundImage: conversation.otherUserImage != null
+                      ? NetworkImage(conversation.otherUserImage!)
+                      : null,
+                  child: conversation.otherUserImage == null
+                      ? const Icon(Icons.person)
+                      : null,
                 ),
                 Positioned(
                   right: 0,
@@ -446,7 +505,9 @@ class _ConversationTile extends StatelessWidget {
                     width: 13,
                     height: 13,
                     decoration: BoxDecoration(
-                      color: conversation.otherUserOnline ? _onlineGreen : _offlineGrey,
+                      color: conversation.otherUserOnline
+                          ? _onlineGreen
+                          : _offlineGrey,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
@@ -463,7 +524,11 @@ class _ConversationTile extends StatelessWidget {
                     conversation.otherUserName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5, color: Color(0xFF12172B)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15.5,
+                      color: Color(0xFF12172B),
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
@@ -474,8 +539,12 @@ class _ConversationTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13.5,
-                      fontWeight: hasUnread ? FontWeight.w600 : FontWeight.normal,
-                      color: hasUnread ? const Color(0xFF2F3648) : Colors.grey.shade600,
+                      fontWeight: hasUnread
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                      color: hasUnread
+                          ? const Color(0xFF2F3648)
+                          : Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -497,11 +566,21 @@ class _ConversationTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 if (hasUnread)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(color: _accent, borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _accent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: Text(
                       '${conversation.unreadCount}',
-                      style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   )
                 else if (isFavorite)

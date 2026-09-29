@@ -17,12 +17,15 @@ class CallRepository {
     String status = 'answered',
     int? durationSeconds,
   }) async {
-    final response = await _dio.post('/api/calls', data: {
-      'calleeId': calleeId,
-      'type': type,
-      'status': status,
-      'durationSeconds': ?durationSeconds,
-    });
+    final response = await _dio.post(
+      '/api/calls',
+      data: {
+        'calleeId': calleeId,
+        'type': type,
+        'status': status,
+        'durationSeconds': ?durationSeconds,
+      },
+    );
     ApiException.checkStatus(response);
   }
 

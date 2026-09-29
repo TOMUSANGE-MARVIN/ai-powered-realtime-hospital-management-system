@@ -42,7 +42,9 @@ class AppointmentRepository {
   }
 
   Future<void> cancel(String appointmentId) async {
-    final response = await _dio.patch('/api/appointments/$appointmentId/cancel');
+    final response = await _dio.patch(
+      '/api/appointments/$appointmentId/cancel',
+    );
     ApiException.checkStatus(response);
   }
 
@@ -51,11 +53,7 @@ class AppointmentRepository {
   Future<List<Appointment>> listAssigned({String? status, String? date}) async {
     final response = await _dio.get(
       '/api/appointments/assigned',
-      queryParameters: {
-        'status': ?status,
-        'date': ?date,
-        'limit': 50,
-      },
+      queryParameters: {'status': ?status, 'date': ?date, 'limit': 50},
     );
     ApiException.checkStatus(response);
     final results = (response.data as Map)['res'] as List;

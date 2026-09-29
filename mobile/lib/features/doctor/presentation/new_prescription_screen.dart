@@ -10,13 +10,18 @@ import '../data/prescription_item_input.dart';
 import '../state/doctor_providers.dart';
 
 class NewPrescriptionScreen extends ConsumerStatefulWidget {
-  const NewPrescriptionScreen({super.key, required this.patientId, required this.patientName});
+  const NewPrescriptionScreen({
+    super.key,
+    required this.patientId,
+    required this.patientName,
+  });
 
   final String patientId;
   final String patientName;
 
   @override
-  ConsumerState<NewPrescriptionScreen> createState() => _NewPrescriptionScreenState();
+  ConsumerState<NewPrescriptionScreen> createState() =>
+      _NewPrescriptionScreenState();
 }
 
 class _MedicationRow {
@@ -36,7 +41,10 @@ class _MedicationRow {
 class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
   final _notesController = TextEditingController();
   final List<_MedicationRow> _rows = [_MedicationRow()];
-  final _signatureController = SignatureController(penStrokeWidth: 2, penColor: Colors.black);
+  final _signatureController = SignatureController(
+    penStrokeWidth: 2,
+    penColor: Colors.black,
+  );
   XFile? _attachedPhoto;
   bool _submitting = false;
 
@@ -51,7 +59,10 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 80);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      imageQuality: 80,
+    );
     if (picked != null) setState(() => _attachedPhoto = picked);
   }
 
@@ -90,15 +101,22 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
       if (_signatureController.isNotEmpty) {
         final bytes = await _signatureController.toPngBytes();
         if (bytes != null) {
-          signatureUrl = await uploadRepo.uploadBytes(bytes, filename: 'signature.png');
+          signatureUrl = await uploadRepo.uploadBytes(
+            bytes,
+            filename: 'signature.png',
+          );
         }
       }
 
-      await ref.read(doctorPrescriptionRepositoryProvider).create(
+      await ref
+          .read(doctorPrescriptionRepositoryProvider)
+          .create(
             patientId: widget.patientId,
             patientName: widget.patientName,
             items: items,
-            notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+            notes: _notesController.text.trim().isEmpty
+                ? null
+                : _notesController.text.trim(),
             imageUrl: imageUrl,
             signatureUrl: signatureUrl,
           );
@@ -110,7 +128,9 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -124,9 +144,14 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Medications', style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text(
+            'Medications',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
-          ..._rows.asMap().entries.map((entry) => _buildMedicationRow(entry.key, entry.value)),
+          ..._rows.asMap().entries.map(
+            (entry) => _buildMedicationRow(entry.key, entry.value),
+          ),
           TextButton.icon(
             icon: const Icon(Icons.add),
             label: const Text('Add medication'),
@@ -139,12 +164,18 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
             decoration: const InputDecoration(labelText: 'Notes'),
           ),
           const SizedBox(height: 20),
-          const Text('Attach a photo (optional)', style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text(
+            'Attach a photo (optional)',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
           if (_attachedPhoto != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text(_attachedPhoto!.name, style: TextStyle(color: Colors.grey.shade600)),
+              child: Text(
+                _attachedPhoto!.name,
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
             ),
           OutlinedButton.icon(
             icon: const Icon(Icons.camera_alt_outlined),
@@ -152,7 +183,10 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
             onPressed: _pickPhoto,
           ),
           const SizedBox(height: 20),
-          const Text('Digital signature', style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text(
+            'Digital signature',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -175,7 +209,10 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : const Text('Send to Patient'),
           ),
@@ -197,7 +234,10 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
                 Expanded(
                   child: TextField(
                     controller: row.nameController,
-                    decoration: const InputDecoration(labelText: 'Medication', isDense: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Medication',
+                      isDense: true,
+                    ),
                   ),
                 ),
                 if (_rows.length > 1)
@@ -215,7 +255,10 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
                 Expanded(
                   child: TextField(
                     controller: row.dosageController,
-                    decoration: const InputDecoration(labelText: 'Dosage', isDense: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Dosage',
+                      isDense: true,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -224,7 +267,10 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
                   child: TextField(
                     controller: row.quantityController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Qty', isDense: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Qty',
+                      isDense: true,
+                    ),
                   ),
                 ),
               ],
@@ -232,7 +278,10 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: row.instructionsController,
-              decoration: const InputDecoration(labelText: 'Instructions (optional)', isDense: true),
+              decoration: const InputDecoration(
+                labelText: 'Instructions (optional)',
+                isDense: true,
+              ),
             ),
           ],
         ),

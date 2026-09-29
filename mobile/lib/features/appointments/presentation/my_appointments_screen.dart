@@ -176,44 +176,44 @@ class _AppointmentCard extends ConsumerWidget {
     switch (status) {
       case 'requested':
         return (
-          bg: const Color(0xFFFFF3E0),
-          fg: const Color(0xFF8A4B00),
+          bg: const Color(0xFFFF9800),
+          fg: const Color(0xFF2B1A00),
           icon: Icons.schedule_rounded,
           label: 'Requested',
         );
       case 'confirmed':
       case 'scheduled':
         return (
-          bg: const Color(0xFFE0F7F4),
-          fg: const Color(0xFF0B7A6E),
+          bg: seedTeal,
+          fg: Colors.white,
           icon: Icons.event_available_rounded,
           label: status == 'confirmed' ? 'Confirmed' : 'Scheduled',
         );
       case 'in_progress':
         return (
-          bg: const Color(0xFFFFF8E1),
-          fg: const Color(0xFF8A5A00),
+          bg: const Color(0xFFFFA000),
+          fg: const Color(0xFF2B1A00),
           icon: Icons.play_circle_outline_rounded,
           label: 'In progress',
         );
       case 'completed':
         return (
-          bg: const Color(0xFFE0F2F2),
-          fg: seedTeal,
+          bg: const Color(0xFF0B5F60),
+          fg: Colors.white,
           icon: Icons.check_circle_outline_rounded,
           label: 'Completed',
         );
       case 'cancelled':
         return (
-          bg: const Color(0xFFFFE3E3),
-          fg: const Color(0xFFC62828),
+          bg: const Color(0xFFD32F2F),
+          fg: Colors.white,
           icon: Icons.cancel_outlined,
           label: 'Cancelled',
         );
       default:
         return (
-          bg: const Color(0xFFEEF2F2),
-          fg: const Color(0xFF55605F),
+          bg: const Color(0xFF55605F),
+          fg: Colors.white,
           icon: Icons.info_outline_rounded,
           label: status,
         );
@@ -503,8 +503,8 @@ class _AppointmentCard extends ConsumerWidget {
                         : _ActionButton(
                             icon: Icons.star_outline_rounded,
                             label: 'Review',
-                            background: const Color(0xFFFFF3E0),
-                            foreground: const Color(0xFF8A4B00),
+                            background: const Color(0xFFFF9800),
+                            foreground: const Color(0xFF2B1A00),
                             onPressed: () => _review(context, ref),
                           ),
                   ),

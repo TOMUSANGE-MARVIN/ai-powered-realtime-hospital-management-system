@@ -52,12 +52,16 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               _Header(user: user),
               const SizedBox(height: 24),
-              if (user.role == 'doctor') ..._doctorSections(context, user) else ..._patientSections(context, ref),
+              if (user.role == 'doctor')
+                ..._doctorSections(context, user)
+              else
+                ..._patientSections(context, ref),
               const SizedBox(height: 24),
               OutlinedButton.icon(
                 icon: const Icon(Icons.logout),
                 label: const Text('Sign out'),
-                onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+                onPressed: () =>
+                    ref.read(authControllerProvider.notifier).signOut(),
               ),
             ],
           );
@@ -71,7 +75,9 @@ class ProfileScreen extends ConsumerWidget {
     return [
       _SectionCard(
         title: 'About',
-        child: Text(user.bio?.isNotEmpty == true ? user.bio! : 'No bio added yet.'),
+        child: Text(
+          user.bio?.isNotEmpty == true ? user.bio! : 'No bio added yet.',
+        ),
       ),
       const SizedBox(height: 16),
       _SectionCard(
@@ -80,14 +86,22 @@ class ProfileScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(user.hospitalName ?? 'Not set'),
-            if (user.hospitalAddress != null) Text(user.hospitalAddress!, style: TextStyle(color: Colors.grey.shade600)),
+            if (user.hospitalAddress != null)
+              Text(
+                user.hospitalAddress!,
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
           ],
         ),
       ),
       const SizedBox(height: 16),
       _SectionCard(
         title: 'Consultation Fee',
-        child: Text(user.consultationFee != null ? 'UGX ${user.consultationFee}' : 'Not set'),
+        child: Text(
+          user.consultationFee != null
+              ? 'UGX ${user.consultationFee}'
+              : 'Not set',
+        ),
       ),
       const SizedBox(height: 16),
       _SectionCard(
@@ -95,7 +109,9 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('See what patients are saying and reply to their reviews.'),
+            const Text(
+              'See what patients are saying and reply to their reviews.',
+            ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
               icon: const Icon(Icons.reviews_outlined),
@@ -155,7 +171,11 @@ class _ProfileSkeleton extends StatelessWidget {
           4,
           (_) => const Padding(
             padding: EdgeInsets.only(bottom: 16),
-            child: SkeletonBox(width: double.infinity, height: 90, borderRadius: 14),
+            child: SkeletonBox(
+              width: double.infinity,
+              height: 90,
+              borderRadius: 14,
+            ),
           ),
         ),
       ],
@@ -174,7 +194,9 @@ class _Header extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 40,
-          backgroundImage: user.image != null ? NetworkImage(user.image!) : null,
+          backgroundImage: user.image != null
+              ? NetworkImage(user.image!)
+              : null,
           child: user.image == null ? const Icon(Icons.person, size: 36) : null,
         ),
         const SizedBox(height: 12),
@@ -209,7 +231,10 @@ class _SectionCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
                 ?trailing,
               ],
             ),
@@ -234,7 +259,9 @@ class _HealthSnapshotSection extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Expanded(child: _snapshotItem('Blood Group', user?.bloodgroup ?? '—')),
+              Expanded(
+                child: _snapshotItem('Blood Group', user?.bloodgroup ?? '—'),
+              ),
               Expanded(child: _snapshotItem('Age', user?.age ?? '—')),
             ],
           ),
@@ -242,7 +269,12 @@ class _HealthSnapshotSection extends ConsumerWidget {
           Row(
             children: [
               Expanded(child: _snapshotItem('Gender', user?.gender ?? '—')),
-              Expanded(child: _snapshotItem('Marital Status', user?.maritalStatus ?? '—')),
+              Expanded(
+                child: _snapshotItem(
+                  'Marital Status',
+                  user?.maritalStatus ?? '—',
+                ),
+              ),
             ],
           ),
         ],
@@ -254,7 +286,10 @@ class _HealthSnapshotSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+        ),
         const SizedBox(height: 2),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
@@ -283,7 +318,10 @@ class _ConsultationHistorySection extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(a.doctorName),
-                        Text(dateFormat.format(a.date), style: TextStyle(color: Colors.grey.shade600)),
+                        Text(
+                          dateFormat.format(a.date),
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
                       ],
                     ),
                   ),
@@ -321,18 +359,33 @@ class _PrescriptionsSection extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              p.items.isNotEmpty ? p.items.first.medicationName : 'Prescription',
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              p.items.isNotEmpty
+                                  ? p.items.first.medicationName
+                                  : 'Prescription',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             Chip(
-                              label: Text(p.status, style: const TextStyle(fontSize: 11)),
+                              label: Text(
+                                p.status,
+                                style: const TextStyle(fontSize: 11),
+                              ),
                               visualDensity: VisualDensity.compact,
-                              backgroundColor: p.isActive ? Colors.green.shade100 : null,
+                              backgroundColor: p.isActive
+                                  ? Colors.green.shade100
+                                  : null,
                             ),
                           ],
                         ),
                         if (p.items.isNotEmpty)
-                          Text(p.items.first.dosage, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                          Text(
+                            p.items.first.dosage,
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -386,7 +439,8 @@ class _MedicalDocumentsSection extends ConsumerWidget {
       ),
       child: documentsAsync.when(
         data: (documents) {
-          if (documents.isEmpty) return const Text('No documents uploaded yet.');
+          if (documents.isEmpty)
+            return const Text('No documents uploaded yet.');
           return Column(
             children: documents
                 .map(
@@ -414,7 +468,10 @@ class _EmergencyContactSection extends ConsumerWidget {
     if (user?.emergencyContactName == null) {
       return _SectionCard(
         title: 'Emergency Contact',
-        child: Text('Not set. Add one from Edit Profile.', style: TextStyle(color: Colors.grey.shade600)),
+        child: Text(
+          'Not set. Add one from Edit Profile.',
+          style: TextStyle(color: Colors.grey.shade600),
+        ),
       );
     }
     return _SectionCard(
@@ -422,9 +479,14 @@ class _EmergencyContactSection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(user!.emergencyContactName!, style: const TextStyle(fontWeight: FontWeight.w600)),
-          if (user.emergencyContactRelation != null) Text(user.emergencyContactRelation!),
-          if (user.emergencyContactPhone != null) Text(user.emergencyContactPhone!),
+          Text(
+            user!.emergencyContactName!,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          if (user.emergencyContactRelation != null)
+            Text(user.emergencyContactRelation!),
+          if (user.emergencyContactPhone != null)
+            Text(user.emergencyContactPhone!),
         ],
       ),
     );

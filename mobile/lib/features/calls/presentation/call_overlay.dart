@@ -28,7 +28,8 @@ class CallOverlay extends ConsumerStatefulWidget {
   ConsumerState<CallOverlay> createState() => _CallOverlayState();
 }
 
-class _CallOverlayState extends ConsumerState<CallOverlay> with WidgetsBindingObserver {
+class _CallOverlayState extends ConsumerState<CallOverlay>
+    with WidgetsBindingObserver {
   bool _minimized = false;
   bool _inCallRouteOpen = false;
 
@@ -56,21 +57,28 @@ class _CallOverlayState extends ConsumerState<CallOverlay> with WidgetsBindingOb
   }
 
   bool _isActiveCallState(CallState state) =>
-      state is CallOutgoingRinging || state is CallConnecting || state is CallInProgress;
+      state is CallOutgoingRinging ||
+      state is CallConnecting ||
+      state is CallInProgress;
 
   void _pushInCallScreen() {
     _inCallRouteOpen = true;
     rootNavigatorKey.currentState!
-        .push(MaterialPageRoute(fullscreenDialog: true, builder: (_) => const InCallScreen()))
+        .push(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => const InCallScreen(),
+          ),
+        )
         .then((_) {
-      _inCallRouteOpen = false;
-      // Only re-show as minimized if the call is still actually active —
-      // if it already ended (hangup/declined/etc. popped this route
-      // programmatically below), there's nothing left to minimize back to.
-      if (mounted && _isActiveCallState(ref.read(callControllerProvider))) {
-        setState(() => _minimized = true);
-      }
-    });
+          _inCallRouteOpen = false;
+          // Only re-show as minimized if the call is still actually active —
+          // if it already ended (hangup/declined/etc. popped this route
+          // programmatically below), there's nothing left to minimize back to.
+          if (mounted && _isActiveCallState(ref.read(callControllerProvider))) {
+            setState(() => _minimized = true);
+          }
+        });
   }
 
   @override
@@ -107,11 +115,6 @@ class _CallOverlayState extends ConsumerState<CallOverlay> with WidgetsBindingOb
       );
     }
 
-    return Stack(
-      children: [
-        ?widget.child,
-        ?overlay,
-      ],
-    );
+    return Stack(children: [?widget.child, ?overlay]);
   }
 }

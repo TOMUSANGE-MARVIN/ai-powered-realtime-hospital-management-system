@@ -8,19 +8,22 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1400),
   )..repeat(reverse: true);
 
-  late final Animation<double> _scale = Tween(begin: 0.94, end: 1.04).animate(
-    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-  );
+  late final Animation<double> _scale = Tween(
+    begin: 0.94,
+    end: 1.04,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
-  late final Animation<double> _opacity = Tween(begin: 0.75, end: 1.0).animate(
-    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-  );
+  late final Animation<double> _opacity = Tween(
+    begin: 0.75,
+    end: 1.0,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
   @override
   void dispose() {
@@ -44,13 +47,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: SizedBox(
                 width: 140,
                 height: 140,
-                child: SvgPicture.asset('assets/images/illustrations/ask-musawo-logo.svg'),
+                child: SvgPicture.asset(
+                  'assets/images/illustrations/ask-musawo-logo.svg',
+                ),
               ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Ask Musawo',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, letterSpacing: 0.2),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
+              ),
             ),
           ],
         ),

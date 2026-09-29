@@ -26,6 +26,5 @@ class OnboardingController extends Notifier<bool> {
   }
 }
 
-final onboardingControllerProvider = NotifierProvider<OnboardingController, bool>(
-  OnboardingController.new,
-);
+final onboardingControllerProvider =
+    NotifierProvider<OnboardingController, bool>(OnboardingController.new);

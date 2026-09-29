@@ -75,12 +75,18 @@ class _CallTile extends StatelessWidget {
 
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
-    final isToday = now.year == dateTime.year && now.month == dateTime.month && now.day == dateTime.day;
+    final isToday =
+        now.year == dateTime.year &&
+        now.month == dateTime.month &&
+        now.day == dateTime.day;
     if (isToday) return DateFormat('HH:mm').format(dateTime);
     final yesterday = now.subtract(const Duration(days: 1));
     final isYesterday =
-        yesterday.year == dateTime.year && yesterday.month == dateTime.month && yesterday.day == dateTime.day;
-    if (isYesterday) return 'Yesterday, ${DateFormat('HH:mm').format(dateTime)}';
+        yesterday.year == dateTime.year &&
+        yesterday.month == dateTime.month &&
+        yesterday.day == dateTime.day;
+    if (isYesterday)
+      return 'Yesterday, ${DateFormat('HH:mm').format(dateTime)}';
     return DateFormat('MMM d, HH:mm').format(dateTime);
   }
 
@@ -92,16 +98,21 @@ class _CallTile extends StatelessWidget {
         '/chat/${call.otherUserId}',
         extra: ChatArgs(name: call.otherUserName),
       ),
-      leading: CircleAvatar(child: Icon(call.isVideo ? Icons.videocam : Icons.call)),
-      title: Text(call.otherUserName, style: const TextStyle(fontWeight: FontWeight.w600)),
+      leading: CircleAvatar(
+        child: Icon(call.isVideo ? Icons.videocam : Icons.call),
+      ),
+      title: Text(
+        call.otherUserName,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
       subtitle: Row(
         children: [
           Icon(
             call.status == 'missed' || call.status == 'declined'
                 ? Icons.call_missed
                 : call.isOutgoing
-                    ? Icons.call_made
-                    : Icons.call_received,
+                ? Icons.call_made
+                : Icons.call_received,
             size: 15,
             color: call.status == 'missed' || call.status == 'declined'
                 ? Colors.red
@@ -115,7 +126,10 @@ class _CallTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(_formatTime(call.createdAt), style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            _formatTime(call.createdAt),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 4),
           Icon(
             call.isVideo ? Icons.videocam_outlined : Icons.call_outlined,

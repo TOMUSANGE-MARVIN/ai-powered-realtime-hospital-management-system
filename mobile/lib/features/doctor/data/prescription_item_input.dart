@@ -12,9 +12,9 @@ class PrescriptionItemInput {
   final String? instructions;
 
   Map<String, dynamic> toJson() => {
-        'medicationName': medicationName,
-        'dosage': dosage,
-        'quantity': quantity,
-        if (instructions != null) 'instructions': instructions,
-      };
+    'medicationName': medicationName,
+    'dosage': dosage,
+    'quantity': quantity,
+    if (instructions != null) 'instructions': instructions,
+  };
 }

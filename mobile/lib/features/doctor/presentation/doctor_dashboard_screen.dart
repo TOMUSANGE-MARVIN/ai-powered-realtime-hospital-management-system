@@ -17,7 +17,8 @@ String _greetingName(String? fullName) {
   // Skip a leading title (e.g. "Dr.", "Prof.") so the greeting shows the
   // doctor's actual first name rather than just the honorific.
   final firstNonTitle = parts.firstWhere(
-    (p) => !RegExp(r'^(Dr|Prof|Mr|Mrs|Ms)\.?$', caseSensitive: false).hasMatch(p),
+    (p) =>
+        !RegExp(r'^(Dr|Prof|Mr|Mrs|Ms)\.?$', caseSensitive: false).hasMatch(p),
     orElse: () => parts.first,
   );
   return firstNonTitle;
@@ -60,15 +61,20 @@ class DoctorDashboardScreen extends ConsumerWidget {
                       Text(
                         'Earnings today',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                         ),
                       ),
                       const SizedBox(height: 8),
                       earningsAsync.when(
                         data: (earnings) => Text(
                           'UGX ${currencyFormat.format(earnings.today)}',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -83,7 +89,10 @@ class DoctorDashboardScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Today's Appointments", style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    "Today's Appointments",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   TextButton(
                     onPressed: () => context.go('/doctor-home/appointments'),
                     child: const Text('View all'),
@@ -108,7 +117,10 @@ class DoctorDashboardScreen extends ConsumerWidget {
                 error: (error, _) => Text(error.toString()),
               ),
               const SizedBox(height: 24),
-              Text('Appointment Requests', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Appointment Requests',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               requestsAsync.when(
                 data: (requests) {
                   if (requests.isEmpty) {
@@ -146,7 +158,11 @@ class _DoctorDashboardSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        const SkeletonBox(width: double.infinity, height: 108, borderRadius: 12),
+        const SkeletonBox(
+          width: double.infinity,
+          height: 108,
+          borderRadius: 12,
+        ),
         const SizedBox(height: 24),
         const SkeletonBox(width: 180, height: 18),
         const SizedBox(height: 12),
@@ -183,7 +199,9 @@ class _AppointmentTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         title: Text(appointment.patientName ?? 'Patient'),
-        subtitle: Text(appointment.time ?? DateFormat('MMM d').format(appointment.date)),
+        subtitle: Text(
+          appointment.time ?? DateFormat('MMM d').format(appointment.date),
+        ),
         trailing: Chip(label: Text(appointment.status)),
       ),
     );
@@ -195,7 +213,11 @@ class _RequestTile extends ConsumerWidget {
 
   final Appointment appointment;
 
-  Future<void> _respond(BuildContext context, WidgetRef ref, String status) async {
+  Future<void> _respond(
+    BuildContext context,
+    WidgetRef ref,
+    String status,
+  ) async {
     try {
       await ref
           .read(appointmentRepositoryProvider)
@@ -204,7 +226,9 @@ class _RequestTile extends ConsumerWidget {
       ref.invalidate(todaysAssignedAppointmentsProvider);
     } on ApiException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     }
   }
@@ -222,13 +246,18 @@ class _RequestTile extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(appointment.patientName ?? 'Patient',
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    appointment.patientName ?? 'Patient',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 if (appointment.isEmergency)
                   Chip(
-                    avatar: Icon(Icons.emergency,
-                        size: 15, color: Theme.of(context).colorScheme.onError),
+                    avatar: Icon(
+                      Icons.emergency,
+                      size: 15,
+                      color: Theme.of(context).colorScheme.onError,
+                    ),
                     label: const Text('EMERGENCY'),
                     labelStyle: TextStyle(
                       color: Theme.of(context).colorScheme.onError,

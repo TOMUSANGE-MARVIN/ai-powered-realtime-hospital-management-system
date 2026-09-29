@@ -6,8 +6,14 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
 import '../state/profile_providers.dart';
 
-Future<void> showUploadDocumentDialog(BuildContext context, WidgetRef ref) async {
-  final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+Future<void> showUploadDocumentDialog(
+  BuildContext context,
+  WidgetRef ref,
+) async {
+  final picked = await ImagePicker().pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 85,
+  );
   if (picked == null || !context.mounted) return;
 
   final titleController = TextEditingController(text: 'Medical document');
@@ -21,8 +27,14 @@ Future<void> showUploadDocumentDialog(BuildContext context, WidgetRef ref) async
         autofocus: true,
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-        FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Upload')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Upload'),
+        ),
       ],
     ),
   );
@@ -30,18 +42,28 @@ Future<void> showUploadDocumentDialog(BuildContext context, WidgetRef ref) async
   if (confirmed != true || !context.mounted) return;
 
   try {
-    final url = await ref.read(uploadRepositoryProvider).uploadFile(picked.path);
-    await ref.read(profileRepositoryProvider).uploadDocument(
-          title: titleController.text.trim().isEmpty ? 'Medical document' : titleController.text.trim(),
+    final url = await ref
+        .read(uploadRepositoryProvider)
+        .uploadFile(picked.path);
+    await ref
+        .read(profileRepositoryProvider)
+        .uploadDocument(
+          title: titleController.text.trim().isEmpty
+              ? 'Medical document'
+              : titleController.text.trim(),
           url: url,
         );
     ref.invalidate(myMedicalDocumentsProvider);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Document uploaded')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Document uploaded')));
     }
   } on ApiException catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 }

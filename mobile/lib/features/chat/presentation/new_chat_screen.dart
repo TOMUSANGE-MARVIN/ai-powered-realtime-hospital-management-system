@@ -86,11 +86,17 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
                   final doctor = doctors[index];
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: doctor.image != null ? NetworkImage(doctor.image!) : null,
-                      child: doctor.image == null ? const Icon(Icons.person) : null,
+                      backgroundImage: doctor.image != null
+                          ? NetworkImage(doctor.image!)
+                          : null,
+                      child: doctor.image == null
+                          ? const Icon(Icons.person)
+                          : null,
                     ),
                     title: Text(doctor.name),
-                    subtitle: Text(doctor.specialization ?? doctor.department ?? 'General'),
+                    subtitle: Text(
+                      doctor.specialization ?? doctor.department ?? 'General',
+                    ),
                     onTap: () => context.pushReplacement(
                       '/chat/${doctor.id}',
                       extra: ChatArgs(name: doctor.name, image: doctor.image),
@@ -99,7 +105,8 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
                 },
               );
             },
-            loading: () => const SkeletonList(padding: EdgeInsets.symmetric(vertical: 8)),
+            loading: () =>
+                const SkeletonList(padding: EdgeInsets.symmetric(vertical: 8)),
             error: (error, _) => Center(child: Text(error.toString())),
           ),
         ),
@@ -108,10 +115,10 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
   }
 }
 
-final _searchedDoctorsProvider =
-    FutureProvider.autoDispose.family<List<Doctor>, String>((ref, query) {
-  return ref.watch(doctorRepositoryProvider).listDoctors(search: query);
-});
+final _searchedDoctorsProvider = FutureProvider.autoDispose
+    .family<List<Doctor>, String>((ref, query) {
+      return ref.watch(doctorRepositoryProvider).listDoctors(search: query);
+    });
 
 class _PatientPicker extends ConsumerWidget {
   const _PatientPicker();
@@ -146,7 +153,8 @@ class _PatientPicker extends ConsumerWidget {
           },
         );
       },
-      loading: () => const SkeletonList(padding: EdgeInsets.symmetric(vertical: 8)),
+      loading: () =>
+          const SkeletonList(padding: EdgeInsets.symmetric(vertical: 8)),
       error: (error, _) => Center(child: Text(error.toString())),
     );
   }

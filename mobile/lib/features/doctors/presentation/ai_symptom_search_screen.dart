@@ -17,7 +17,8 @@ class AiSymptomSearchScreen extends ConsumerStatefulWidget {
   const AiSymptomSearchScreen({super.key});
 
   @override
-  ConsumerState<AiSymptomSearchScreen> createState() => _AiSymptomSearchScreenState();
+  ConsumerState<AiSymptomSearchScreen> createState() =>
+      _AiSymptomSearchScreenState();
 }
 
 class _AiSymptomSearchScreenState extends ConsumerState<AiSymptomSearchScreen> {
@@ -61,7 +62,10 @@ class _AiSymptomSearchScreenState extends ConsumerState<AiSymptomSearchScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.primary),
+                Icon(
+                  Icons.auto_awesome,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
@@ -87,7 +91,10 @@ class _AiSymptomSearchScreenState extends ConsumerState<AiSymptomSearchScreen> {
                   ? const SizedBox(
                       height: 18,
                       width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(Icons.search),
               label: Text(_loading ? 'Analysing…' : 'Find a specialist'),
@@ -117,12 +124,17 @@ class _ErrorState extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.error_outline, color: Theme.of(context).colorScheme.onErrorContainer),
+              Icon(
+                Icons.error_outline,
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   message,
-                  style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                  ),
                 ),
               ),
             ],
@@ -149,18 +161,26 @@ class _ResultsView extends StatelessWidget {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(16),
-          child: Text('No clear match found — try describing your symptoms differently.'),
+          child: Text(
+            'No clear match found — try describing your symptoms differently.',
+          ),
         ),
       );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Suggested specialties', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text(
+          'Suggested specialties',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         const SizedBox(height: 10),
         ...result.matches.map((m) => _MatchCard(match: m)),
         const SizedBox(height: 20),
-        const Text('Matching doctors', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text(
+          'Matching doctors',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         const SizedBox(height: 10),
         if (result.doctors.isEmpty)
           const Text('No doctors are currently listed under these specialties.')
@@ -195,10 +215,18 @@ class _MatchCard extends StatelessWidget {
                 children: [
                   Text(
                     match.specialty,
-                    style: TextStyle(fontWeight: FontWeight.bold, color: accent.foreground),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: accent.foreground,
+                    ),
                   ),
                   const SizedBox(height: 2),
-                  Text(match.reason, style: TextStyle(color: accent.foreground.withValues(alpha: 0.9))),
+                  Text(
+                    match.reason,
+                    style: TextStyle(
+                      color: accent.foreground.withValues(alpha: 0.9),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -225,10 +253,15 @@ class _DoctorResultTile extends ConsumerWidget {
           context.push('/doctors/${doctor.id}');
         },
         leading: CircleAvatar(
-          backgroundImage: doctor.image != null ? NetworkImage(doctor.image!) : null,
+          backgroundImage: doctor.image != null
+              ? NetworkImage(doctor.image!)
+              : null,
           child: doctor.image == null ? const Icon(Icons.person) : null,
         ),
-        title: Text(doctor.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          doctor.name,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         subtitle: Text(doctor.specialization ?? doctor.department ?? 'General'),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -239,15 +272,23 @@ class _DoctorResultTile extends ConsumerWidget {
                 const Icon(Icons.star, size: 14, color: Colors.amber),
                 const SizedBox(width: 2),
                 Text(
-                  doctor.rating != null ? doctor.rating!.toStringAsFixed(1) : 'New',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  doctor.rating != null
+                      ? doctor.rating!.toStringAsFixed(1)
+                      : 'New',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
             if (doctor.consultationFee != null)
               Text(
                 'UGX ${feeFormat.format(doctor.consultationFee)}',
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.primary),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
           ],
         ),

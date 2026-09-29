@@ -49,7 +49,9 @@ class PatientPrescription {
       status: json['status'] as String? ?? 'pending',
       createdAt: DateTime.parse(json['createdAt'] as String),
       items: (json['items'] as List? ?? [])
-          .map((i) => PatientPrescriptionItem.fromJson(i as Map<String, dynamic>))
+          .map(
+            (i) => PatientPrescriptionItem.fromJson(i as Map<String, dynamic>),
+          )
           .toList(),
       notes: json['notes'] as String?,
       imageUrl: json['imageUrl'] as String?,

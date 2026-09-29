@@ -14,5 +14,5 @@ final earningsProvider = FutureProvider((ref) {
 
 final doctorPrescriptionRepositoryProvider =
     Provider<DoctorPrescriptionRepository>((ref) {
-  return DoctorPrescriptionRepository(ref.watch(dioProvider));
-});
+      return DoctorPrescriptionRepository(ref.watch(dioProvider));
+    });

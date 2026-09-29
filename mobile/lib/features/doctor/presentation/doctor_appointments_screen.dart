@@ -13,10 +13,12 @@ class DoctorAppointmentsScreen extends ConsumerStatefulWidget {
   const DoctorAppointmentsScreen({super.key});
 
   @override
-  ConsumerState<DoctorAppointmentsScreen> createState() => _DoctorAppointmentsScreenState();
+  ConsumerState<DoctorAppointmentsScreen> createState() =>
+      _DoctorAppointmentsScreenState();
 }
 
-class _DoctorAppointmentsScreenState extends ConsumerState<DoctorAppointmentsScreen> {
+class _DoctorAppointmentsScreenState
+    extends ConsumerState<DoctorAppointmentsScreen> {
   String _filter = 'all';
 
   @override
@@ -33,11 +35,36 @@ class _DoctorAppointmentsScreenState extends ConsumerState<DoctorAppointmentsScr
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _FilterChip(label: 'All', value: 'all', selected: _filter, onSelect: (v) => setState(() => _filter = v)),
-                _FilterChip(label: 'Requested', value: 'requested', selected: _filter, onSelect: (v) => setState(() => _filter = v)),
-                _FilterChip(label: 'Confirmed', value: 'confirmed', selected: _filter, onSelect: (v) => setState(() => _filter = v)),
-                _FilterChip(label: 'Completed', value: 'completed', selected: _filter, onSelect: (v) => setState(() => _filter = v)),
-                _FilterChip(label: 'Cancelled', value: 'cancelled', selected: _filter, onSelect: (v) => setState(() => _filter = v)),
+                _FilterChip(
+                  label: 'All',
+                  value: 'all',
+                  selected: _filter,
+                  onSelect: (v) => setState(() => _filter = v),
+                ),
+                _FilterChip(
+                  label: 'Requested',
+                  value: 'requested',
+                  selected: _filter,
+                  onSelect: (v) => setState(() => _filter = v),
+                ),
+                _FilterChip(
+                  label: 'Confirmed',
+                  value: 'confirmed',
+                  selected: _filter,
+                  onSelect: (v) => setState(() => _filter = v),
+                ),
+                _FilterChip(
+                  label: 'Completed',
+                  value: 'completed',
+                  selected: _filter,
+                  onSelect: (v) => setState(() => _filter = v),
+                ),
+                _FilterChip(
+                  label: 'Cancelled',
+                  value: 'cancelled',
+                  selected: _filter,
+                  onSelect: (v) => setState(() => _filter = v),
+                ),
               ],
             ),
           ),
@@ -51,12 +78,14 @@ class _DoctorAppointmentsScreenState extends ConsumerState<DoctorAppointmentsScr
                   return const Center(child: Text('No appointments here.'));
                 }
                 return RefreshIndicator(
-                  onRefresh: () => ref.refresh(allAssignedAppointmentsProvider.future),
+                  onRefresh: () =>
+                      ref.refresh(allAssignedAppointmentsProvider.future),
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: filtered.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) => _DoctorAppointmentCard(appointment: filtered[index]),
+                    itemBuilder: (context, index) =>
+                        _DoctorAppointmentCard(appointment: filtered[index]),
                   ),
                 );
               },
@@ -74,7 +103,12 @@ class _DoctorAppointmentsScreenState extends ConsumerState<DoctorAppointmentsScr
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label, required this.value, required this.selected, required this.onSelect});
+  const _FilterChip({
+    required this.label,
+    required this.value,
+    required this.selected,
+    required this.onSelect,
+  });
 
   final String label;
   final String value;
@@ -99,13 +133,21 @@ class _DoctorAppointmentCard extends ConsumerWidget {
 
   final Appointment appointment;
 
-  Future<void> _updateStatus(BuildContext context, WidgetRef ref, String status) async {
+  Future<void> _updateStatus(
+    BuildContext context,
+    WidgetRef ref,
+    String status,
+  ) async {
     try {
-      await ref.read(appointmentRepositoryProvider).updateAssigned(appointment.id, status: status);
+      await ref
+          .read(appointmentRepositoryProvider)
+          .updateAssigned(appointment.id, status: status);
       ref.invalidate(allAssignedAppointmentsProvider);
     } on ApiException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     }
   }
@@ -118,10 +160,15 @@ class _DoctorAppointmentCard extends ConsumerWidget {
       lastDate: DateTime.now().add(const Duration(days: 180)),
     );
     if (date == null || !context.mounted) return;
-    final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
     if (!context.mounted) return;
     try {
-      await ref.read(appointmentRepositoryProvider).updateAssigned(
+      await ref
+          .read(appointmentRepositoryProvider)
+          .updateAssigned(
             appointment.id,
             date: date,
             time: time?.format(context),
@@ -129,7 +176,9 @@ class _DoctorAppointmentCard extends ConsumerWidget {
       ref.invalidate(allAssignedAppointmentsProvider);
     } on ApiException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     }
   }
@@ -149,9 +198,15 @@ class _DoctorAppointmentCard extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(appointment.patientName ?? 'Patient', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    appointment.patientName ?? 'Patient',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
-                Chip(label: Text(appointment.status), visualDensity: VisualDensity.compact),
+                Chip(
+                  label: Text(appointment.status),
+                  visualDensity: VisualDensity.compact,
+                ),
               ],
             ),
             const SizedBox(height: 6),
@@ -160,7 +215,10 @@ class _DoctorAppointmentCard extends ConsumerWidget {
             ),
             if (appointment.reason != null) ...[
               const SizedBox(height: 4),
-              Text(appointment.reason!, style: TextStyle(color: Colors.grey.shade600)),
+              Text(
+                appointment.reason!,
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
             ],
             const SizedBox(height: 12),
             Wrap(
@@ -168,23 +226,39 @@ class _DoctorAppointmentCard extends ConsumerWidget {
               runSpacing: 8,
               children: [
                 if (appointment.isPending) ...[
-                  FilledButton(onPressed: () => _updateStatus(context, ref, 'confirmed'), child: const Text('Accept')),
-                  OutlinedButton(onPressed: () => _updateStatus(context, ref, 'cancelled'), child: const Text('Reject')),
+                  FilledButton(
+                    onPressed: () => _updateStatus(context, ref, 'confirmed'),
+                    child: const Text('Accept'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => _updateStatus(context, ref, 'cancelled'),
+                    child: const Text('Reject'),
+                  ),
                 ],
                 if (appointment.status == 'confirmed') ...[
-                  OutlinedButton(onPressed: () => _reschedule(context, ref), child: const Text('Reschedule')),
-                  OutlinedButton(onPressed: () => _updateStatus(context, ref, 'cancelled'), child: const Text('Cancel')),
+                  OutlinedButton(
+                    onPressed: () => _reschedule(context, ref),
+                    child: const Text('Reschedule'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => _updateStatus(context, ref, 'cancelled'),
+                    child: const Text('Cancel'),
+                  ),
                   FilledButton(
                     onPressed: () => _updateStatus(context, ref, 'completed'),
                     child: const Text('Mark completed'),
                   ),
                 ],
-                if (appointment.status == 'completed' && appointment.patientId != null)
+                if (appointment.status == 'completed' &&
+                    appointment.patientId != null)
                   OutlinedButton.icon(
                     icon: const Icon(Icons.receipt_long, size: 16),
                     onPressed: () => context.push(
                       '/doctor-home/prescriptions/new',
-                      extra: {'patientId': appointment.patientId, 'patientName': appointment.patientName},
+                      extra: {
+                        'patientId': appointment.patientId,
+                        'patientName': appointment.patientName,
+                      },
                     ),
                     label: const Text('Write Prescription'),
                   ),
@@ -193,7 +267,9 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                     icon: const Icon(Icons.chat_bubble_outline, size: 16),
                     onPressed: () => context.push(
                       '/chat/${appointment.patientId}',
-                      extra: ChatArgs(name: appointment.patientName ?? 'Patient'),
+                      extra: ChatArgs(
+                        name: appointment.patientName ?? 'Patient',
+                      ),
                     ),
                     label: const Text('Message'),
                   ),

@@ -56,7 +56,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'This permanently deletes your account and all associated data. This cannot be undone.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.of(context).pop(true),
@@ -72,7 +75,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) context.go('/login');
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     }
   }
@@ -129,7 +134,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             secondary: const Icon(Icons.dark_mode_outlined),
             title: const Text('Dark Mode'),
             value: themeMode == ThemeMode.dark,
-            onChanged: (value) => ref.read(themeModeProvider.notifier).setDarkMode(value),
+            onChanged: (value) =>
+                ref.read(themeModeProvider.notifier).setDarkMode(value),
           ),
           const _SectionHeader('Support'),
           ListTile(
@@ -149,15 +155,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: OutlinedButton.icon(
               icon: const Icon(Icons.logout, color: Colors.red),
               label: const Text('Log Out', style: TextStyle(color: Colors.red)),
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.red)),
-              onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.red),
+              ),
+              onPressed: () =>
+                  ref.read(authControllerProvider.notifier).signOut(),
             ),
           ),
           const SizedBox(height: 8),
           Center(
             child: TextButton(
               onPressed: _confirmDeleteAccount,
-              child: Text('Delete Account', style: TextStyle(color: Colors.grey.shade600)),
+              child: Text(
+                'Delete Account',
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -179,7 +191,11 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Text(
         label.toUpperCase(),
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade600),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey.shade600,
+        ),
       ),
     );
   }

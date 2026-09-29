@@ -65,29 +65,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // there's text, like WhatsApp's input.
     _textController.addListener(_onTextChanged);
     _loadHistory();
-    _newMessageSubscription = ref.read(socketServiceProvider).messages.listen((data) {
+    _newMessageSubscription = ref.read(socketServiceProvider).messages.listen((
+      data,
+    ) {
       final message = ChatMessage.fromJson(data);
-      if (message.senderId == widget.otherUserId || message.receiverId == widget.otherUserId) {
+      if (message.senderId == widget.otherUserId ||
+          message.receiverId == widget.otherUserId) {
         _appendIfNew(message);
       }
     });
-    _deletedMessageSubscription =
-        ref.read(socketServiceProvider).deletedMessages.listen((data) {
-      final deleted = ChatMessage.fromJson(data);
-      _replace(deleted);
-    });
-    _statusSubscription =
-        ref.read(socketServiceProvider).messageStatusUpdates.listen((data) {
-      final updated = ChatMessage.fromJson(data);
-      if (updated.senderId == widget.otherUserId || updated.receiverId == widget.otherUserId) {
-        _replace(updated);
-      }
-    });
+    _deletedMessageSubscription = ref
+        .read(socketServiceProvider)
+        .deletedMessages
+        .listen((data) {
+          final deleted = ChatMessage.fromJson(data);
+          _replace(deleted);
+        });
+    _statusSubscription = ref
+        .read(socketServiceProvider)
+        .messageStatusUpdates
+        .listen((data) {
+          final updated = ChatMessage.fromJson(data);
+          if (updated.senderId == widget.otherUserId ||
+              updated.receiverId == widget.otherUserId) {
+            _replace(updated);
+          }
+        });
   }
 
   Future<void> _loadHistory() async {
     try {
-      final history = await ref.read(chatRepositoryProvider).getConversation(widget.otherUserId);
+      final history = await ref
+          .read(chatRepositoryProvider)
+          .getConversation(widget.otherUserId);
       if (!mounted) return;
       setState(() => _messages = history);
       _scrollToBottom();
@@ -148,14 +158,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!await _audioRecorder.hasPermission()) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microphone permission is required to record a voice note')),
+          const SnackBar(
+            content: Text(
+              'Microphone permission is required to record a voice note',
+            ),
+          ),
         );
       }
       return;
     }
     final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-    await _audioRecorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
+    final path =
+        '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _audioRecorder.start(
+      const RecordConfig(encoder: AudioEncoder.aacLc),
+      path: path,
+    );
     if (!mounted) return;
     setState(() {
       _isRecording = true;
@@ -163,7 +181,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _recordingDuration = Duration.zero;
     });
     _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() => _recordingDuration += const Duration(seconds: 1));
+      if (mounted)
+        setState(() => _recordingDuration += const Duration(seconds: 1));
     });
   }
 
@@ -188,7 +207,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final path = await _audioRecorder.stop();
     if (mounted) setState(() => _isRecording = false);
     if (path == null) return;
-    await _uploadAndSend(filePath: path, attachmentType: 'audio', attachmentName: 'Voice message');
+    await _uploadAndSend(
+      filePath: path,
+      attachmentType: 'audio',
+      attachmentName: 'Voice message',
+    );
   }
 
   String _formatDuration(Duration d) {
@@ -207,7 +230,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       final sent = await ref
           .read(chatRepositoryProvider)
-          .send(receiverId: widget.otherUserId, text: text, replyToId: replyToId);
+          .send(
+            receiverId: widget.otherUserId,
+            text: text,
+            replyToId: replyToId,
+          );
       _appendIfNew(sent);
     } catch (_) {
       if (mounted) {
@@ -273,9 +300,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _pickFromCamera() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
     if (picked == null) return;
-    await _uploadAndSend(filePath: picked.path, attachmentType: 'image', attachmentName: picked.name);
+    await _uploadAndSend(
+      filePath: picked.path,
+      attachmentType: 'image',
+      attachmentName: picked.name,
+    );
   }
 
   Future<void> _uploadAndSend({
@@ -288,7 +322,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() => _replyingTo = null);
     try {
       final url = await ref.read(uploadRepositoryProvider).uploadFile(filePath);
-      final sent = await ref.read(chatRepositoryProvider).send(
+      final sent = await ref
+          .read(chatRepositoryProvider)
+          .send(
             receiverId: widget.otherUserId,
             attachmentUrl: url,
             attachmentType: attachmentType,
@@ -299,7 +335,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Attachment failed to send. Try again.')),
+          const SnackBar(
+            content: Text('Attachment failed to send. Try again.'),
+          ),
         );
       }
     } finally {
@@ -314,8 +352,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         title: const Text('Delete message?'),
         content: const Text('This will remove the message for both of you.'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -365,7 +409,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _placeCall({required bool isVideo}) {
-    ref.read(callControllerProvider.notifier).startOutgoingCall(
+    ref
+        .read(callControllerProvider.notifier)
+        .startOutgoingCall(
           widget.otherUserId,
           widget.otherUserName,
           isVideo: isVideo,
@@ -389,9 +435,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFFE3F2F1),
-              backgroundImage:
-                  widget.otherUserImage != null ? NetworkImage(widget.otherUserImage!) : null,
-              child: widget.otherUserImage == null ? const Icon(Icons.person, size: 18) : null,
+              backgroundImage: widget.otherUserImage != null
+                  ? NetworkImage(widget.otherUserImage!)
+                  : null,
+              child: widget.otherUserImage == null
+                  ? const Icon(Icons.person, size: 18)
+                  : null,
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -402,14 +451,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Text(
                     widget.otherUserName,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15.5,
+                    ),
                   ),
-                  ref.watch(presenceProvider(widget.otherUserId)).maybeWhen(
+                  ref
+                      .watch(presenceProvider(widget.otherUserId))
+                      .maybeWhen(
                         data: (isOnline) => Text(
                           isOnline ? 'Online' : 'Offline',
                           style: TextStyle(
                             fontSize: 12,
-                            color: isOnline ? const Color(0xFF3BB273) : Colors.grey.shade500,
+                            color: isOnline
+                                ? const Color(0xFF3BB273)
+                                : Colors.grey.shade500,
                           ),
                         ),
                         orElse: () => const SizedBox.shrink(),
@@ -436,13 +492,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Column(
           children: [
             Expanded(child: _buildBody(myId)),
-            if (_uploadingAttachment) const LinearProgressIndicator(minHeight: 2),
-            if (_replyingTo != null) _ReplyPreviewBar(
-              message: _replyingTo!,
-              isMine: _replyingTo!.senderId == myId,
-              otherUserName: widget.otherUserName,
-              onCancel: () => setState(() => _replyingTo = null),
-            ),
+            if (_uploadingAttachment)
+              const LinearProgressIndicator(minHeight: 2),
+            if (_replyingTo != null)
+              _ReplyPreviewBar(
+                message: _replyingTo!,
+                isMine: _replyingTo!.senderId == myId,
+                otherUserName: widget.otherUserName,
+                onCancel: () => setState(() => _replyingTo = null),
+              ),
             SafeArea(
               top: false,
               child: Padding(
@@ -465,7 +523,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         Container(
           width: 44,
           height: 44,
-          decoration: const BoxDecoration(color: Color(0xFFE0F2F2), shape: BoxShape.circle),
+          decoration: const BoxDecoration(
+            color: Color(0xFFE0F2F2),
+            shape: BoxShape.circle,
+          ),
           child: IconButton(
             icon: const Icon(Icons.add, color: seedTeal),
             onPressed: _uploadingAttachment ? null : _pickAttachment,
@@ -495,7 +556,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     decoration: InputDecoration(
                       hintText: 'Message',
                       hintMaxLines: 1,
-                      hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 15,
+                      ),
                       filled: false,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -525,13 +589,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         Container(
           width: 44,
           height: 44,
-          decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
+          decoration: const BoxDecoration(
+            color: seedTeal,
+            shape: BoxShape.circle,
+          ),
           child: IconButton(
             icon: _sending
                 ? const SizedBox(
                     height: 18,
                     width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : Icon(hasText ? Icons.send : Icons.mic, color: Colors.white),
             onPressed: _sending || _uploadingAttachment
@@ -553,17 +623,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(26),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.redAccent,
+                  ),
                   tooltip: 'Cancel',
                   onPressed: _cancelRecording,
                 ),
-                const Icon(Icons.fiber_manual_record, color: Colors.red, size: 16),
+                const Icon(
+                  Icons.fiber_manual_record,
+                  color: Colors.red,
+                  size: 16,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -577,7 +658,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         const SizedBox(width: 8),
         Container(
-          decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
+          decoration: const BoxDecoration(
+            color: seedTeal,
+            shape: BoxShape.circle,
+          ),
           child: IconButton(
             icon: const Icon(Icons.send, color: Colors.white),
             tooltip: 'Send voice note',
@@ -611,7 +695,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           isMine: isMine,
           myId: myId,
           otherUserName: widget.otherUserName,
-          onLongPress: message.isDeleted ? null : () => _showMessageActions(message, isMine),
+          onLongPress: message.isDeleted
+              ? null
+              : () => _showMessageActions(message, isMine),
         );
       },
     );
@@ -619,7 +705,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 }
 
 class _InputIcon extends StatelessWidget {
-  const _InputIcon({required this.icon, required this.color, required this.onTap});
+  const _InputIcon({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   final IconData icon;
   final Color color;
@@ -667,7 +757,10 @@ class _ReplyPreviewBar extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
         border: Border(
-          left: BorderSide(color: Theme.of(context).colorScheme.primary, width: 3),
+          left: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 3,
+          ),
         ),
       ),
       child: Row(
@@ -688,7 +781,10 @@ class _ReplyPreviewBar extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(icon: const Icon(Icons.close, size: 18), onPressed: onCancel),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18),
+            onPressed: onCancel,
+          ),
         ],
       ),
     );
@@ -722,7 +818,9 @@ class _MessageBubble extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
+          ),
           decoration: BoxDecoration(
             color: bubbleColor,
             borderRadius: BorderRadius.only(
@@ -732,7 +830,11 @@ class _MessageBubble extends StatelessWidget {
               bottomRight: Radius.circular(isMine ? 4 : 16),
             ),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
             ],
           ),
           child: Column(
@@ -743,7 +845,11 @@ class _MessageBubble extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.block, size: 14, color: textColor.withValues(alpha: 0.7)),
+                    Icon(
+                      Icons.block,
+                      size: 14,
+                      color: textColor.withValues(alpha: 0.7),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'This message was deleted',
@@ -762,9 +868,11 @@ class _MessageBubble extends StatelessWidget {
                     otherUserName: otherUserName,
                     textColor: textColor,
                   ),
-                if (message.hasAttachment) _Attachment(message: message, textColor: textColor),
+                if (message.hasAttachment)
+                  _Attachment(message: message, textColor: textColor),
                 if (message.text.isNotEmpty) ...[
-                  if (message.hasAttachment || message.isReply) const SizedBox(height: 6),
+                  if (message.hasAttachment || message.isReply)
+                    const SizedBox(height: 6),
                   Text(message.text, style: TextStyle(color: textColor)),
                 ],
               ],
@@ -774,7 +882,10 @@ class _MessageBubble extends StatelessWidget {
                 children: [
                   Text(
                     DateFormat('HH:mm').format(message.createdAt),
-                    style: TextStyle(fontSize: 10.5, color: textColor.withValues(alpha: 0.7)),
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: textColor.withValues(alpha: 0.7),
+                    ),
                   ),
                   if (isMine && !message.isDeleted) ...[
                     const SizedBox(width: 4),
@@ -806,7 +917,11 @@ class _MessageTicks extends StatelessWidget {
       return const Icon(Icons.done_all, size: 15, color: _seenColor);
     }
     if (message.deliveredAt != null) {
-      return Icon(Icons.done_all, size: 15, color: textColor.withValues(alpha: 0.7));
+      return Icon(
+        Icons.done_all,
+        size: 15,
+        color: textColor.withValues(alpha: 0.7),
+      );
     }
     return Icon(Icons.done, size: 15, color: textColor.withValues(alpha: 0.7));
   }
@@ -835,20 +950,29 @@ class _QuotedMessage extends StatelessWidget {
       decoration: BoxDecoration(
         color: textColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border(left: BorderSide(color: textColor.withValues(alpha: 0.6), width: 3)),
+        border: Border(
+          left: BorderSide(color: textColor.withValues(alpha: 0.6), width: 3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             quotedLabel,
-            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           Text(
             message.replyToText ?? '',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12.5, color: textColor.withValues(alpha: 0.9)),
+            style: TextStyle(
+              fontSize: 12.5,
+              color: textColor.withValues(alpha: 0.9),
+            ),
           ),
         ],
       ),
@@ -888,10 +1012,16 @@ class _Attachment extends StatelessWidget {
       );
     }
     if (message.isAudio) {
-      return _AudioAttachment(url: message.attachmentUrl!, textColor: textColor);
+      return _AudioAttachment(
+        url: message.attachmentUrl!,
+        textColor: textColor,
+      );
     }
     return InkWell(
-      onTap: () => launchUrl(Uri.parse(message.attachmentUrl!), mode: LaunchMode.externalApplication),
+      onTap: () => launchUrl(
+        Uri.parse(message.attachmentUrl!),
+        mode: LaunchMode.externalApplication,
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -900,7 +1030,10 @@ class _Attachment extends StatelessWidget {
           Flexible(
             child: Text(
               message.attachmentName ?? 'Attachment',
-              style: TextStyle(color: textColor, decoration: TextDecoration.underline),
+              style: TextStyle(
+                color: textColor,
+                decoration: TextDecoration.underline,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -1074,7 +1207,9 @@ class _AudioAttachmentState extends State<_AudioAttachment> {
   @override
   Widget build(BuildContext context) {
     final shown = _playing || _position > Duration.zero ? _position : _duration;
-    final maxMs = _duration.inMilliseconds > 0 ? _duration.inMilliseconds.toDouble() : 1.0;
+    final maxMs = _duration.inMilliseconds > 0
+        ? _duration.inMilliseconds.toDouble()
+        : 1.0;
     final valueMs = _position.inMilliseconds.toDouble().clamp(0.0, maxMs);
 
     return SizedBox(
@@ -1087,13 +1222,18 @@ class _AudioAttachmentState extends State<_AudioAttachment> {
             child: _loading
                 ? Padding(
                     padding: const EdgeInsets.all(6),
-                    child: CircularProgressIndicator(strokeWidth: 2, color: widget.textColor),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: widget.textColor,
+                    ),
                   )
                 : IconButton(
                     icon: Icon(
                       _hasError
                           ? Icons.error_outline
-                          : (_playing ? Icons.pause_circle_filled : Icons.play_circle_filled),
+                          : (_playing
+                                ? Icons.pause_circle_filled
+                                : Icons.play_circle_filled),
                       color: widget.textColor,
                       size: 34,
                     ),
@@ -1111,8 +1251,12 @@ class _AudioAttachmentState extends State<_AudioAttachment> {
                 SliderTheme(
                   data: SliderThemeData(
                     trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 6,
+                    ),
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 12,
+                    ),
                     activeTrackColor: widget.textColor,
                     inactiveTrackColor: widget.textColor.withValues(alpha: 0.3),
                     thumbColor: widget.textColor,
@@ -1124,8 +1268,11 @@ class _AudioAttachmentState extends State<_AudioAttachment> {
                     value: valueMs,
                     onChanged: _hasError || maxMs <= 1
                         ? null
-                        : (v) => setState(() => _position = Duration(milliseconds: v.toInt())),
-                    onChangeEnd: (v) => _player.seek(Duration(milliseconds: v.toInt())),
+                        : (v) => setState(
+                            () => _position = Duration(milliseconds: v.toInt()),
+                          ),
+                    onChangeEnd: (v) =>
+                        _player.seek(Duration(milliseconds: v.toInt())),
                   ),
                 ),
                 Padding(

@@ -10,7 +10,8 @@ class DoctorEarningsScreen extends ConsumerStatefulWidget {
   const DoctorEarningsScreen({super.key});
 
   @override
-  ConsumerState<DoctorEarningsScreen> createState() => _DoctorEarningsScreenState();
+  ConsumerState<DoctorEarningsScreen> createState() =>
+      _DoctorEarningsScreenState();
 }
 
 class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
@@ -30,9 +31,9 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
   }
 
   void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payouts are coming soon.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Payouts are coming soon.')));
   }
 
   @override
@@ -53,7 +54,8 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                   Expanded(
                     child: _StatCard(
                       label: 'Available Balance',
-                      value: 'UGX ${currency.format(earnings.availableBalance)}',
+                      value:
+                          'UGX ${currency.format(earnings.availableBalance)}',
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -72,7 +74,10 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('Withdraw Funds', style: TextStyle(fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Withdraw Funds',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       const SizedBox(height: 12),
                       FilledButton.icon(
                         icon: const Icon(Icons.phone_android),
@@ -90,7 +95,10 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Earnings Overview', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Earnings Overview',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               SegmentedButton<String>(
                 segments: const [
@@ -113,35 +121,63 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Consultation Stats', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Consultation Stats',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(child: _StatCard(label: 'Total', value: '${earnings.consultationTotal}')),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Total',
+                      value: '${earnings.consultationTotal}',
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _StatCard(label: 'Virtual', value: '${earnings.consultationVirtual}')),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Virtual',
+                      value: '${earnings.consultationVirtual}',
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _StatCard(label: 'In-person', value: '${earnings.consultationInPerson}')),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'In-person',
+                      value: '${earnings.consultationInPerson}',
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
-              Text('Revenue Breakdown', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Revenue Breakdown',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               Card(
                 child: Column(
                   children: [
                     ListTile(
                       title: const Text('Virtual Consultations'),
-                      trailing: Text('UGX ${currency.format(earnings.revenueVirtual)}'),
+                      trailing: Text(
+                        'UGX ${currency.format(earnings.revenueVirtual)}',
+                      ),
                     ),
                     const Divider(height: 1),
                     ListTile(
                       title: const Text('In-person Consultations'),
-                      trailing: Text('UGX ${currency.format(earnings.revenueInPerson)}'),
+                      trailing: Text(
+                        'UGX ${currency.format(earnings.revenueInPerson)}',
+                      ),
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      title: const Text('Total Earnings', style: TextStyle(fontWeight: FontWeight.bold)),
+                      title: const Text(
+                        'Total Earnings',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       trailing: Text(
                         'UGX ${currency.format(earnings.totalEarnings)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -151,7 +187,10 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Recent Transactions', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Recent Transactions',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               if (earnings.recentTransactions.isEmpty)
                 const Padding(
@@ -163,7 +202,11 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                   (t) => Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      leading: Icon(t.isVirtual ? Icons.videocam_outlined : Icons.local_hospital_outlined),
+                      leading: Icon(
+                        t.isVirtual
+                            ? Icons.videocam_outlined
+                            : Icons.local_hospital_outlined,
+                      ),
                       title: Text(t.patientName),
                       subtitle: Text(DateFormat('MMM d, yyyy').format(t.date)),
                       trailing: Text('+${currency.format(t.amount)}'),
@@ -195,13 +238,29 @@ class _EarningsSkeleton extends StatelessWidget {
       children: [
         Row(
           children: const [
-            Expanded(child: SkeletonBox(width: double.infinity, height: 64, borderRadius: 14)),
+            Expanded(
+              child: SkeletonBox(
+                width: double.infinity,
+                height: 64,
+                borderRadius: 14,
+              ),
+            ),
             SizedBox(width: 12),
-            Expanded(child: SkeletonBox(width: double.infinity, height: 64, borderRadius: 14)),
+            Expanded(
+              child: SkeletonBox(
+                width: double.infinity,
+                height: 64,
+                borderRadius: 14,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
-        const SkeletonBox(width: double.infinity, height: 130, borderRadius: 14),
+        const SkeletonBox(
+          width: double.infinity,
+          height: 130,
+          borderRadius: 14,
+        ),
         const SizedBox(height: 24),
         const SkeletonBox(width: 160, height: 16),
         const SizedBox(height: 12),
@@ -209,7 +268,11 @@ class _EarningsSkeleton extends StatelessWidget {
         const SizedBox(height: 24),
         const SkeletonBox(width: 160, height: 16),
         const SizedBox(height: 12),
-        const SkeletonBox(width: double.infinity, height: 150, borderRadius: 14),
+        const SkeletonBox(
+          width: double.infinity,
+          height: 150,
+          borderRadius: 14,
+        ),
       ],
     );
   }
@@ -229,9 +292,15 @@ class _StatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(
+              label,
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
           ],
         ),
       ),

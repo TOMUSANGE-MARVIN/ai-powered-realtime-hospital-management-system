@@ -55,7 +55,8 @@ class Doctor {
       yearsOfExperience: (json['yearsOfExperience'] as num?)?.toInt(),
       qualifications: json['qualifications'] as String?,
       boardCertified: json['boardCertified'] as bool? ?? false,
-      treatments: (json['treatments'] as String?)
+      treatments:
+          (json['treatments'] as String?)
               ?.split(',')
               .map((t) => t.trim())
               .where((t) => t.isNotEmpty)

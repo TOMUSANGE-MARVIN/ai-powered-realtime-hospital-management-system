@@ -1,4 +1,12 @@
-enum CallEndReason { hangup, declined, busy, noAnswer, cancelled, peerDisconnected, error }
+enum CallEndReason {
+  hangup,
+  declined,
+  busy,
+  noAnswer,
+  cancelled,
+  peerDisconnected,
+  error,
+}
 
 sealed class CallState {
   const CallState();

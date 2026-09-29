@@ -19,13 +19,19 @@ class ReviewRepository {
 
   /// The signed-in doctor's own reviews, for the reply screen.
   Future<DoctorReviews> listMine({int limit = 50}) async {
-    final response = await _dio.get('/api/reviews/mine', queryParameters: {'limit': limit});
+    final response = await _dio.get(
+      '/api/reviews/mine',
+      queryParameters: {'limit': limit},
+    );
     ApiException.checkStatus(response);
     return DoctorReviews.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<void> reply({required String reviewId, required String reply}) async {
-    final response = await _dio.post('/api/reviews/$reviewId/reply', data: {'reply': reply});
+    final response = await _dio.post(
+      '/api/reviews/$reviewId/reply',
+      data: {'reply': reply},
+    );
     ApiException.checkStatus(response);
   }
 

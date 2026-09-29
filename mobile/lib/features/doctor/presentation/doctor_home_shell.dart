@@ -6,7 +6,10 @@ import '../../../core/widgets/pill_nav_bar.dart';
 const doctorNavItems = [
   PillNavItem(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard),
   PillNavItem(icon: Icons.chat_bubble_outline, selectedIcon: Icons.chat_bubble),
-  PillNavItem(icon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month),
+  PillNavItem(
+    icon: Icons.calendar_month_outlined,
+    selectedIcon: Icons.calendar_month,
+  ),
   PillNavItem(icon: Icons.payments_outlined, selectedIcon: Icons.payments),
   PillNavItem(icon: Icons.person_outline, selectedIcon: Icons.person),
 ];

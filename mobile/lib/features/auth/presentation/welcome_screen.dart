@@ -67,7 +67,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   }
 
   double get _currentPagePosition {
-    if (!_pageController.hasClients || !_pageController.position.haveDimensions) {
+    if (!_pageController.hasClients ||
+        !_pageController.position.haveDimensions) {
       return _page.toDouble();
     }
     return _pageController.page ?? _page.toDouble();
@@ -100,7 +101,10 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   final scale = 1 - (delta.abs() * 0.15);
                   final opacity = 1 - (delta.abs() * 0.4);
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
                     child: Center(
                       child: Opacity(
                         opacity: opacity.clamp(0.0, 1.0),
@@ -126,7 +130,10 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 },
               ),
             ),
-            _DotIndicator(count: _welcomeIllustrations.length, pagePosition: pagePosition),
+            _DotIndicator(
+              count: _welcomeIllustrations.length,
+              pagePosition: pagePosition,
+            ),
             const SizedBox(height: 28),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -134,11 +141,17 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                   children: const [
-                    TextSpan(text: 'Welcome to ', style: TextStyle(color: Color(0xFF8BC34A))),
-                    TextSpan(text: 'Ask Musawo', style: TextStyle(color: Color(0xFF29B6D8))),
+                    TextSpan(
+                      text: 'Welcome to ',
+                      style: TextStyle(color: Color(0xFF8BC34A)),
+                    ),
+                    TextSpan(
+                      text: 'Ask Musawo',
+                      style: TextStyle(color: Color(0xFF29B6D8)),
+                    ),
                   ],
                 ),
               ),
@@ -147,9 +160,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
             Text(
               'Connecting Patients\nWith Trusted Doctors',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 40),
             Padding(
@@ -192,6 +205,7 @@ class _DotIndicator extends StatelessWidget {
   const _DotIndicator({required this.count, required this.pagePosition});
 
   final int count;
+
   /// Continuous scroll position from the [PageController], e.g. 1.35 while
   /// dragging from page 1 to 2. Lets each dot morph its width/opacity in
   /// lockstep with the swipe instead of snapping only on page settle.

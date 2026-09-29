@@ -33,7 +33,8 @@ class Appointment {
   final String? consultationType;
   final bool isEmergency;
 
-  bool get isCancellable => status == 'requested' || status == 'scheduled' || status == 'confirmed';
+  bool get isCancellable =>
+      status == 'requested' || status == 'scheduled' || status == 'confirmed';
   bool get isPending => status == 'requested';
 
   factory Appointment.fromJson(Map<String, dynamic> json) {

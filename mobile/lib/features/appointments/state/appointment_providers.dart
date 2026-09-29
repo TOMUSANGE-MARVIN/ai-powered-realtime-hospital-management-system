@@ -25,7 +25,9 @@ final todaysAssignedAppointmentsProvider = FutureProvider((ref) {
 
 /// Doctor dashboard/appointments: pending appointment requests.
 final assignedRequestsProvider = FutureProvider((ref) {
-  return ref.watch(appointmentRepositoryProvider).listAssigned(status: 'requested');
+  return ref
+      .watch(appointmentRepositoryProvider)
+      .listAssigned(status: 'requested');
 });
 
 /// Doctor appointments tab: full assigned list, unfiltered.

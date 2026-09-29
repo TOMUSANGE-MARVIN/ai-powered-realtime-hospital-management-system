@@ -65,8 +65,12 @@ class CallController extends Notifier<CallState> {
 
     _incomingSub = socket.incomingCalls.listen(_onIncomingCall);
     _answeredSub = socket.callAnswered.listen(_onCallAnswered);
-    _declinedSub = socket.callDeclined.listen((_) => _onTerminal(CallEndReason.declined));
-    _cancelledSub = socket.callCancelled.listen((_) => _onTerminal(CallEndReason.cancelled));
+    _declinedSub = socket.callDeclined.listen(
+      (_) => _onTerminal(CallEndReason.declined),
+    );
+    _cancelledSub = socket.callCancelled.listen(
+      (_) => _onTerminal(CallEndReason.cancelled),
+    );
     _endedSub = socket.callEnded.listen(_onCallEnded);
     _busySub = socket.callBusy.listen((_) => _onTerminal(CallEndReason.busy));
     _iceSub = socket.iceCandidates.listen(_onRemoteIceCandidate);
@@ -92,20 +96,20 @@ class CallController extends Notifier<CallState> {
   }
 
   String? get _peerId => switch (state) {
-        CallOutgoingRinging(:final peerId) => peerId,
-        CallIncomingRinging(:final peerId) => peerId,
-        CallConnecting(:final peerId) => peerId,
-        CallInProgress(:final peerId) => peerId,
-        _ => null,
-      };
+    CallOutgoingRinging(:final peerId) => peerId,
+    CallIncomingRinging(:final peerId) => peerId,
+    CallConnecting(:final peerId) => peerId,
+    CallInProgress(:final peerId) => peerId,
+    _ => null,
+  };
 
   String? get _callId => switch (state) {
-        CallOutgoingRinging(:final callId) => callId,
-        CallIncomingRinging(:final callId) => callId,
-        CallConnecting(:final callId) => callId,
-        CallInProgress(:final callId) => callId,
-        _ => null,
-      };
+    CallOutgoingRinging(:final callId) => callId,
+    CallIncomingRinging(:final callId) => callId,
+    CallConnecting(:final callId) => callId,
+    CallInProgress(:final callId) => callId,
+    _ => null,
+  };
 
   Future<bool> _checkMicPermission() => AudioRecorder().hasPermission();
 
@@ -230,7 +234,8 @@ class CallController extends Notifier<CallState> {
 
   Future<void> _onCallAnswered(Map<String, dynamic> data) async {
     final current = state;
-    if (current is! CallOutgoingRinging || data['callId'] != current.callId) return;
+    if (current is! CallOutgoingRinging || data['callId'] != current.callId)
+      return;
     _stopRingingSounds();
     _ringTimer?.cancel();
 
@@ -249,7 +254,8 @@ class CallController extends Notifier<CallState> {
   }
 
   void _onPeerConnectionState(RTCPeerConnectionState connectionState) {
-    if (connectionState == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+    if (connectionState ==
+        RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
       final current = state;
       if (current is CallConnecting) {
         _connectedAt = DateTime.now();
@@ -262,7 +268,8 @@ class CallController extends Notifier<CallState> {
           peerImage: current.peerImage,
         );
       }
-    } else if (connectionState == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+    } else if (connectionState ==
+        RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
       _finish(CallEndReason.error);
     }
   }
@@ -282,11 +289,18 @@ class CallController extends Notifier<CallState> {
 
   void _onCallStatus(Map<String, dynamic> data) {
     final current = state;
-    if (current is! CallOutgoingRinging || data['callId'] != current.callId) return;
-    state = current.copyWith(calleeOnline: data['calleeOnline'] as bool? ?? false);
+    if (current is! CallOutgoingRinging || data['callId'] != current.callId)
+      return;
+    state = current.copyWith(
+      calleeOnline: data['calleeOnline'] as bool? ?? false,
+    );
   }
 
-  void _sendIceCandidate(String callId, String targetUserId, RTCIceCandidate candidate) {
+  void _sendIceCandidate(
+    String callId,
+    String targetUserId,
+    RTCIceCandidate candidate,
+  ) {
     ref.read(socketServiceProvider).emitIceCandidate({
       'callId': callId,
       'targetUserId': targetUserId,
@@ -347,7 +361,9 @@ class CallController extends Notifier<CallState> {
     final callId = _callId;
     if (callId != null) _earlyIceCandidates.remove(callId);
     final wasInProgress = state is CallInProgress;
-    final duration = wasInProgress ? DateTime.now().difference(_connectedAt!) : null;
+    final duration = wasInProgress
+        ? DateTime.now().difference(_connectedAt!)
+        : null;
 
     if (_wasCaller) {
       final callType = switch (state) {
@@ -366,7 +382,9 @@ class CallController extends Notifier<CallState> {
       };
       final peerId = _peerId;
       if (peerId != null) {
-        ref.read(callRepositoryProvider).recordCall(
+        ref
+            .read(callRepositoryProvider)
+            .recordCall(
               calleeId: peerId,
               type: callType ? 'video' : 'voice',
               status: status,
@@ -391,4 +409,6 @@ class CallController extends Notifier<CallState> {
   }
 }
 
-final callControllerProvider = NotifierProvider<CallController, CallState>(CallController.new);
+final callControllerProvider = NotifierProvider<CallController, CallState>(
+  CallController.new,
+);

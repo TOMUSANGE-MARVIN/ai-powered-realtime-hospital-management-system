@@ -20,7 +20,10 @@ class AuthRepository {
     }
   }
 
-  Future<AppUser> signIn({required String email, required String password}) async {
+  Future<AppUser> signIn({
+    required String email,
+    required String password,
+  }) async {
     try {
       final response = await _dio.post(
         '/api/auth/sign-in/email',

@@ -10,7 +10,13 @@ import '../state/profile_providers.dart';
 
 const _genderOptions = ['Male', 'Female', 'Other'];
 const _bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-const _maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Widowed', 'Other'];
+const _maritalStatusOptions = [
+  'Single',
+  'Married',
+  'Divorced',
+  'Widowed',
+  'Other',
+];
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -109,18 +115,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
     if (source == null) return;
 
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 85,
+    );
     if (picked == null || !mounted) return;
 
     setState(() => _uploadingPhoto = true);
     try {
-      final url = await ref.read(uploadRepositoryProvider).uploadFile(picked.path);
+      final url = await ref
+          .read(uploadRepositoryProvider)
+          .uploadFile(picked.path);
       await ref.read(profileRepositoryProvider).updateMe({'image': url});
       ref.invalidate(authControllerProvider);
       if (mounted) setState(() => _imageUrl = url);
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _uploadingPhoto = false);
@@ -148,12 +161,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       });
       ref.invalidate(authControllerProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profile updated')));
         Navigator.of(context).pop();
       }
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -174,10 +191,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 48,
-                  backgroundImage: _imageUrl != null ? NetworkImage(_imageUrl!) : null,
+                  backgroundImage: _imageUrl != null
+                      ? NetworkImage(_imageUrl!)
+                      : null,
                   child: _uploadingPhoto
                       ? const CircularProgressIndicator()
-                      : (_imageUrl == null ? const Icon(Icons.person, size: 44) : null),
+                      : (_imageUrl == null
+                            ? const Icon(Icons.person, size: 44)
+                            : null),
                 ),
                 Positioned(
                   bottom: 0,
@@ -190,7 +211,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 2,
+                        ),
                       ),
                       child: Icon(
                         Icons.camera_alt,
@@ -211,7 +235,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const SizedBox(height: 16),
           if (_role == 'doctor') ..._doctorFields() else ..._patientFields(),
           const SizedBox(height: 16),
-          const Text('Emergency Contact', style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text(
+            'Emergency Contact',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
           TextField(
             controller: _emergencyNameController,
@@ -235,7 +262,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : const Text('Save Changes'),
           ),
@@ -251,7 +281,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         initialValue: _gender,
         decoration: const InputDecoration(labelText: 'Gender'),
         items: _genderOptions
-            .map((option) => DropdownMenuItem(value: option, child: Text(option)))
+            .map(
+              (option) => DropdownMenuItem(value: option, child: Text(option)),
+            )
             .toList(),
         onChanged: (value) => setState(() => _gender = value),
       ),
@@ -260,7 +292,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         initialValue: _bloodgroup,
         decoration: const InputDecoration(labelText: 'Blood Group'),
         items: _bloodGroupOptions
-            .map((option) => DropdownMenuItem(value: option, child: Text(option)))
+            .map(
+              (option) => DropdownMenuItem(value: option, child: Text(option)),
+            )
             .toList(),
         onChanged: (value) => setState(() => _bloodgroup = value),
       ),
@@ -269,7 +303,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         initialValue: _maritalStatus,
         decoration: const InputDecoration(labelText: 'Marital Status'),
         items: _maritalStatusOptions
-            .map((option) => DropdownMenuItem(value: option, child: Text(option)))
+            .map(
+              (option) => DropdownMenuItem(value: option, child: Text(option)),
+            )
             .toList(),
         onChanged: (value) => setState(() => _maritalStatus = value),
       ),

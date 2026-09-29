@@ -3,7 +3,11 @@ import 'package:dio/dio.dart';
 import '../../../core/api/api_exception.dart';
 
 class InitiatedPayment {
-  InitiatedPayment({required this.id, required this.amount, required this.status});
+  InitiatedPayment({
+    required this.id,
+    required this.amount,
+    required this.status,
+  });
 
   final String id;
   final int amount;
@@ -33,7 +37,11 @@ class PaymentRepository {
   }) async {
     final response = await _dio.post(
       '/api/payments/initiate',
-      data: {'doctorId': doctorId, 'method': method, 'phoneNumber': phoneNumber},
+      data: {
+        'doctorId': doctorId,
+        'method': method,
+        'phoneNumber': phoneNumber,
+      },
     );
     ApiException.checkStatus(response);
     return InitiatedPayment.fromJson(response.data as Map<String, dynamic>);

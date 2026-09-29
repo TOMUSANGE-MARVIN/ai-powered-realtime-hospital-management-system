@@ -40,7 +40,10 @@ class DoctorReviewsScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Text(
                           data.averageRating?.toStringAsFixed(1) ?? '—',
-                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text('(${data.totalReviews} reviews)'),
@@ -92,7 +95,9 @@ class _DoctorReviewCard extends ConsumerWidget {
     final text = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(review.doctorReply == null ? 'Reply to review' : 'Edit reply'),
+        title: Text(
+          review.doctorReply == null ? 'Reply to review' : 'Edit reply',
+        ),
         content: TextField(
           controller: controller,
           maxLines: 4,
@@ -102,7 +107,10 @@ class _DoctorReviewCard extends ConsumerWidget {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
             child: const Text('Send'),
@@ -112,12 +120,14 @@ class _DoctorReviewCard extends ConsumerWidget {
     );
     if (text == null || text.isEmpty) return;
     try {
-      await ref.read(reviewRepositoryProvider).reply(reviewId: review.id, reply: text);
+      await ref
+          .read(reviewRepositoryProvider)
+          .reply(reviewId: review.id, reply: text);
       ref.invalidate(myReviewsProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reply sent')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Reply sent')));
       }
     } catch (_) {
       if (context.mounted) {
@@ -140,7 +150,10 @@ class _DoctorReviewCard extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(review.patientName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    review.patientName,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 ...List.generate(
                   5,
@@ -160,7 +173,8 @@ class _DoctorReviewCard extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(review.comment!),
             ],
-            if (review.doctorReply != null && review.doctorReply!.isNotEmpty) ...[
+            if (review.doctorReply != null &&
+                review.doctorReply!.isNotEmpty) ...[
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -189,8 +203,13 @@ class _DoctorReviewCard extends ConsumerWidget {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
-                icon: Icon(review.doctorReply == null ? Icons.reply : Icons.edit, size: 16),
-                label: Text(review.doctorReply == null ? 'Reply' : 'Edit reply'),
+                icon: Icon(
+                  review.doctorReply == null ? Icons.reply : Icons.edit,
+                  size: 16,
+                ),
+                label: Text(
+                  review.doctorReply == null ? 'Reply' : 'Edit reply',
+                ),
                 onPressed: () => _reply(context, ref),
               ),
             ),

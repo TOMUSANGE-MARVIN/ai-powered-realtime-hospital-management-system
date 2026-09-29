@@ -18,7 +18,8 @@ class DoctorRepository {
       '/api/doctors',
       queryParameters: {
         if (search != null && search.isNotEmpty) 'search': search,
-        if (specialization != null && specialization != 'all') 'specialization': specialization,
+        if (specialization != null && specialization != 'all')
+          'specialization': specialization,
         if (featured) 'featured': 'true',
         'limit': limit,
       },

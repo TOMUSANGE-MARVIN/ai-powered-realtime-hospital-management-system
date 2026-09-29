@@ -1,5 +1,9 @@
 class ActiveInvoice {
-  ActiveInvoice({required this.id, required this.totalAmount, required this.status});
+  ActiveInvoice({
+    required this.id,
+    required this.totalAmount,
+    required this.status,
+  });
 
   final String id;
   final int totalAmount;

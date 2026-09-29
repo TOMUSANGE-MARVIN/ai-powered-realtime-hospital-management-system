@@ -529,12 +529,8 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
     final specialty =
         doctor?.specialization ?? doctor?.department ?? appointment.department;
 
-    final pillBg = isPending
-        ? const Color(0xFFFFF3E0)
-        : const Color(0xFFE0F7F4);
-    final pillFg = isPending
-        ? const Color(0xFF8A4B00)
-        : const Color(0xFF0B7A6E);
+    final pillBg = isPending ? const Color(0xFFFF9800) : seedTeal;
+    final pillFg = isPending ? const Color(0xFF2B1A00) : Colors.white;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -887,7 +883,7 @@ class _QuickActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Material(
-        color: accent.background.withValues(alpha: 0.7),
+        color: accent.foreground,
         borderRadius: BorderRadius.circular(20),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -896,7 +892,7 @@ class _QuickActionTile extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(4, 16, 4, 14),
             child: Column(
               children: [
-                Icon(icon, color: accent.foreground, size: 30),
+                Icon(icon, color: Colors.white, size: 30),
                 const SizedBox(height: 12),
                 FittedBox(
                   fit: BoxFit.scaleDown,
@@ -906,7 +902,7 @@ class _QuickActionTile extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: darkTealBackground,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -917,7 +913,7 @@ class _QuickActionTile extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 11,
                     height: 1.25,
-                    color: Color(0xFF5F6B6B),
+                    color: Color(0xE6FFFFFF),
                   ),
                 ),
               ],

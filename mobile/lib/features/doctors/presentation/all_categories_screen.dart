@@ -13,7 +13,8 @@ class AllCategoriesScreen extends ConsumerStatefulWidget {
   const AllCategoriesScreen({super.key});
 
   @override
-  ConsumerState<AllCategoriesScreen> createState() => _AllCategoriesScreenState();
+  ConsumerState<AllCategoriesScreen> createState() =>
+      _AllCategoriesScreenState();
 }
 
 class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
@@ -38,7 +39,8 @@ class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: TextField(
               controller: _searchController,
-              onChanged: (value) => setState(() => _query = value.trim().toLowerCase()),
+              onChanged: (value) =>
+                  setState(() => _query = value.trim().toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search a category',
                 prefixIcon: const Icon(Icons.search),
@@ -61,10 +63,15 @@ class _AllCategoriesScreenState extends ConsumerState<AllCategoriesScreen> {
                 final filtered = _query.isEmpty
                     ? categories
                     : categories
-                        .where((c) => c.category.name.toLowerCase().contains(_query))
-                        .toList();
+                          .where(
+                            (c) =>
+                                c.category.name.toLowerCase().contains(_query),
+                          )
+                          .toList();
                 if (filtered.isEmpty) {
-                  return const Center(child: Text('No categories match your search'));
+                  return const Center(
+                    child: Text('No categories match your search'),
+                  );
                 }
                 return GridView.builder(
                   padding: const EdgeInsets.all(16),

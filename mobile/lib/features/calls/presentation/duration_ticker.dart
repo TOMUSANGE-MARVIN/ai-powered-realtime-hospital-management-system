@@ -37,7 +37,8 @@ class _DurationTickerState extends State<DurationTicker> {
     final seconds = elapsed.inSeconds.remainder(60).toString().padLeft(2, '0');
     return Text(
       '$minutes:$seconds',
-      style: widget.style ?? const TextStyle(color: Colors.white70, fontSize: 15),
+      style:
+          widget.style ?? const TextStyle(color: Colors.white70, fontSize: 15),
     );
   }
 }

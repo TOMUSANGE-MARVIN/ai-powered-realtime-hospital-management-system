@@ -14,7 +14,9 @@ class ProfileRepository {
   Future<AppUser> updateMe(Map<String, dynamic> data) async {
     final response = await _dio.patch('/api/users/me', data: data);
     ApiException.checkStatus(response);
-    return AppUser.fromJson((response.data as Map)['updatedUser'] as Map<String, dynamic>);
+    return AppUser.fromJson(
+      (response.data as Map)['updatedUser'] as Map<String, dynamic>,
+    );
   }
 
   Future<void> deleteMe() async {
@@ -30,7 +32,10 @@ class ProfileRepository {
         .toList();
   }
 
-  Future<void> uploadDocument({required String title, required String url}) async {
+  Future<void> uploadDocument({
+    required String title,
+    required String url,
+  }) async {
     final response = await _dio.post(
       '/api/medical-documents',
       data: {'title': title, 'url': url},
@@ -43,7 +48,9 @@ class ProfileRepository {
     ApiException.checkStatus(response);
     final results = (response.data as Map)['res'] as List;
     return results
-        .map((json) => PatientPrescription.fromJson(json as Map<String, dynamic>))
+        .map(
+          (json) => PatientPrescription.fromJson(json as Map<String, dynamic>),
+        )
         .toList();
   }
 

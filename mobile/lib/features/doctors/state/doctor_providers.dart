@@ -41,7 +41,9 @@ class CategoryWithCount {
 /// Admin-managed categories joined with doctor counts from
 /// [specialtiesProvider] by matching name — avoids a backend join since both
 /// sources are already fetched independently.
-final categoriesWithCountsProvider = FutureProvider<List<CategoryWithCount>>((ref) async {
+final categoriesWithCountsProvider = FutureProvider<List<CategoryWithCount>>((
+  ref,
+) async {
   final categories = await ref.watch(categoriesProvider.future);
   final specialties = await ref.watch(specialtiesProvider.future);
   final countByName = {for (final s in specialties) s.name: s.count};
@@ -58,7 +60,10 @@ final doctorsListProvider = FutureProvider.autoDispose<List<Doctor>>((ref) {
       .listDoctors(search: search, specialization: specialty);
 });
 
-final doctorDetailProvider = FutureProvider.autoDispose.family<Doctor, String>((ref, id) {
+final doctorDetailProvider = FutureProvider.autoDispose.family<Doctor, String>((
+  ref,
+  id,
+) {
   return ref.watch(doctorRepositoryProvider).getDoctor(id);
 });
 
@@ -67,13 +72,15 @@ final doctorDetailProvider = FutureProvider.autoDispose.family<Doctor, String>((
 /// cached across navigation instead of re-fetching (with a loading spinner)
 /// every time the home screen remounts.
 final featuredDoctorsProvider = FutureProvider<List<Doctor>>((ref) {
-  return ref.watch(doctorRepositoryProvider).listDoctors(featured: true, limit: 10);
+  return ref
+      .watch(doctorRepositoryProvider)
+      .listDoctors(featured: true, limit: 10);
 });
 
-final doctorReviewsProvider =
-    FutureProvider.autoDispose.family<DoctorReviews, String>((ref, doctorId) {
-  return ref.watch(reviewRepositoryProvider).listForDoctor(doctorId);
-});
+final doctorReviewsProvider = FutureProvider.autoDispose
+    .family<DoctorReviews, String>((ref, doctorId) {
+      return ref.watch(reviewRepositoryProvider).listForDoctor(doctorId);
+    });
 
 /// Kicks off the doctor detail + reviews fetches for [doctorId] without
 /// waiting for them, so the network round-trip overlaps with the page
@@ -83,7 +90,9 @@ final doctorReviewsProvider =
 /// screen's own `ref.watch(doctorDetailProvider(...))` picks up the same
 /// in-flight (or already-resolved) future instead of re-fetching.
 void prefetchDoctorDetail(WidgetRef ref, String doctorId) {
-  ref.read(doctorDetailProvider(doctorId).future).then(
+  ref
+      .read(doctorDetailProvider(doctorId).future)
+      .then(
         (doctor) => ref.read(doctorReviewsProvider(doctorId).future),
         onError: (_) {},
       );

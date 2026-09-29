@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -40,6 +41,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   _Stage _stage = _Stage.review;
   Payment? _payment;
   String? _error;
+  _PayMethod _method = _PayMethod.mtn;
 
   BookingDraft get _draft => widget.draft;
   int get _fee => _draft.doctor.consultationFee ?? 0;
@@ -230,6 +232,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               draft: _draft,
               fee: _fee,
               error: _error,
+              method: _method,
+              onMethodChanged: (m) => setState(() => _method = m),
               starting: _stage == _Stage.starting,
               onPay: _pay,
               onCancel: () => context.pop(),
@@ -245,6 +249,8 @@ class _Review extends StatelessWidget {
     required this.draft,
     required this.fee,
     required this.error,
+    required this.method,
+    required this.onMethodChanged,
     required this.starting,
     required this.onPay,
     required this.onCancel,
@@ -253,6 +259,8 @@ class _Review extends StatelessWidget {
   final BookingDraft draft;
   final int fee;
   final String? error;
+  final _PayMethod method;
+  final ValueChanged<_PayMethod> onMethodChanged;
   final bool starting;
   final VoidCallback onPay;
   final VoidCallback onCancel;
@@ -304,45 +312,8 @@ class _Review extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Payment method',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: _ink),
-              ),
-              const SizedBox(height: 10),
-              SoftCard(
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.verified_user_outlined, color: seedTeal),
-                        SizedBox(width: 10),
-                        Text(
-                          'Pesapal secure checkout',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _ink),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Choose mobile money or card on the next screen.',
-                      style: TextStyle(fontSize: 13.5, color: _muted),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: const [
-                        _MethodTag(icon: Icons.phone_android, label: 'MTN MoMo'),
-                        _MethodTag(icon: Icons.phone_android, label: 'Airtel Money'),
-                        _MethodTag(icon: Icons.credit_card, label: 'Visa'),
-                        _MethodTag(icon: Icons.credit_card, label: 'Mastercard'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              _MethodPicker(selected: method, onChanged: onMethodChanged),
+              const SizedBox(height: 4),
               if (error != null) ...[
                 const SizedBox(height: 16),
                 SoftCard(
@@ -470,33 +441,6 @@ class _Line extends StatelessWidget {
   }
 }
 
-class _MethodTag extends StatelessWidget {
-  const _MethodTag({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: tealBackground,
-        borderRadius: BorderRadius.circular(kCardRadius),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: seedTeal),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-        ],
-      ),
-    );
-  }
-}
-
 class _Progress extends StatelessWidget {
   const _Progress({required this.title, required this.subtitle});
 
@@ -598,6 +542,221 @@ class _Result extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Pesapal's order API takes no preferred method — its checkout lists every
+/// option — so the choice here only tailors the instruction for that page.
+enum _PayMethod {
+  mtn(
+    title: 'MTN MoMo',
+    subtitle: 'Pay using your MTN Mobile Money account.',
+    logo: 'assets/images/payments/mtn.svg',
+    // MTN's mark is drawn black and always sits on brand yellow.
+    tile: Color(0xFFFFCB05),
+    hint: 'On the next page, choose MTN MoMo and approve the prompt on your phone.',
+  ),
+  airtel(
+    title: 'Airtel Money',
+    subtitle: 'Pay using your Airtel Money account.',
+    logo: 'assets/images/payments/airtel.svg',
+    hint: 'On the next page, choose Airtel Money and approve the prompt on your phone.',
+  ),
+  visa(
+    title: 'Visa',
+    subtitle: 'Pay using your Visa card.',
+    logo: 'assets/images/payments/visa.svg',
+    hint: 'On the next page, choose Visa and enter your card details.',
+  ),
+  mastercard(
+    title: 'Mastercard',
+    subtitle: 'Pay using your Mastercard.',
+    logo: 'assets/images/payments/mastercard.svg',
+    hint: 'On the next page, choose Mastercard and enter your card details.',
+  );
+
+  const _PayMethod({
+    required this.title,
+    required this.subtitle,
+    required this.logo,
+    required this.hint,
+    this.tile = Colors.white,
+  });
+
+  final String title;
+  final String subtitle;
+  final String logo;
+  final String hint;
+  final Color tile;
+}
+
+class _MethodPicker extends StatelessWidget {
+  const _MethodPicker({required this.selected, required this.onChanged});
+
+  final _PayMethod selected;
+  final ValueChanged<_PayMethod> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Payment method',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: _ink),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Choose how you want to pay for your appointment.',
+          style: TextStyle(fontSize: 13.5, color: _muted),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE6F5F4),
+            borderRadius: BorderRadius.circular(kCardRadius),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
+                child: const Icon(Icons.verified_user, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pesapal secure checkout',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _ink),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Your payment details are secure and encrypted with Pesapal.',
+                      style: TextStyle(fontSize: 12.5, color: Color(0xFF4A5A5A)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        for (final m in _PayMethod.values) ...[
+          _MethodRow(method: m, selected: m == selected, onTap: () => onChanged(m)),
+          const SizedBox(height: 8),
+        ],
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline, size: 16, color: seedTeal),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                selected.hint,
+                style: const TextStyle(fontSize: 12.5, color: _muted),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _MethodRow extends StatelessWidget {
+  const _MethodRow({required this.method, required this.selected, required this.onTap});
+
+  final _PayMethod method;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final outline = Theme.of(context).colorScheme.outlineVariant;
+    return Semantics(
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      label: method.title,
+      child: Material(
+        color: selected ? tealBackground : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kCardRadius),
+          side: BorderSide(color: selected ? seedTeal : outline, width: selected ? 1.5 : 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 44,
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: method.tile,
+                    borderRadius: BorderRadius.circular(kCardRadius),
+                    border: method.tile == Colors.white ? Border.all(color: outline) : null,
+                  ),
+                  child: SvgPicture.asset(method.logo, fit: BoxFit.contain),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        method.title,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _ink),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        method.subtitle,
+                        style: const TextStyle(fontSize: 12.5, color: _muted),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _RadioDot(selected: selected),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RadioDot extends StatelessWidget {
+  const _RadioDot({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: selected ? seedTeal : const Color(0xFFB6C2C2), width: 2),
+      ),
+      alignment: Alignment.center,
+      child: selected
+          ? Container(
+              width: 11,
+              height: 11,
+              decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
+            )
+          : null,
     );
   }
 }

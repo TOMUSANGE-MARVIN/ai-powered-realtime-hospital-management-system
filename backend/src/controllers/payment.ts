@@ -6,6 +6,8 @@ import {
   PesapalError,
   submitOrder,
 } from "../lib/pesapal";
+import { VoucherError } from "./voucher";
+import { priceConsultation } from "../lib/pricing";
 
 // Pay-before-book via Pesapal. The patient pays on Pesapal's hosted checkout
 // (cards + mobile money), so this server never sees card details. Payment
@@ -24,7 +26,7 @@ async function syncWithPesapal(payment: PaymentRecord): Promise<PaymentRecord> {
     const tx = await getTransactionStatus(payment.orderTrackingId);
     const status = STATUS_BY_CODE[tx.status_code];
     if (!status) return payment;
-    return await prisma.payment.update({
+    const updated = await prisma.payment.update({
       where: { id: payment.id },
       data: {
         status,
@@ -32,6 +34,14 @@ async function syncWithPesapal(payment: PaymentRecord): Promise<PaymentRecord> {
         reference: tx.confirmation_code || payment.reference,
       },
     });
+    // A voucher counts as used only once its payment actually goes through.
+    if (status === "paid" && payment.voucherCode) {
+      await prisma.voucher.updateMany({
+        where: { code: payment.voucherCode },
+        data: { usedCount: { increment: 1 } },
+      });
+    }
+    return updated;
   } catch (error) {
     // Pesapal answers unpaid orders with an error body — that's still "pending".
     if (!(error instanceof PesapalError)) console.error("Error syncing payment:", error);
@@ -42,6 +52,9 @@ async function syncWithPesapal(payment: PaymentRecord): Promise<PaymentRecord> {
 const toClient = (payment: PaymentRecord, redirectUrl?: string) => ({
   id: payment.id,
   amount: payment.amount,
+  discount: payment.discount,
+  tax: payment.tax,
+  voucherCode: payment.voucherCode,
   currency: payment.currency,
   status: payment.status,
   method: payment.method,
@@ -54,7 +67,7 @@ const toClient = (payment: PaymentRecord, redirectUrl?: string) => ({
 export const initiatePayment = async (req: Request, res: Response) => {
   try {
     const patient = (req as any).user;
-    const { doctorId, phoneNumber } = req.body;
+    const { doctorId, phoneNumber, voucherCode } = req.body;
 
     if (!doctorId) {
       return res.status(400).json({ message: "doctorId is required" });
@@ -76,11 +89,25 @@ export const initiatePayment = async (req: Request, res: Response) => {
         .json({ message: "This doctor has no consultation fee configured" });
     }
 
+    // Re-price on the server — never trust an amount sent by the app.
+    let price;
+    try {
+      price = await priceConsultation(doctor.consultationFee, voucherCode);
+    } catch (error) {
+      if (error instanceof VoucherError) {
+        return res.status(400).json({ message: error.message });
+      }
+      throw error;
+    }
+
     const payment = await prisma.payment.create({
       data: {
         patientId: patient.id,
         doctorId,
-        amount: doctor.consultationFee,
+        amount: price.total,
+        discount: price.discount,
+        tax: price.tax,
+        voucherCode: price.voucherCode,
         method: "pesapal",
         phoneNumber: phoneNumber || null,
         status: "pending",
@@ -111,6 +138,24 @@ export const initiatePayment = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error initiating payment:", error);
     res.status(502).json({ message: "Could not start the payment. Please try again." });
+  }
+};
+
+// What the patient will pay for a doctor, before any voucher — lets the app
+// show tax up front. Vouchers are priced through /api/vouchers/validate.
+export const getQuote = async (req: Request, res: Response) => {
+  try {
+    const doctor = await prisma.user.findFirst({
+      where: { id: req.query.doctorId as string, role: "doctor" },
+      select: { consultationFee: true },
+    });
+    if (!doctor?.consultationFee) {
+      return res.status(400).json({ message: "This doctor has no consultation fee" });
+    }
+    res.json(await priceConsultation(doctor.consultationFee));
+  } catch (error) {
+    console.error("Error pricing consultation:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

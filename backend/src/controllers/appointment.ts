@@ -307,6 +307,50 @@ export const cancelMyAppointment = async (req: Request, res: Response) => {
   }
 };
 
+// Patient moves one of their own upcoming appointments. It goes back to
+// "requested" so the doctor confirms the new slot.
+export const rescheduleMyAppointment = async (req: Request, res: Response) => {
+  try {
+    const patient = (req as any).user;
+    const id = req.params.id as string;
+    const { date, time } = req.body;
+
+    const newDate = date ? new Date(date) : null;
+    if (!newDate || isNaN(newDate.getTime())) {
+      return res.status(400).json({ message: "A valid date is required" });
+    }
+    if (newDate < new Date()) {
+      return res.status(400).json({ message: "Choose a time in the future" });
+    }
+
+    const appointment = await prisma.appointment.findUnique({ where: { id } });
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    if (appointment.patientId !== patient.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    if (!["requested", "scheduled", "confirmed"].includes(appointment.status)) {
+      return res
+        .status(400)
+        .json({ message: "Only upcoming appointments can be rescheduled" });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id },
+      data: { date: newDate, time: time || null, status: "requested" },
+    });
+
+    const io = req.app.get("io");
+    if (io) io.emit("appointment_updated");
+
+    res.json(updated);
+  } catch (error) {
+    console.error("Error rescheduling appointment:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Doctor's own assigned appointments (mobile doctor app dashboard/appointments tab)
 export const getAssignedAppointments = async (req: Request, res: Response) => {
   try {

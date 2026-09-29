@@ -37,6 +37,18 @@ class Appointment {
       status == 'requested' || status == 'scheduled' || status == 'confirmed';
   bool get isPending => status == 'requested';
 
+  bool get isCallVisit =>
+      consultationType == 'voice' || consultationType == 'video';
+
+  /// A voice/video visit can be joined from 10 minutes before its start
+  /// until an hour after.
+  bool canJoinCallAt(DateTime now) {
+    if (!isCallVisit) return false;
+    if (status != 'confirmed' && status != 'in_progress') return false;
+    return now.isAfter(date.subtract(const Duration(minutes: 10))) &&
+        now.isBefore(date.add(const Duration(minutes: 60)));
+  }
+
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
       id: (json['_id'] ?? json['id']).toString(),

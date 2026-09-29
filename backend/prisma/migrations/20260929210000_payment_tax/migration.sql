@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `payment` ADD COLUMN `tax` INTEGER NOT NULL DEFAULT 0;

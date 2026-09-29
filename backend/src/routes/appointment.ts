@@ -9,6 +9,7 @@ import {
   bookAppointment,
   getMyAppointments,
   cancelMyAppointment,
+  rescheduleMyAppointment,
   getAssignedAppointments,
 } from "../controllers/appointment";
 
@@ -35,6 +36,13 @@ appointmentRouter.patch(
   requireAuth,
   checkRole(["patient"]),
   cancelMyAppointment,
+);
+
+appointmentRouter.patch(
+  "/:id/reschedule",
+  requireAuth,
+  checkRole(["patient"]),
+  rescheduleMyAppointment,
 );
 
 // Doctor (mobile app) — appointments assigned to the authenticated doctor

@@ -92,8 +92,8 @@ class _OtpCodeFieldState extends State<OtpCodeField> {
                         color: _focusNode.hasFocus && i == code.length
                             ? seedTeal
                             : i < code.length
-                                ? seedTeal.withValues(alpha: 0.5)
-                                : scheme.outlineVariant,
+                            ? seedTeal.withValues(alpha: 0.5)
+                            : scheme.outlineVariant,
                         width: _focusNode.hasFocus && i == code.length ? 2 : 1,
                       ),
                     ),
@@ -239,9 +239,9 @@ class _TwoFactorChallengeSheetState
             onPressed: _submitting
                 ? null
                 : () => setState(() {
-                      _useBackupCode = !_useBackupCode;
-                      _error = null;
-                    }),
+                    _useBackupCode = !_useBackupCode;
+                    _error = null;
+                  }),
             child: Text(
               _useBackupCode
                   ? 'Use authenticator code instead'

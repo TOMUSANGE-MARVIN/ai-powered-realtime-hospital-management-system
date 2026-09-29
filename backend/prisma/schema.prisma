@@ -246,6 +246,10 @@ model Payment {
   reference   String?
   // Pesapal's id for the order; IPN/callback requests are matched on it.
   orderTrackingId String? @unique
+  // Voucher applied at checkout; `amount` is already net of `discount`.
+  voucherCode String?
+  discount    Int      @default(0)
+  tax         Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -467,4 +471,21 @@ model MedicalDocument {
   createdAt DateTime @default(now())
 
   @@map("medical_document")
+}
+
+// Discount codes patients enter on the booking Confirmation screen.
+model Voucher {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  // "fixed" (UGX off) | "percent" (0–100)
+  discountType String
+  value        Int
+  expiresAt    DateTime?
+  maxUses      Int?
+  usedCount    Int       @default(0)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("voucher")
 }

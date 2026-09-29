@@ -3,6 +3,7 @@ import { requireAuth } from "../middleware/auth";
 import { checkRole } from "../middleware/checkRole";
 import {
   initiatePayment,
+  getQuote,
   getPaymentStatus,
   pesapalIpn,
   pesapalCallback,
@@ -16,6 +17,7 @@ paymentRouter.get("/pesapal/ipn", pesapalIpn);
 paymentRouter.post("/pesapal/ipn", pesapalIpn);
 paymentRouter.get("/pesapal/callback", pesapalCallback);
 
+paymentRouter.get("/quote", requireAuth, checkRole(["patient"]), getQuote);
 paymentRouter.post("/initiate", requireAuth, checkRole(["patient"]), initiatePayment);
 paymentRouter.get("/:id/status", requireAuth, checkRole(["patient"]), getPaymentStatus);
 

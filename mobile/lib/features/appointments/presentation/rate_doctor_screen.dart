@@ -100,8 +100,11 @@ class _RateDoctorScreenState extends ConsumerState<RateDoctorScreen> {
           ),
           if (specialty != null) ...[
             const SizedBox(height: 4),
-            Text(specialty, textAlign: TextAlign.center,
-                style: TextStyle(color: muted)),
+            Text(
+              specialty,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: muted),
+            ),
           ],
           const SizedBox(height: 20),
           Row(
@@ -115,8 +118,10 @@ class _RateDoctorScreenState extends ConsumerState<RateDoctorScreen> {
                       ? null
                       : () => setState(() => _rating = i),
                   icon: Icon(
-                    i <= _rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: i <= _rating ? const Color(0xFFFFB300) : muted,
+                    i <= _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: i <= _rating ? const Color(0xFFFFA000) : muted,
                   ),
                 ),
             ],
@@ -137,10 +142,10 @@ class _RateDoctorScreenState extends ConsumerState<RateDoctorScreen> {
               onChanged: _submitting
                   ? null
                   : (checked) => setState(() {
-                        checked == true
-                            ? _helpedWith.add(entry.key)
-                            : _helpedWith.remove(entry.key);
-                      }),
+                      checked == true
+                          ? _helpedWith.add(entry.key)
+                          : _helpedWith.remove(entry.key);
+                    }),
             ),
           const SizedBox(height: 16),
           Text('Leave a public review', style: TextStyle(color: muted)),

@@ -226,8 +226,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
           FilledButton.icon(
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.errorContainer,
-              foregroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: const Color(0xFFFFE3E3),
+              foregroundColor: const Color(0xFFD32F2F),
+              side: const BorderSide(color: Color(0xFFD32F2F)),
             ),
             icon: const Icon(Icons.logout),
             label: const Text('Log Out'),
@@ -345,10 +346,7 @@ class _ProfileCard extends StatelessWidget {
                   ],
                 ),
               ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: seedTeal.withValues(alpha: 0.1),
-                ),
+              FilledButton(
                 onPressed: () => context.push('/edit-profile'),
                 child: const Text('Edit Profile'),
               ),
@@ -367,9 +365,14 @@ class _ProfileCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: alert
-                          ? Theme.of(context).colorScheme.errorContainer
-                          : Theme.of(context).colorScheme.surfaceContainerHigh,
+                      color: alert ? const Color(0xFFD32F2F) : null,
+                      border: alert
+                          ? null
+                          : Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                            ),
                       borderRadius: BorderRadius.circular(kPillRadius),
                     ),
                     child: Row(
@@ -378,9 +381,7 @@ class _ProfileCard extends StatelessWidget {
                         Icon(
                           icon,
                           size: 14,
-                          color: alert
-                              ? Theme.of(context).colorScheme.error
-                              : null,
+                          color: alert ? Colors.white : null,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -388,9 +389,7 @@ class _ProfileCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: alert
-                                ? Theme.of(context).colorScheme.error
-                                : null,
+                            color: alert ? Colors.white : null,
                           ),
                         ),
                       ],

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
@@ -11,7 +10,6 @@ import '../../doctors/data/doctor.dart';
 import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
 import '../../doctors/state/doctor_providers.dart';
 import '../data/booking_draft.dart';
-import '../state/appointment_providers.dart';
 
 const _ink = darkTealBackground;
 const _muted = Color(0xFF6B7A7A);
@@ -26,7 +24,8 @@ class BookAppointmentScreen extends ConsumerStatefulWidget {
   final String doctorId;
 
   @override
-  ConsumerState<BookAppointmentScreen> createState() => _BookAppointmentScreenState();
+  ConsumerState<BookAppointmentScreen> createState() =>
+      _BookAppointmentScreenState();
 }
 
 class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
@@ -35,7 +34,6 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
   int? _slotMinutes;
   String _consultationType = 'video';
   bool _isEmergency = false;
-  bool _submitting = false;
 
   @override
   void dispose() {
@@ -63,7 +61,11 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
 
   /// The doctor's next bookable day on/after [from] — used both to seed the
   /// screen's default date and as the earliest [showDatePicker] will offer.
-  DateTime? _nextBookableDay(DateTime from, Set<int>? weekdays, List<int> slots) {
+  DateTime? _nextBookableDay(
+    DateTime from,
+    Set<int>? weekdays,
+    List<int> slots,
+  ) {
     for (var i = 0; i < _bookingWindowDays; i++) {
       final day = from.add(Duration(days: i));
       if (_isDayBookable(day, weekdays, slots)) return day;
@@ -139,35 +141,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
       );
       return;
     }
-    // Doctors with a fee: pay first, the payment screen books on success.
-    if (doctor.consultationFee != null) {
-      context.push('/book/${doctor.id}/pay', extra: draft);
-      return;
-    }
-
-    setState(() => _submitting = true);
-    try {
-      await ref.read(appointmentRepositoryProvider).book(
-            doctorId: doctor.id,
-            date: draft.date,
-            time: draft.time,
-            reason: draft.reason,
-            consultationType: draft.consultationType,
-            isEmergency: draft.isEmergency,
-          );
-      ref.invalidate(myAppointmentsProvider);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Appointment requested — we'll notify you once it's confirmed")),
-      );
-      context.go('/home/appointments');
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
+    // Review, insurance and voucher happen on the Confirmation screen,
+    // which books directly for free doctors and pays first otherwise.
+    context.push('/book/${doctor.id}/confirm', extra: draft);
   }
 
   @override
@@ -230,7 +206,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                               child: _PickerField(
                                 icon: Icons.calendar_month_outlined,
                                 label: 'Date',
-                                value: DateFormat('EEE, MMM d, yyyy').format(_date!),
+                                value: DateFormat(
+                                  'EEE, MMM d, yyyy',
+                                ).format(_date!),
                                 onTap: () => _pickDate(weekdays, slots),
                               ),
                             ),
@@ -239,7 +217,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                               child: _PickerField(
                                 icon: Icons.access_time_outlined,
                                 label: 'Time',
-                                value: _slotMinutes == null ? 'Choose time' : _formatSlot(_slotMinutes!),
+                                value: _slotMinutes == null
+                                    ? 'Choose time'
+                                    : _formatSlot(_slotMinutes!),
                                 placeholder: _slotMinutes == null,
                                 onTap: () => _pickTime(slots),
                               ),
@@ -273,7 +253,6 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
               ),
               _CheckoutBar(
                 fee: doctor.consultationFee,
-                busy: _submitting,
                 ready: _isEmergency || (_date != null && _slotMinutes != null),
                 onPressed: () => _continue(doctor),
               ),
@@ -294,7 +273,11 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _ink),
+      style: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: _ink,
+      ),
     );
   }
 }
@@ -315,7 +298,9 @@ class _DoctorSummary extends StatelessWidget {
           SizedBox(
             width: 52,
             height: 52,
-            child: ClipOval(child: DoctorImage(url: doctor.image, name: doctor.name)),
+            child: ClipOval(
+              child: DoctorImage(url: doctor.image, name: doctor.name),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -326,7 +311,11 @@ class _DoctorSummary extends StatelessWidget {
                   doctor.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _ink),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: _ink,
+                  ),
                 ),
                 if (specialty != null)
                   Text(
@@ -369,7 +358,11 @@ class _ConsultationTypePicker extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 22, color: value == key ? Colors.white : seedTeal),
+                  Icon(
+                    icon,
+                    size: 22,
+                    color: value == key ? Colors.white : seedTeal,
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     label,
@@ -405,7 +398,9 @@ class _ChoiceTile extends StatelessWidget {
       color: selected ? seedTeal : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kCardRadius),
-        side: selected ? BorderSide.none : BorderSide(color: scheme.outlineVariant),
+        side: selected
+            ? BorderSide.none
+            : BorderSide(color: scheme.outlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -502,7 +497,10 @@ class _PickerField extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label, style: const TextStyle(fontSize: 11.5, color: _muted)),
+                    Text(
+                      label,
+                      style: const TextStyle(fontSize: 11.5, color: _muted),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       value,
@@ -528,13 +526,11 @@ class _PickerField extends StatelessWidget {
 class _CheckoutBar extends StatelessWidget {
   const _CheckoutBar({
     required this.fee,
-    required this.busy,
     required this.ready,
     required this.onPressed,
   });
 
   final int? fee;
-  final bool busy;
   final bool ready;
   final VoidCallback onPressed;
 
@@ -556,10 +552,17 @@ class _CheckoutBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Consultation fee', style: TextStyle(fontSize: 12.5, color: _muted)),
+                  const Text(
+                    'Consultation fee',
+                    style: TextStyle(fontSize: 12.5, color: _muted),
+                  ),
                   Text(
                     'UGX ${NumberFormat.decimalPattern().format(fee)}',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: _ink,
+                    ),
                   ),
                 ],
               ),
@@ -569,17 +572,11 @@ class _CheckoutBar extends StatelessWidget {
               child: SizedBox(
                 height: 52,
                 child: FilledButton(
-                  onPressed: busy || !ready ? null : onPressed,
-                  child: busy
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : Text(
-                          fee != null ? 'Continue to payment' : 'Request appointment',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
+                  onPressed: ready ? onPressed : null,
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ),

@@ -79,7 +79,11 @@ class _ReviewsSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       physics: const NeverScrollableScrollPhysics(),
       children: const [
-        SkeletonBox(width: double.infinity, height: 72, borderRadius: kCardRadius),
+        SkeletonBox(
+          width: double.infinity,
+          height: 72,
+          borderRadius: kCardRadius,
+        ),
         SizedBox(height: 16),
         SkeletonCardList(count: 4, cardHeight: 90),
       ],

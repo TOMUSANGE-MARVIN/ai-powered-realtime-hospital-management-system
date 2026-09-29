@@ -24,7 +24,16 @@ const _danger = Color(0xFFD32F2F);
 const _pollInterval = Duration(seconds: 3);
 const _pollAttempts = 20;
 
-enum _Stage { review, starting, verifying, booking, success, failed, stillPending, bookingFailed }
+enum _Stage {
+  review,
+  starting,
+  verifying,
+  booking,
+  success,
+  failed,
+  stillPending,
+  bookingFailed,
+}
 
 /// Review → pay on Pesapal → verify → book. The appointment is only created
 /// after the backend reports the Pesapal payment as paid.
@@ -44,9 +53,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   _PayMethod _method = _PayMethod.mtn;
 
   BookingDraft get _draft => widget.draft;
-  int get _fee => _draft.doctor.consultationFee ?? 0;
+  int get _fee => _draft.total;
   bool get _busy =>
-      _stage == _Stage.starting || _stage == _Stage.verifying || _stage == _Stage.booking;
+      _stage == _Stage.starting ||
+      _stage == _Stage.verifying ||
+      _stage == _Stage.booking;
 
   PaymentRepository get _repo => ref.read(paymentRepositoryProvider);
 
@@ -58,16 +69,25 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     try {
       // Resume an unfinished checkout instead of creating a second order.
       final existing = _payment;
-      final payment = existing != null && existing.isPending && existing.redirectUrl != null
+      final payment =
+          existing != null && existing.isPending && existing.redirectUrl != null
           ? existing
-          : await _repo.initiate(doctorId: _draft.doctor.id);
+          : await _repo.initiate(
+              doctorId: _draft.doctor.id,
+              voucherCode: _draft.voucherCode,
+            );
       _payment = payment;
       final url = payment.redirectUrl;
-      if (url == null) throw ApiException('The payment page is unavailable. Please try again.');
+      if (url == null)
+        throw ApiException(
+          'The payment page is unavailable. Please try again.',
+        );
       if (!mounted) return;
 
       final attempted = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(builder: (_) => PesapalCheckoutScreen(checkoutUrl: url)),
+        MaterialPageRoute(
+          builder: (_) => PesapalCheckoutScreen(checkoutUrl: url),
+        ),
       );
       await _verify(keepPolling: attempted == true);
     } on ApiException catch (e) {
@@ -85,7 +105,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     if (payment == null || !mounted) return;
     setState(() => _stage = _Stage.verifying);
 
-    for (var attempt = 0; attempt < (keepPolling ? _pollAttempts : 1); attempt++) {
+    for (
+      var attempt = 0;
+      attempt < (keepPolling ? _pollAttempts : 1);
+      attempt++
+    ) {
       if (attempt > 0) await Future<void>.delayed(_pollInterval);
       if (!mounted) return;
       try {
@@ -122,7 +146,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       } else {
         // Closed the checkout before finishing — back to review, same order.
         _stage = _Stage.review;
-        _error = 'Payment not completed. Tap Pay now to continue where you left off.';
+        _error =
+            'Payment not completed. Tap Pay now to continue where you left off.';
       }
     });
   }
@@ -135,7 +160,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       _error = null;
     });
     try {
-      await ref.read(appointmentRepositoryProvider).book(
+      await ref
+          .read(appointmentRepositoryProvider)
+          .book(
             doctorId: _draft.doctor.id,
             date: _draft.date,
             time: _draft.time,
@@ -157,10 +184,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   }
 
   void _startOver() => setState(() {
-        _payment = null;
-        _stage = _Stage.review;
-        _error = null;
-      });
+    _payment = null;
+    _stage = _Stage.review;
+    _error = null;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -180,64 +207,68 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         ),
         body: switch (_stage) {
           _Stage.verifying => const _Progress(
-              title: 'Confirming your payment',
-              subtitle: 'If you paid with mobile money, approve the prompt on your phone.',
-            ),
+            title: 'Confirming your payment',
+            subtitle:
+                'If you paid with mobile money, approve the prompt on your phone.',
+          ),
           _Stage.booking => const _Progress(
-              title: 'Payment received',
-              subtitle: 'Booking your appointment…',
-            ),
+            title: 'Payment received',
+            subtitle: 'Booking your appointment…',
+          ),
           _Stage.success => _Result(
-              icon: Icons.check_rounded,
-              color: seedTeal,
-              title: 'Appointment requested',
-              message: "You've paid UGX ${NumberFormat.decimalPattern().format(_payment?.amount ?? _fee)}"
-                  '${_payment?.reference != null ? ' (ref ${_payment!.reference})' : ''}. '
-                  "We'll notify you once ${_draft.doctor.name} confirms.",
-              primaryLabel: 'View my appointments',
-              onPrimary: () => context.go('/home/appointments'),
-            ),
+            icon: Icons.check_rounded,
+            color: seedTeal,
+            title: 'Appointment requested',
+            message:
+                "You've paid UGX ${NumberFormat.decimalPattern().format(_payment?.amount ?? _fee)}"
+                '${_payment?.reference != null ? ' (ref ${_payment!.reference})' : ''}. '
+                "We'll notify you once ${_draft.doctor.name} confirms.",
+            primaryLabel: 'View my appointments',
+            onPrimary: () => context.go('/home/appointments'),
+          ),
           _Stage.failed => _Result(
-              icon: Icons.close_rounded,
-              color: _danger,
-              title: 'Payment failed',
-              message: _error ?? 'The payment did not go through.',
-              primaryLabel: 'Try again',
-              onPrimary: _startOver,
-              secondaryLabel: 'Back to booking',
-              onSecondary: () => context.pop(),
-            ),
+            icon: Icons.close_rounded,
+            color: _danger,
+            title: 'Payment failed',
+            message: _error ?? 'The payment did not go through.',
+            primaryLabel: 'Try again',
+            onPrimary: _startOver,
+            secondaryLabel: 'Back to booking',
+            onSecondary: () => context.pop(),
+          ),
           _Stage.stillPending => _Result(
-              icon: Icons.hourglass_top_rounded,
-              color: const Color(0xFFFF9800),
-              iconColor: const Color(0xFF2B1A00),
-              title: 'Still processing',
-              message: "We haven't received confirmation from Pesapal yet. "
-                  'If you approved the payment, check again in a moment.',
-              primaryLabel: 'Check again',
-              onPrimary: () => _verify(keepPolling: true),
-              secondaryLabel: 'Back to payment',
-              onSecondary: () => setState(() => _stage = _Stage.review),
-            ),
+            icon: Icons.hourglass_top_rounded,
+            color: const Color(0xFFFF9800),
+            iconColor: const Color(0xFF2B1A00),
+            title: 'Still processing',
+            message:
+                "We haven't received confirmation from Pesapal yet. "
+                'If you approved the payment, check again in a moment.',
+            primaryLabel: 'Check again',
+            onPrimary: () => _verify(keepPolling: true),
+            secondaryLabel: 'Back to payment',
+            onSecondary: () => setState(() => _stage = _Stage.review),
+          ),
           _Stage.bookingFailed => _Result(
-              icon: Icons.event_busy_outlined,
-              color: _danger,
-              title: "Paid, but the booking didn't go through",
-              message: '${_error ?? 'Something went wrong.'} '
-                  "Your payment is safe — tap below to finish booking without paying again.",
-              primaryLabel: 'Finish booking',
-              onPrimary: _book,
-            ),
+            icon: Icons.event_busy_outlined,
+            color: _danger,
+            title: "Paid, but the booking didn't go through",
+            message:
+                '${_error ?? 'Something went wrong.'} '
+                "Your payment is safe — tap below to finish booking without paying again.",
+            primaryLabel: 'Finish booking',
+            onPrimary: _book,
+          ),
           _ => _Review(
-              draft: _draft,
-              fee: _fee,
-              error: _error,
-              method: _method,
-              onMethodChanged: (m) => setState(() => _method = m),
-              starting: _stage == _Stage.starting,
-              onPay: _pay,
-              onCancel: () => context.pop(),
-            ),
+            draft: _draft,
+            fee: _fee,
+            error: _error,
+            method: _method,
+            onMethodChanged: (m) => setState(() => _method = m),
+            starting: _stage == _Stage.starting,
+            onPay: _pay,
+            onCancel: () => context.pop(),
+          ),
         },
       ),
     );
@@ -271,7 +302,7 @@ class _Review extends StatelessWidget {
     final when = draft.isEmergency
         ? 'Today · Emergency'
         : '${DateFormat('EEE, MMM d, yyyy').format(draft.date)}'
-            '${draft.time != null ? ' · ${draft.time}' : ''}';
+              '${draft.time != null ? ' · ${draft.time}' : ''}';
 
     return Column(
       children: [
@@ -289,13 +320,27 @@ class _Review extends StatelessWidget {
                     _Line(label: 'Service', value: draft.serviceLabel),
                     _Line(label: 'Doctor', value: draft.doctor.name),
                     _Line(label: 'Date', value: when),
-                    _Line(label: 'Consultation fee', value: money),
+                    _Line(
+                      label: 'Consultation fee',
+                      value:
+                          'UGX ${NumberFormat.decimalPattern().format(draft.fee)}',
+                    ),
+                    if (draft.discount > 0)
+                      _Line(
+                        label: 'Voucher ${draft.voucherCode}',
+                        value:
+                            '-UGX ${NumberFormat.decimalPattern().format(draft.discount)}',
+                      ),
                     const Divider(height: 24),
                     Row(
                       children: [
                         const Text(
                           'Total',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _ink),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: _ink,
+                          ),
                         ),
                         const Spacer(),
                         Text(
@@ -325,7 +370,13 @@ class _Review extends StatelessWidget {
                       const Icon(Icons.error_outline, color: _danger, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(error!, style: const TextStyle(color: _danger, fontSize: 13.5)),
+                        child: Text(
+                          error!,
+                          style: const TextStyle(
+                            color: _danger,
+                            fontSize: 13.5,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -337,7 +388,11 @@ class _Review extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+            border: Border(
+              top: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
+            ),
           ),
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: SafeArea(
@@ -354,11 +409,17 @@ class _Review extends StatelessWidget {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : Text(
                             'Pay $money',
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                   ),
                 ),
@@ -432,7 +493,11 @@ class _Line extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _ink),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: _ink,
+              ),
             ),
           ),
         ],
@@ -464,10 +529,18 @@ class _Progress extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _ink),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: _ink,
+              ),
             ),
             const SizedBox(height: 6),
-            Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(color: _muted)),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: _muted),
+            ),
           ],
         ),
       ),
@@ -519,24 +592,38 @@ class _Result extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: _ink),
+              style: const TextStyle(
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+                color: _ink,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14.5, height: 1.4, color: _muted),
+              style: const TextStyle(
+                fontSize: 14.5,
+                height: 1.4,
+                color: _muted,
+              ),
             ),
             const Spacer(),
             SizedBox(
               height: 52,
-              child: FilledButton(onPressed: onPrimary, child: Text(primaryLabel)),
+              child: FilledButton(
+                onPressed: onPrimary,
+                child: Text(primaryLabel),
+              ),
             ),
             if (secondaryLabel != null) ...[
               const SizedBox(height: 8),
               SizedBox(
                 height: 48,
-                child: OutlinedButton(onPressed: onSecondary, child: Text(secondaryLabel!)),
+                child: OutlinedButton(
+                  onPressed: onSecondary,
+                  child: Text(secondaryLabel!),
+                ),
               ),
             ],
           ],
@@ -555,13 +642,15 @@ enum _PayMethod {
     logo: 'assets/images/payments/mtn.svg',
     // MTN's mark is drawn black and always sits on brand yellow.
     tile: Color(0xFFFFCB05),
-    hint: 'On the next page, choose MTN MoMo and approve the prompt on your phone.',
+    hint:
+        'On the next page, choose MTN MoMo and approve the prompt on your phone.',
   ),
   airtel(
     title: 'Airtel Money',
     subtitle: 'Pay using your Airtel Money account.',
     logo: 'assets/images/payments/airtel.svg',
-    hint: 'On the next page, choose Airtel Money and approve the prompt on your phone.',
+    hint:
+        'On the next page, choose Airtel Money and approve the prompt on your phone.',
   ),
   visa(
     title: 'Visa',
@@ -604,7 +693,11 @@ class _MethodPicker extends StatelessWidget {
       children: [
         const Text(
           'Payment method',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: _ink),
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: _ink,
+          ),
         ),
         const SizedBox(height: 4),
         const Text(
@@ -623,8 +716,15 @@ class _MethodPicker extends StatelessWidget {
               Container(
                 width: 44,
                 height: 44,
-                decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
-                child: const Icon(Icons.verified_user, color: Colors.white, size: 22),
+                decoration: const BoxDecoration(
+                  color: seedTeal,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.verified_user,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -633,12 +733,19 @@ class _MethodPicker extends StatelessWidget {
                   children: [
                     Text(
                       'Pesapal secure checkout',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _ink),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: _ink,
+                      ),
                     ),
                     SizedBox(height: 2),
                     Text(
                       'Your payment details are secure and encrypted with Pesapal.',
-                      style: TextStyle(fontSize: 12.5, color: Color(0xFF4A5A5A)),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF4A5A5A),
+                      ),
                     ),
                   ],
                 ),
@@ -648,7 +755,11 @@ class _MethodPicker extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         for (final m in _PayMethod.values) ...[
-          _MethodRow(method: m, selected: m == selected, onTap: () => onChanged(m)),
+          _MethodRow(
+            method: m,
+            selected: m == selected,
+            onTap: () => onChanged(m),
+          ),
           const SizedBox(height: 8),
         ],
         Row(
@@ -670,7 +781,11 @@ class _MethodPicker extends StatelessWidget {
 }
 
 class _MethodRow extends StatelessWidget {
-  const _MethodRow({required this.method, required this.selected, required this.onTap});
+  const _MethodRow({
+    required this.method,
+    required this.selected,
+    required this.onTap,
+  });
 
   final _PayMethod method;
   final bool selected;
@@ -687,7 +802,10 @@ class _MethodRow extends StatelessWidget {
         color: selected ? tealBackground : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(kCardRadius),
-          side: BorderSide(color: selected ? seedTeal : outline, width: selected ? 1.5 : 1),
+          side: BorderSide(
+            color: selected ? seedTeal : outline,
+            width: selected ? 1.5 : 1,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -703,7 +821,9 @@ class _MethodRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: method.tile,
                     borderRadius: BorderRadius.circular(kCardRadius),
-                    border: method.tile == Colors.white ? Border.all(color: outline) : null,
+                    border: method.tile == Colors.white
+                        ? Border.all(color: outline)
+                        : null,
                   ),
                   child: SvgPicture.asset(method.logo, fit: BoxFit.contain),
                 ),
@@ -714,7 +834,11 @@ class _MethodRow extends StatelessWidget {
                     children: [
                       Text(
                         method.title,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _ink),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: _ink,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -747,14 +871,20 @@ class _RadioDot extends StatelessWidget {
       height: 22,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: selected ? seedTeal : const Color(0xFFB6C2C2), width: 2),
+        border: Border.all(
+          color: selected ? seedTeal : const Color(0xFFB6C2C2),
+          width: 2,
+        ),
       ),
       alignment: Alignment.center,
       child: selected
           ? Container(
               width: 11,
               height: 11,
-              decoration: const BoxDecoration(color: seedTeal, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: seedTeal,
+                shape: BoxShape.circle,
+              ),
             )
           : null,
     );

@@ -18,14 +18,14 @@ class ReviewHelpTags extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: seedTeal.withValues(alpha: 0.1),
+              color: seedTeal,
               borderRadius: BorderRadius.circular(kPillRadius),
             ),
             child: Text(
               label,
               style: const TextStyle(
                 fontSize: 12,
-                color: seedTeal,
+                color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),

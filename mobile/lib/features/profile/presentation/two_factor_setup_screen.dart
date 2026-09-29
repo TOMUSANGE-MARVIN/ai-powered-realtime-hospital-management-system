@@ -100,9 +100,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
           controller: controller,
           autofocus: true,
           obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Confirm your password',
-          ),
+          decoration: const InputDecoration(labelText: 'Confirm your password'),
           onSubmitted: (value) => Navigator.of(context).pop(value),
         ),
         actions: [
@@ -257,7 +255,8 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
             const _MethodCard(
               icon: Icons.smartphone,
               title: 'Text Message (SMS)',
-              subtitle: 'Receive a 6-digit code via SMS to your registered '
+              subtitle:
+                  'Receive a 6-digit code via SMS to your registered '
                   'mobile number. Coming soon.',
               selected: false,
               enabled: false,
@@ -266,7 +265,8 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
             const _MethodCard(
               icon: Icons.lock_outline,
               title: 'Authenticator App',
-              subtitle: 'Use an app like Google Authenticator or Authy to '
+              subtitle:
+                  'Use an app like Google Authenticator or Authy to '
                   'generate codes.',
               selected: true,
             ),
@@ -360,7 +360,6 @@ class _MethodCard extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1 : 0.55,
       child: SoftCard(
-        color: selected ? seedTeal.withValues(alpha: 0.06) : null,
         borderSide: BorderSide(
           color: selected ? seedTeal : scheme.outlineVariant,
           width: selected ? 1.5 : 1,
@@ -411,7 +410,10 @@ class _MethodCard extends StatelessWidget {
 }
 
 class _EnrollmentCard extends StatelessWidget {
-  const _EnrollmentCard({required this.enrollment, required this.onCodeChanged});
+  const _EnrollmentCard({
+    required this.enrollment,
+    required this.onCodeChanged,
+  });
 
   final TotpEnrollment enrollment;
   final ValueChanged<String> onCodeChanged;
@@ -420,8 +422,6 @@ class _EnrollmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return SoftCard(
-      color: seedTeal.withValues(alpha: 0.04),
-      borderSide: BorderSide(color: seedTeal.withValues(alpha: 0.3)),
       child: Column(
         children: [
           const Text(
@@ -456,9 +456,8 @@ class _EnrollmentCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.copy, size: 18),
                 tooltip: 'Copy key',
-                onPressed: () => Clipboard.setData(
-                  ClipboardData(text: enrollment.secret),
-                ),
+                onPressed: () =>
+                    Clipboard.setData(ClipboardData(text: enrollment.secret)),
               ),
             ],
           ),

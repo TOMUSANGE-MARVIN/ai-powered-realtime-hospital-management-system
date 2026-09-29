@@ -41,6 +41,20 @@ class AppointmentRepository {
     ApiException.checkStatus(response);
   }
 
+  /// Moves one of the patient's upcoming appointments; the doctor has to
+  /// confirm the new slot again.
+  Future<void> reschedule(
+    String appointmentId, {
+    required DateTime date,
+    String? time,
+  }) async {
+    final response = await _dio.patch(
+      '/api/appointments/$appointmentId/reschedule',
+      data: {'date': date.toIso8601String(), 'time': time},
+    );
+    ApiException.checkStatus(response);
+  }
+
   Future<void> cancel(String appointmentId) async {
     final response = await _dio.patch(
       '/api/appointments/$appointmentId/cancel',

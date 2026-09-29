@@ -136,30 +136,30 @@ Designs: *Edit Profile*, *Ask Musawo - User Profile*.
 
 Design: *Confirmation*. Flow becomes Book → Confirm → Pay.
 
-- [ ] Backend: `Voucher` model (code, type fixed / percent, value, expiresAt, maxUses, usedCount, active)
-- [ ] Backend: admin `POST/GET/PATCH /api/vouchers`
-- [ ] Backend: `POST /api/vouchers/validate { code, amount }` → discounted amount or error
-- [ ] Backend: payment initiation re-validates the voucher and charges the discounted amount; increments `usedCount` on success
-- [ ] Backend: store `voucherCode` and `discount` on `Payment`
-- [ ] Mobile: `BookingDraft` gains `voucherCode`, `discount`
-- [ ] Mobile: `BookingConfirmationScreen`
-    - [ ] 3-step indicator (Doctor → Schedule → Confirm)
-    - [ ] Rows: Service + fee, Type, Doctor, Date & Time with edit (pops back), Note
-    - [ ] Insurance row from profile (or "Add insurance" → Edit Profile)
-    - [ ] Voucher field + Apply, applied state with remove, updated total
-    - [ ] "Confirm Appointment" → payment route
-- [ ] Mobile: route `/book/:doctorId/confirm`; Book screen goes there instead of `pay`
-- [ ] Web (small): voucher list / create page in `frontend/` settings
+- [x] Backend: `Voucher` model (code, type fixed / percent, value, expiresAt, maxUses, usedCount, active) — migration `20260929200000_vouchers`
+- [x] Backend: admin `POST/GET/PATCH /api/vouchers`
+- [x] Backend: `POST /api/vouchers/validate { code, doctorId }` → discount and total, priced from the doctor's fee on the server; never below UGX 1,000
+- [x] Backend: payment initiation re-validates the voucher and charges the discounted amount; increments `usedCount` when the payment turns `paid`
+- [x] Backend: store `voucherCode` and `discount` on `Payment`
+- [x] Mobile: `BookingDraft` gains `voucherCode`, `discount`
+- [x] Mobile: `BookingConfirmationScreen`
+    - [x] 3-step indicator (Doctor → Schedule → Confirm)
+    - [x] Rows: Service + fee, Type, Doctor, Date & Time with edit (pops back), Note
+    - [x] Insurance row from profile (or "Add insurance" → Edit Profile)
+    - [x] Voucher field + Apply, applied state with remove, updated total
+    - [x] "Confirm Appointment" → payment route (or books directly when the doctor has no fee)
+- [x] Mobile: route `/book/:doctorId/confirm`; Book screen goes there instead of `pay`; payment summary shows the voucher line
+- [x] Web (small): voucher list / create / enable-disable page at Settings → Vouchers
 - [ ] Verify: valid, expired, used-up and unknown codes; paid amount equals discounted total
 
 ## E8. Patient appointment actions
 
 Design: *Appointments*.
 
-- [ ] Backend: `PATCH /api/appointments/:id/reschedule` for the patient (new date/time → status back to `requested`, doctor notified)
-- [ ] Mobile: Reschedule sheet reusing the booking date and slot pickers
-- [ ] Mobile: Reschedule button on requested / confirmed appointments
-- [ ] Mobile: Join call button on voice / video appointments from 10 min before start until 60 min after; starts the call with the doctor
+- [x] Backend: `PATCH /api/appointments/:id/reschedule` for the patient (new date/time → status back to `requested`, `appointment_updated` socket event)
+- [x] Mobile: Reschedule sheet using the doctor's working days and half-hour slots (same parsers as booking)
+- [x] Mobile: Reschedule button on requested / confirmed appointments (not emergencies)
+- [x] Mobile: Join call button on confirmed / in-progress voice / video appointments from 10 min before start until 60 min after; starts the call with the doctor
 - [ ] Verify: doctor sees the rescheduled request; join works for both call types
 
 ## E9. Payment screen polish

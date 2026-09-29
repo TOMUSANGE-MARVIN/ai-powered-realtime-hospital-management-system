@@ -30,7 +30,10 @@ class AuthController extends AsyncNotifier<AppUser?> {
 
   /// Finishes a sign-in that stopped at the 2FA challenge. Throws on a wrong
   /// code and leaves the user signed out so they can try again.
-  Future<void> verifySecondFactor(String code, {bool isBackupCode = false}) async {
+  Future<void> verifySecondFactor(
+    String code, {
+    bool isBackupCode = false,
+  }) async {
     final user = await ref
         .read(authRepositoryProvider)
         .verifySecondFactor(code, isBackupCode: isBackupCode);

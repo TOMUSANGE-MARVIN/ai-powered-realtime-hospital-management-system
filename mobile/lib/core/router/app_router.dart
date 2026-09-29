@@ -37,6 +37,7 @@ import '../../features/profile/presentation/health_profile_screen.dart';
 import '../../features/profile/presentation/privacy_settings_screen.dart';
 import '../../features/doctor/presentation/patient_history_screen.dart';
 import '../../features/appointments/presentation/rate_doctor_screen.dart';
+import '../../features/appointments/presentation/booking_confirmation_screen.dart';
 import '../../features/appointments/data/appointment.dart';
 
 /// Bridges Riverpod's [authControllerProvider] to go_router's
@@ -101,34 +102,59 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
-      GoRoute(path: '/welcome', builder: (context, state) => const WelcomeScreen()),
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/welcome',
+        builder: (context, state) => const WelcomeScreen(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
       GoRoute(
         path: '/search',
         builder: (context, state) =>
             DoctorsListScreen(initialSpecialty: state.extra as String?),
       ),
-      GoRoute(path: '/categories', builder: (context, state) => const AllCategoriesScreen()),
-      GoRoute(path: '/ai-search', builder: (context, state) => const AiSymptomSearchScreen()),
+      GoRoute(
+        path: '/categories',
+        builder: (context, state) => const AllCategoriesScreen(),
+      ),
+      GoRoute(
+        path: '/ai-search',
+        builder: (context, state) => const AiSymptomSearchScreen(),
+      ),
       GoRoute(
         path: '/doctors/:id',
-        builder: (context, state) => DoctorDetailScreen(doctorId: state.pathParameters['id']!),
+        builder: (context, state) =>
+            DoctorDetailScreen(doctorId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/book/:doctorId',
-        builder: (context, state) => BookAppointmentScreen(
-          doctorId: state.pathParameters['doctorId']!,
-        ),
+        builder: (context, state) =>
+            BookAppointmentScreen(doctorId: state.pathParameters['doctorId']!),
         routes: [
+          GoRoute(
+            path: 'confirm',
+            redirect: (context, state) => state.extra is BookingDraft
+                ? null
+                : '/book/${state.pathParameters['doctorId']}',
+            builder: (context, state) =>
+                BookingConfirmationScreen(draft: state.extra! as BookingDraft),
+          ),
           GoRoute(
             path: 'pay',
             // The draft only exists in memory; without it (e.g. restored
             // after process death) fall back to the booking screen.
-            redirect: (context, state) =>
-                state.extra is BookingDraft ? null : '/book/${state.pathParameters['doctorId']}',
-            builder: (context, state) => PaymentScreen(draft: state.extra! as BookingDraft),
+            redirect: (context, state) => state.extra is BookingDraft
+                ? null
+                : '/book/${state.pathParameters['doctorId']}',
+            builder: (context, state) =>
+                PaymentScreen(draft: state.extra! as BookingDraft),
           ),
         ],
       ),
@@ -143,10 +169,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      GoRoute(path: '/new-chat', builder: (context, state) => const NewChatScreen()),
+      GoRoute(
+        path: '/new-chat',
+        builder: (context, state) => const NewChatScreen(),
+      ),
       GoRoute(path: '/calls', builder: (context, state) => const CallsScreen()),
-      GoRoute(path: '/edit-profile', builder: (context, state) => const EditProfileScreen()),
-      GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
       GoRoute(
         path: '/review/:appointmentId',
         builder: (context, state) =>
@@ -170,13 +205,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const TwoFactorSetupScreen(),
       ),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => HomeShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) =>
+            HomeShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
-            routes: [GoRoute(path: '/home', builder: (context, state) => const PatientHomeScreen())],
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const PatientHomeScreen(),
+              ),
+            ],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: '/home/chats', builder: (context, state) => const ChatListScreen())],
+            routes: [
+              GoRoute(
+                path: '/home/chats',
+                builder: (context, state) => const ChatListScreen(),
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [
@@ -187,7 +233,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: '/home/profile', builder: (context, state) => const ProfileScreen())],
+            routes: [
+              GoRoute(
+                path: '/home/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),
@@ -206,16 +257,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => DoctorHomeShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) =>
+            DoctorHomeShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             routes: [
-              GoRoute(path: '/doctor-home', builder: (context, state) => const DoctorDashboardScreen()),
+              GoRoute(
+                path: '/doctor-home',
+                builder: (context, state) => const DoctorDashboardScreen(),
+              ),
             ],
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(path: '/doctor-home/chats', builder: (context, state) => const ChatListScreen()),
+              GoRoute(
+                path: '/doctor-home/chats',
+                builder: (context, state) => const ChatListScreen(),
+              ),
             ],
           ),
           StatefulShellBranch(

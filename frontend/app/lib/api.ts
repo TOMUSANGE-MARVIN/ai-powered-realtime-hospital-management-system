@@ -13,6 +13,7 @@ import type {
   Feedback,
   Category,
   CategoryOptions,
+  Voucher,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -612,5 +613,45 @@ export const createFeedback = async (data: {
     credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to submit feedback");
+  return res.json();
+};
+
+export const getVouchers = async (): Promise<Voucher[]> => {
+  const res = await fetch(`${API_URL}/vouchers`, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch vouchers");
+  return res.json();
+};
+
+export const createVoucher = async (data: Partial<Voucher>) => {
+  const res = await fetch(`${API_URL}/vouchers`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || "Failed to create voucher");
+  }
+  return res.json();
+};
+
+export const updateVoucher = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: Partial<Voucher>;
+}) => {
+  const res = await fetch(`${API_URL}/vouchers/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || "Failed to update voucher");
+  }
   return res.json();
 };

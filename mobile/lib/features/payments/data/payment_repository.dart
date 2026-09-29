@@ -54,10 +54,13 @@ class PaymentRepository {
   /// Path Pesapal redirects to after checkout — the WebView closes on it.
   static const callbackPath = '/api/payments/pesapal/callback';
 
-  Future<Payment> initiate({required String doctorId}) async {
+  Future<Payment> initiate({
+    required String doctorId,
+    String? voucherCode,
+  }) async {
     final response = await _dio.post(
       '/api/payments/initiate',
-      data: {'doctorId': doctorId},
+      data: {'doctorId': doctorId, 'voucherCode': ?voucherCode},
     );
     ApiException.checkStatus(response);
     return Payment.fromJson(response.data as Map<String, dynamic>);
@@ -67,5 +70,45 @@ class PaymentRepository {
     final response = await _dio.get('/api/payments/$paymentId/status');
     ApiException.checkStatus(response);
     return Payment.fromJson(response.data as Map<String, dynamic>);
+  }
+}
+
+/// Result of checking a voucher code against a doctor's fee.
+class VoucherQuote {
+  const VoucherQuote({
+    required this.code,
+    required this.discount,
+    required this.total,
+  });
+
+  final String code;
+  final int discount;
+  final int total;
+}
+
+class VoucherRepository {
+  VoucherRepository(this._dio);
+
+  final Dio _dio;
+
+  Future<VoucherQuote> validate({
+    required String code,
+    required String doctorId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/vouchers/validate',
+        data: {'code': code, 'doctorId': doctorId},
+      );
+      ApiException.checkStatus(response);
+      final data = response.data as Map<String, dynamic>;
+      return VoucherQuote(
+        code: data['code'] as String,
+        discount: (data['discount'] as num).toInt(),
+        total: (data['total'] as num).toInt(),
+      );
+    } on DioException catch (error) {
+      throw ApiException.fromDioError(error);
+    }
   }
 }

@@ -7,10 +7,13 @@ import 'package:intl/intl.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
+import '../../calls/state/call_controller.dart';
 import '../../chat/data/chat_args.dart';
+import '../../doctors/data/doctor.dart';
 import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
 import '../../doctors/state/doctor_providers.dart';
 import '../data/appointment.dart';
+import '../data/booking_draft.dart';
 import '../state/appointment_providers.dart';
 
 /// Appointment ids reviewed in this session — flips the button to
@@ -253,6 +256,55 @@ class _AppointmentCard extends ConsumerWidget {
     }
   }
 
+  Future<void> _reschedule(
+    BuildContext context,
+    WidgetRef ref,
+    Doctor? doctor,
+  ) async {
+    final picked = await showModalBottomSheet<DateTime>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) =>
+          _RescheduleSheet(doctor: doctor, current: appointment.date),
+    );
+    if (picked == null) return;
+    try {
+      await ref
+          .read(appointmentRepositoryProvider)
+          .reschedule(
+            appointment.id,
+            date: picked,
+            time: DateFormat.jm().format(picked),
+          );
+      ref.invalidate(myAppointmentsProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Rescheduled — waiting for the doctor to confirm'),
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    }
+  }
+
+  void _joinCall(WidgetRef ref, Doctor? doctor) {
+    ref
+        .read(callControllerProvider.notifier)
+        .startOutgoingCall(
+          appointment.doctorId!,
+          appointment.doctorName,
+          isVideo: appointment.consultationType == 'video',
+          peerImage: doctor?.image,
+        );
+  }
+
   Future<void> _review(BuildContext context, WidgetRef ref) async {
     final saved = await context.push<bool>(
       '/review/${appointment.id}',
@@ -263,9 +315,9 @@ class _AppointmentCard extends ConsumerWidget {
         .read(_reviewedAppointmentsProvider.notifier)
         .update((ids) => {...ids, appointment.id});
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Thanks for your review!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Thanks for your review!')));
     }
   }
 
@@ -490,6 +542,44 @@ class _AppointmentCard extends ConsumerWidget {
               ],
             ),
           ],
+          if (!appointment.isEmergency &&
+              (appointment.isCancellable ||
+                  (appointment.doctorId != null &&
+                      appointment.canJoinCallAt(DateTime.now())))) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (appointment.isCancellable)
+                  Expanded(
+                    child: _ActionButton(
+                      icon: Icons.event_repeat_rounded,
+                      label: 'Reschedule',
+                      background: Colors.white,
+                      foreground: seedTeal,
+                      borderColor: seedTeal,
+                      onPressed: () => _reschedule(context, ref, doctor),
+                    ),
+                  ),
+                if (appointment.isCancellable &&
+                    appointment.doctorId != null &&
+                    appointment.canJoinCallAt(DateTime.now()))
+                  const SizedBox(width: 12),
+                if (appointment.doctorId != null &&
+                    appointment.canJoinCallAt(DateTime.now()))
+                  Expanded(
+                    child: _ActionButton(
+                      icon: appointment.consultationType == 'video'
+                          ? Icons.videocam_rounded
+                          : Icons.call_rounded,
+                      label: 'Join call',
+                      background: const Color(0xFF0B5F60),
+                      foreground: Colors.white,
+                      onPressed: () => _joinCall(ref, doctor),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -547,6 +637,131 @@ class _ActionButton extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Date + half-hour slot picker limited to the doctor's working days and
+/// hours. Pops the chosen start time.
+class _RescheduleSheet extends StatefulWidget {
+  const _RescheduleSheet({required this.doctor, required this.current});
+
+  final Doctor? doctor;
+  final DateTime current;
+
+  @override
+  State<_RescheduleSheet> createState() => _RescheduleSheetState();
+}
+
+class _RescheduleSheetState extends State<_RescheduleSheet> {
+  late final Set<int>? _weekdays = parseAvailableWeekdays(
+    widget.doctor?.availabilityDays,
+  );
+  late final List<int> _slots = parseSlotMinutes(
+    widget.doctor?.availabilityHours,
+  );
+  DateTime? _day;
+  int? _slot;
+
+  bool _isOpenDay(DateTime day) =>
+      _weekdays == null || _weekdays.contains(day.weekday);
+
+  List<int> _openSlots(DateTime day) {
+    final now = DateTime.now();
+    return [
+      for (final m in _slots)
+        if (day.add(Duration(minutes: m)).isAfter(now)) m,
+    ];
+  }
+
+  Future<void> _pickDay() async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    var first = today;
+    while (!_isOpenDay(first) || _openSlots(first).isEmpty) {
+      first = first.add(const Duration(days: 1));
+      if (first.difference(today).inDays > 60) break;
+    }
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _day ?? first,
+      firstDate: first,
+      lastDate: today.add(const Duration(days: 60)),
+      selectableDayPredicate: _isOpenDay,
+    );
+    if (picked != null) {
+      setState(() {
+        _day = picked;
+        _slot = null;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final day = _day;
+    final slots = day == null ? const <int>[] : _openSlots(day);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Reschedule appointment',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Currently ${DateFormat('EEE, MMM d · h:mm a').format(widget.current)}',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.calendar_today_outlined, size: 18),
+              label: Text(
+                day == null
+                    ? 'Choose date'
+                    : DateFormat('EEEE, MMM d').format(day),
+              ),
+              onPressed: _pickDay,
+            ),
+            if (day != null) ...[
+              const SizedBox(height: 16),
+              if (slots.isEmpty)
+                const Text('No times left on this day.')
+              else
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final m in slots)
+                      ChoiceChip(
+                        label: Text(
+                          DateFormat.jm().format(
+                            DateTime(2000, 1, 1, m ~/ 60, m % 60),
+                          ),
+                        ),
+                        selected: _slot == m,
+                        onSelected: (_) => setState(() => _slot = m),
+                      ),
+                  ],
+                ),
+            ],
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: day == null || _slot == null
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).pop(day.add(Duration(minutes: _slot!))),
+              child: const Text('Request new time'),
+            ),
+          ],
         ),
       ),
     );

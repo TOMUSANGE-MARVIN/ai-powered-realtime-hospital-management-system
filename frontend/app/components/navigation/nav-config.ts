@@ -127,6 +127,7 @@ export const navConfig: {
         { title: "Roles & Permissions", url: "/settings/roles" },
         { title: "Billing", url: "/settings/billing" },
         { title: "Categories", url: "/settings/categories" },
+        { title: "Vouchers", url: "/settings/vouchers" },
       ],
     },
   ],

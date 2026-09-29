@@ -404,10 +404,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         decoration: const InputDecoration(labelText: 'Home Address'),
       ),
       const SizedBox(height: 16),
-      const Text(
-        'Insurance',
-        style: TextStyle(fontWeight: FontWeight.w600),
-      ),
+      const Text('Insurance', style: TextStyle(fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),
       TextField(
         controller: _insuranceProviderController,

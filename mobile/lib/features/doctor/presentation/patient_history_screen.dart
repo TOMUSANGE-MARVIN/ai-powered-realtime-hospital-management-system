@@ -15,8 +15,14 @@ final _dateFormat = DateFormat('d MMM yyyy');
 
 bool _isImage(String url) {
   final path = Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
-  return const ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.heic']
-      .any(path.endsWith);
+  return const [
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.webp',
+    '.gif',
+    '.heic',
+  ].any(path.endsWith);
 }
 
 /// A doctor's "Full History" of one patient: health facts, every document the
@@ -312,10 +318,10 @@ class _VisitTile extends StatelessWidget {
       'video' => 'Video call',
       _ => 'Consultation',
     };
-    final details = [visit.reason, visit.notes]
-        .whereType<String>()
-        .where((t) => t.isNotEmpty)
-        .join('\n');
+    final details = [
+      visit.reason,
+      visit.notes,
+    ].whereType<String>().where((t) => t.isNotEmpty).join('\n');
     return SoftCard(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -341,10 +347,7 @@ class _VisitTile extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(type, style: const TextStyle(color: seedTeal, fontSize: 13)),
-          if (details.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(details),
-          ],
+          if (details.isNotEmpty) ...[const SizedBox(height: 6), Text(details)],
         ],
       ),
     );

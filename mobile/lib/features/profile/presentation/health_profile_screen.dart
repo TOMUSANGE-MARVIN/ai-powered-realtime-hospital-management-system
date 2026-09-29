@@ -19,23 +19,32 @@ class HealthProfileScreen extends ConsumerWidget {
 
     final rows = <(String, String?)>[
       ('Blood group', user.bloodgroup),
-      ('Date of birth', dob == null ? null : DateFormat('d MMM yyyy').format(dob)),
+      (
+        'Date of birth',
+        dob == null ? null : DateFormat('d MMM yyyy').format(dob),
+      ),
       ('Age', user.age),
       ('Gender', user.gender),
       ('Marital status', user.maritalStatus),
-      ('Insurance', user.hasInsurance
-          ? [user.insuranceProvider, user.insuranceMemberNo]
-              .whereType<String>()
-              .where((v) => v.isNotEmpty)
-              .join(' · ')
-          : null),
-      ('Emergency contact', user.emergencyContactName == null
-          ? null
-          : [
-              user.emergencyContactName,
-              user.emergencyContactRelation,
-              user.emergencyContactPhone,
-            ].whereType<String>().where((v) => v.isNotEmpty).join(' · ')),
+      (
+        'Insurance',
+        user.hasInsurance
+            ? [
+                user.insuranceProvider,
+                user.insuranceMemberNo,
+              ].whereType<String>().where((v) => v.isNotEmpty).join(' · ')
+            : null,
+      ),
+      (
+        'Emergency contact',
+        user.emergencyContactName == null
+            ? null
+            : [
+                user.emergencyContactName,
+                user.emergencyContactRelation,
+                user.emergencyContactPhone,
+              ].whereType<String>().where((v) => v.isNotEmpty).join(' · '),
+      ),
     ];
 
     return Scaffold(

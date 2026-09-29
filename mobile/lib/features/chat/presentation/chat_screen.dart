@@ -1312,7 +1312,8 @@ class _DoctorPatientStrip extends ConsumerWidget
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final inConsultation = ref
+    final inConsultation =
+        ref
             .watch(todaysAssignedAppointmentsProvider)
             .value
             ?.any(
@@ -1342,13 +1343,13 @@ class _DoctorPatientStrip extends ConsumerWidget
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: seedTeal.withValues(alpha: 0.12),
+                color: const Color(0xFFFFA000),
                 borderRadius: BorderRadius.circular(kPillRadius),
               ),
               child: const Text(
                 'In Consultation',
                 style: TextStyle(
-                  color: seedTeal,
+                  color: Color(0xFF2B1A00),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),

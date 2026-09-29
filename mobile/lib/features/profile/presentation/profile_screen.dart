@@ -169,7 +169,11 @@ class _ProfileSkeleton extends StatelessWidget {
               const SizedBox(height: 6),
               const SkeletonBox(width: 180, height: 13),
               const SizedBox(height: 12),
-              const SkeletonBox(width: 120, height: 34, borderRadius: kCardRadius),
+              const SkeletonBox(
+                width: 120,
+                height: 34,
+                borderRadius: kCardRadius,
+              ),
             ],
           ),
         ),
@@ -343,7 +347,9 @@ class _HealthSnapshotSection extends ConsumerWidget {
               Expanded(
                 child: _snapshotItem(
                   'Insurance',
-                  user?.hasInsurance == true ? user!.insuranceProvider! : 'None',
+                  user?.hasInsurance == true
+                      ? user!.insuranceProvider!
+                      : 'None',
                 ),
               ),
             ],

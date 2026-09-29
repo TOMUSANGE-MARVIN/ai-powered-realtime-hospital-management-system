@@ -154,6 +154,19 @@ export interface Category {
   updatedAt: string;
 }
 
+export interface Voucher {
+  id: string;
+  code: string;
+  discountType: "fixed" | "percent";
+  value: number;
+  expiresAt?: string | null;
+  maxUses?: number | null;
+  usedCount: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CategoryOptions {
   icons: { key: string; label: string }[];
   colors: { key: string; label: string }[];

@@ -29,7 +29,7 @@ async function withRatings<T extends { id: string }>(doctors: T[]) {
   if (doctors.length === 0) return [];
   const groups = await prisma.review.groupBy({
     by: ["doctorId"],
-    where: { doctorId: { in: doctors.map((d) => d.id) } },
+    where: { doctorId: { in: doctors.map((d) => d.id) }, hidden: false },
     _avg: { rating: true },
     _count: { rating: true },
   });
@@ -69,6 +69,7 @@ export const listDoctors = async (req: Request, res: Response) => {
       // remaining slots so a fresh install still shows a carousel.
       const topRated = await prisma.review.groupBy({
         by: ["doctorId"],
+        where: { hidden: false },
         _avg: { rating: true },
         orderBy: { _avg: { rating: "desc" } },
         take: limit,

@@ -180,6 +180,10 @@ model Review {
   // Comma-separated tags from the rating screen's "What did the doctor
   // help you?" checklist, e.g. "consultation,medicine_instruction".
   helpedWith      String?   @db.Text
+  // Hidden by an admin: kept for the doctor but left out of public ratings.
+  hidden          Boolean   @default(false)
+  hiddenReason    String?   @db.Text
+  hiddenAt        DateTime?
   doctorReply     String?   @db.Text
   doctorRepliedAt DateTime?
   createdAt       DateTime  @default(now())
@@ -383,8 +387,11 @@ model Notification {
   type      NotificationType @default(system)
   isRead    Boolean          @default(false)
   link      String?
+  // Set when the notification came from an admin announcement.
+  announcementId String?
   createdAt DateTime         @default(now())
 
+  @@index([announcementId])
   @@map("notification")
 }
 
@@ -517,4 +524,42 @@ model Withdrawal {
 
   @@index([doctorId])
   @@map("withdrawal")
+}
+
+// Admin broadcast; each recipient gets a Notification row pointing here.
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  message   String   @db.Text
+  // "all" | "patients" | "doctors"
+  audience  String
+  link      String?  @db.Text
+  sentCount Int      @default(0)
+  sentById  String
+  sentByName String
+  createdAt DateTime @default(now())
+
+  @@map("announcement")
+}
+
+// Marketing-site blog, edited in Settings → Content Management.
+model BlogPost {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String    @db.Text
+  // Paragraphs separated by blank lines
+  content     String    @db.LongText
+  category    String
+  image       String?   @db.Text
+  // Card colour key: lime | sky | amber | orange | rose | violet
+  accent      String    @default("sky")
+  authorName  String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+  @@map("blog_post")
 }

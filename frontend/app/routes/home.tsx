@@ -10,6 +10,16 @@ import VideoSection from "@/components/home/VideoSection";
 import TestimonialSection from "@/components/home/TestimonialSection";
 import BlogSection from "@/components/home/BlogSection";
 import Footer from "@/components/home/Footer";
+import { getPublishedPosts } from "@/lib/api";
+
+// Latest posts for the blog strip; the page still renders if the API is down.
+export async function loader() {
+  try {
+    return { posts: await getPublishedPosts(3) };
+  } catch {
+    return { posts: [] };
+  }
+}
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,7 +32,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Home() {
+export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <div className="relative overflow-x-clip overflow-y-visible bg-[#F5F0E6]">
       {/* decorative corner accents */}
@@ -46,7 +56,7 @@ export default function Home() {
         <VideoSection />
         <div className="relative z-10">
           <TestimonialSection />
-          <BlogSection />
+          <BlogSection posts={loaderData.posts} />
           <Footer />
         </div>
       </div>

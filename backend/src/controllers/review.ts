@@ -94,6 +94,9 @@ export const replyToReview = async (req: Request, res: Response) => {
 // used by the doctor-side screen where they reply.
 export const getMyReviews = async (req: Request, res: Response) => {
   req.params.doctorId = (req as any).user.id;
+  // A doctor still sees reviews an admin hid (flagged `hidden`); they just
+  // don't count toward the public rating.
+  (req as any).includeHidden = true;
   return getDoctorReviews(req, res);
 };
 
@@ -105,16 +108,19 @@ export const getDoctorReviews = async (req: Request, res: Response) => {
     const limit = Math.max(1, parseInt(req.query.limit as string) || 20);
     const skip = (page - 1) * limit;
 
+    const includeHidden = (req as any).includeHidden === true;
+    const listWhere = includeHidden ? { doctorId } : { doctorId, hidden: false };
+
     const [total, reviews, aggregate] = await Promise.all([
-      prisma.review.count({ where: { doctorId } }),
+      prisma.review.count({ where: listWhere }),
       prisma.review.findMany({
-        where: { doctorId },
+        where: listWhere,
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       prisma.review.aggregate({
-        where: { doctorId },
+        where: { doctorId, hidden: false },
         _avg: { rating: true },
       }),
     ]);

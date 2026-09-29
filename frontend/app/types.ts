@@ -356,3 +356,93 @@ export interface Feedback {
   rating?: number;
   createdAt: string;
 }
+
+export interface AdminReview {
+  id: string;
+  appointmentId: string;
+  patientName: string;
+  doctorId: string;
+  rating: number;
+  comment: string | null;
+  helpedWith: string | null;
+  doctorReply: string | null;
+  hidden: boolean;
+  hiddenReason: string | null;
+  createdAt: string;
+  doctor: { id: string; name: string; specialization: string | null; image: string | null } | null;
+}
+
+export interface AdminReviewsResponse {
+  summary: {
+    average: number | null;
+    total: number;
+    hidden: number;
+    lowRatings: number;
+    replyRate: number | null;
+    distribution: { stars: number; count: number }[];
+  };
+  reviews: AdminReview[];
+  pagination: { page: number; total: number; totalPages: number };
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  audience: "all" | "patients" | "doctors";
+  link: string | null;
+  sentCount: number;
+  readCount: number;
+  sentByName: string;
+  createdAt: string;
+}
+
+export interface ReportsResponse {
+  range: { from: string; to: string; granularity: "day" | "week" | "month" };
+  totals: {
+    consultations: number;
+    completed: number;
+    cancelled: number;
+    cancellationRate: number | null;
+    revenue: number;
+    discounts: number;
+    tax: number;
+    newPatients: number;
+    newDoctors: number;
+    averageRating: number | null;
+  };
+  consultations: { period: string; completed: number; cancelled: number; other: number }[];
+  revenue: { period: string; revenue: number; discounts: number; tax: number }[];
+  signups: { period: string; patients: number; doctors: number }[];
+  specialties: { name: string; consultations: number; revenue: number }[];
+  doctors: {
+    id: string;
+    name: string;
+    specialization: string;
+    consultations: number;
+    completed: number;
+    revenue: number;
+    rating: number | null;
+    ratings: number;
+  }[];
+  vouchers: { code: string; uses: number; discount: number }[];
+  payouts: { requested: number; approved: number; paid: number; rejected: number };
+}
+
+export type BlogAccent = "lime" | "sky" | "amber" | "orange" | "rose" | "violet";
+
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  image: string | null;
+  accent: BlogAccent;
+  authorName: string | null;
+  published: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

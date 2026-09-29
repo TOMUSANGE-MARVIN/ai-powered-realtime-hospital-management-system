@@ -160,6 +160,7 @@ export const getOverview = async (req: Request, res: Response) => {
       }),
       prisma.review.groupBy({
         by: ["doctorId"],
+        where: { hidden: false },
         _avg: { rating: true },
         _count: { _all: true },
       }),
@@ -274,37 +275,6 @@ export const getOverview = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error building admin overview:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// Sends an in-app notification to everyone in the chosen audience.
-export const sendAnnouncement = async (req: Request, res: Response) => {
-  try {
-    const { audience, title, message } = req.body;
-    if (!title?.trim() || !message?.trim()) {
-      return res.status(400).json({ message: "title and message are required" });
-    }
-    const where =
-      audience === "patients"
-        ? { role: "patient" }
-        : audience === "doctors"
-          ? { role: "doctor" }
-          : {};
-    const users = await prisma.user.findMany({ where, select: { id: true } });
-    await prisma.notification.createMany({
-      data: users.map((u) => ({
-        user: u.id,
-        title: title.trim(),
-        message: message.trim(),
-        type: "system" as const,
-      })),
-    });
-    const io = req.app.get("io");
-    if (io) io.emit("notification_created");
-    res.status(201).json({ sent: users.length });
-  } catch (error) {
-    console.error("Error sending announcement:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

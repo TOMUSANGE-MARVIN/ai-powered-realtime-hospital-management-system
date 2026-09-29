@@ -179,6 +179,31 @@ class _DoctorReviewCard extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(review.comment!),
             ],
+            if (review.hidden) ...[
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.visibility_off_outlined,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Hidden by admin'
+                      '${review.hiddenReason != null ? ': ${review.hiddenReason}' : ''}'
+                      ' — not shown to patients or counted in your rating.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (review.helpedWith.isNotEmpty) ...[
               const SizedBox(height: 8),
               ReviewHelpTags(labels: review.helpedWith),

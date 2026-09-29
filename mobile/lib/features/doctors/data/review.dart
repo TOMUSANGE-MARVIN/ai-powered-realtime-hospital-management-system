@@ -16,6 +16,8 @@ class Review {
     this.doctorReply,
     this.doctorRepliedAt,
     this.helpedWith = const [],
+    this.hidden = false,
+    this.hiddenReason,
   });
 
   final String id;
@@ -28,6 +30,11 @@ class Review {
 
   /// Labels of the checklist items the patient ticked.
   final List<String> helpedWith;
+
+  /// Hidden by an admin: only the doctor sees it, and it doesn't count
+  /// toward their rating.
+  final bool hidden;
+  final String? hiddenReason;
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
@@ -42,6 +49,8 @@ class Review {
       doctorRepliedAt: json['doctorRepliedAt'] != null
           ? DateTime.tryParse(json['doctorRepliedAt'] as String)
           : null,
+      hidden: json['hidden'] as bool? ?? false,
+      hiddenReason: json['hiddenReason'] as String?,
       helpedWith: [
         for (final tag in (json['helpedWith'] as String? ?? '').split(','))
           if (reviewHelpTags[tag.trim()] != null) reviewHelpTags[tag.trim()]!,

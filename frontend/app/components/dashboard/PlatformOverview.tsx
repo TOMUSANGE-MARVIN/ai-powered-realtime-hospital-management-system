@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Area,
@@ -30,7 +29,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { getAdminOverview, sendAnnouncement } from "@/lib/api";
+import { getAdminOverview } from "@/lib/api";
 import type { AdminOverview, Kpi, OverviewPeriod } from "@/types";
 import {
   ChartContainer,
@@ -42,13 +41,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Table,
   TableBody,
   TableCell,
@@ -56,8 +48,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CustomInput } from "@/components/global/CustomInput";
-import { CustomSelect } from "@/components/global/CustomSelect";
 import Loader from "@/components/global/Loader";
 import CreateUserModal from "@/components/users/CreateUserModal";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
@@ -172,58 +162,6 @@ function KpiCard({
       <div className="text-3xl font-black tracking-tight">{value}</div>
       <Change kpi={kpi} />
     </div>
-  );
-}
-
-function AnnouncementDialog() {
-  const [open, setOpen] = useState(false);
-  const form = useForm({
-    defaultValues: { audience: "all", title: "", message: "" },
-  });
-  const mutation = useMutation({
-    mutationFn: sendAnnouncement,
-    onSuccess: ({ sent }) => {
-      toast.success(`Announcement sent to ${sent} user${sent === 1 ? "" : "s"}`);
-      setOpen(false);
-      form.reset();
-    },
-    onError: (e: any) => toast.error(e.message || "Failed to send"),
-  });
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full gap-2">
-          <Bell size={16} /> Send Announcement
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-lg card">
-        <DialogHeader>
-          <DialogTitle>Send Announcement</DialogTitle>
-        </DialogHeader>
-        <form
-          className="space-y-3"
-          onSubmit={form.handleSubmit((data) =>
-            mutation.mutate(data as Parameters<typeof sendAnnouncement>[0]),
-          )}
-        >
-          <CustomSelect
-            control={form.control}
-            name="audience"
-            label="Send to"
-            options={[
-              { label: "Everyone", value: "all" },
-              { label: "Patients", value: "patients" },
-              { label: "Doctors", value: "doctors" },
-            ]}
-          />
-          <CustomInput control={form.control} name="title" label="Title" />
-          <CustomInput control={form.control} name="message" label="Message" />
-          <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            Send
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -680,7 +618,13 @@ export default function PlatformOverview() {
             triggerVariant="outline"
             triggerClassName="w-full gap-2"
           />
-          <AnnouncementDialog />
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={() => navigate("/announcements")}
+          >
+            <Bell size={16} /> Send Announcement
+          </Button>
           <Button
             variant="outline"
             className="w-full gap-2"

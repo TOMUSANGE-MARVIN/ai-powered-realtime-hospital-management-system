@@ -19,6 +19,10 @@ import type {
   OverviewPeriod,
   ConsultationsResponse,
   CallLogEntry,
+  AdminReviewsResponse,
+  Announcement,
+  ReportsResponse,
+  BlogPost,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -705,6 +709,7 @@ export const sendAnnouncement = async (data: {
   audience: "all" | "patients" | "doctors";
   title: string;
   message: string;
+  link?: string;
 }): Promise<{ sent: number }> => {
   const res = await fetch(`${API_URL}/admin/announcements`, {
     method: "POST",
@@ -758,3 +763,53 @@ export const getCallLogs = async (params: {
   if (!res.ok) throw new Error("Failed to load call logs");
   return res.json();
 };
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    credentials: "include",
+    ...init,
+    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || `Request failed (${res.status})`);
+  }
+  return res.status === 204 ? (undefined as T) : res.json();
+}
+
+export const getAdminReviews = (params: Record<string, string | number>) =>
+  request<AdminReviewsResponse>(
+    `/admin/reviews?${new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]))}`,
+  );
+
+export const moderateReview = ({ id, hidden, reason }: { id: string; hidden: boolean; reason?: string }) =>
+  request(`/admin/reviews/${id}`, { method: "PATCH", body: JSON.stringify({ hidden, reason }) });
+
+export const getAnnouncements = (page = 1) =>
+  request<{ announcements: Announcement[]; pagination: { page: number; totalPages: number; total: number } }>(
+    `/admin/announcements?page=${page}`,
+  );
+
+export const getRecipientCount = (audience: string) =>
+  request<{ count: number }>(`/admin/announcements/recipients?audience=${audience}`);
+
+export const getReports = (params: { from: string; to: string; granularity?: string }) =>
+  request<ReportsResponse>(
+    `/admin/reports?${new URLSearchParams({ from: params.from, to: params.to, ...(params.granularity ? { granularity: params.granularity } : {}) })}`,
+  );
+
+export const getPublishedPosts = (limit?: number) =>
+  request<BlogPost[]>(`/blog${limit ? `?limit=${limit}` : ""}`);
+
+export const getPublishedPost = (slug: string) =>
+  request<BlogPost>(`/blog/${encodeURIComponent(slug)}`);
+
+export const getAllPosts = () => request<BlogPost[]>("/blog/admin/all");
+
+export const createPost = (data: Partial<BlogPost>) =>
+  request<BlogPost>("/blog", { method: "POST", body: JSON.stringify(data) });
+
+export const updatePost = ({ id, data }: { id: string; data: Partial<BlogPost> }) =>
+  request<BlogPost>(`/blog/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+
+export const deletePost = (id: string) => request<void>(`/blog/${id}`, { method: "DELETE" });

@@ -69,7 +69,7 @@ Format exactly like this: [{"specialty": "Cardiology", "reason": "..."}]`;
     const ratingGroups = doctors.length
       ? await prisma.review.groupBy({
           by: ["doctorId"],
-          where: { doctorId: { in: doctors.map((d) => d.id) } },
+          where: { doctorId: { in: doctors.map((d) => d.id) }, hidden: false },
           _avg: { rating: true },
           _count: { rating: true },
         })

@@ -11,6 +11,7 @@ import {
   LifeBuoy,
   Send,
   ReceiptCent,
+  Megaphone,
 } from "lucide-react";
 
 export interface NavItem {
@@ -122,6 +123,18 @@ export const navConfig: {
     },
   ],
   navAdmin: [
+    {
+      title: "Platform",
+      url: "/reviews",
+      icon: Megaphone,
+      allowedRoles: ["admin"],
+      items: [
+        { title: "Reviews & Ratings", url: "/reviews" },
+        { title: "Notifications", url: "/announcements" },
+        { title: "Reports & Analytics", url: "/reports" },
+        { title: "Content Management", url: "/content" },
+      ],
+    },
     {
       title: "Settings",
       url: "/settings",

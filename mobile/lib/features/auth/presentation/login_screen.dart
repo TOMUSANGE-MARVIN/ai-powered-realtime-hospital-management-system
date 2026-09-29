@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/auth_repository.dart';
 import '../state/auth_controller.dart';
+import 'two_factor_widgets.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -38,6 +40,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // continuation runs. Touching `ref`/`context` after that is unsafe.
     if (!mounted) return;
     final state = ref.read(authControllerProvider);
+    if (state.error is TwoFactorRequiredException) {
+      await showTwoFactorChallenge(context);
+      return;
+    }
     if (state.hasError) {
       ScaffoldMessenger.of(
         context,

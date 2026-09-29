@@ -52,8 +52,10 @@ model User {
   emergencyContactName     String?   @db.Text
   emergencyContactPhone    String?   @db.Text
   emergencyContactRelation String?   @db.Text
+  twoFactorEnabled         Boolean?  @default(false)
   sessions                 Session[]
   accounts                 Account[]
+  twoFactors               TwoFactor[]
 
   @@unique([email])
   @@map("user")
@@ -108,6 +110,21 @@ model Verification {
   @@map("verification")
 }
 
+// better-auth twoFactor plugin (TOTP authenticator apps).
+model TwoFactor {
+  id                      String    @id
+  secret                  String    @db.Text
+  backupCodes             String    @db.Text
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+
+  @@index([userId])
+  @@map("twoFactor")
+}
+
 enum AppointmentStatus {
   requested
   scheduled
@@ -154,6 +171,9 @@ model Review {
   doctorId        String
   rating          Int
   comment         String?   @db.Text
+  // Comma-separated tags from the rating screen's "What did the doctor
+  // help you?" checklist, e.g. "consultation,medicine_instruction".
+  helpedWith      String?   @db.Text
   doctorReply     String?   @db.Text
   doctorRepliedAt DateTime?
   createdAt       DateTime  @default(now())

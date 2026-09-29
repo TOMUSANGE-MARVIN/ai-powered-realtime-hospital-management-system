@@ -18,6 +18,7 @@ class AppUser {
     this.emergencyContactName,
     this.emergencyContactPhone,
     this.emergencyContactRelation,
+    this.twoFactorEnabled = false,
   });
 
   final String id;
@@ -38,6 +39,7 @@ class AppUser {
   final String? emergencyContactName;
   final String? emergencyContactPhone;
   final String? emergencyContactRelation;
+  final bool twoFactorEnabled;
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
@@ -59,6 +61,7 @@ class AppUser {
       emergencyContactName: json['emergencyContactName'] as String?,
       emergencyContactPhone: json['emergencyContactPhone'] as String?,
       emergencyContactRelation: json['emergencyContactRelation'] as String?,
+      twoFactorEnabled: json['twoFactorEnabled'] as bool? ?? false,
     );
   }
 }

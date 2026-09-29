@@ -6,7 +6,10 @@ import { prisma } from "../lib/prisma";
 export const createReview = async (req: Request, res: Response) => {
   try {
     const patient = (req as any).user;
-    const { appointmentId, rating, comment } = req.body;
+    const { appointmentId, rating, comment, helpedWith } = req.body;
+    const tags = Array.isArray(helpedWith)
+      ? helpedWith.filter((t: unknown) => typeof t === "string" && t).join(",")
+      : null;
 
     const parsedRating = parseInt(rating);
     if (!appointmentId || !parsedRating || parsedRating < 1 || parsedRating > 5) {
@@ -39,8 +42,13 @@ export const createReview = async (req: Request, res: Response) => {
         doctorId: appointment.doctorId,
         rating: parsedRating,
         comment: comment || null,
+        helpedWith: tags || null,
       },
-      update: { rating: parsedRating, comment: comment || null },
+      update: {
+        rating: parsedRating,
+        comment: comment || null,
+        helpedWith: tags || null,
+      },
     });
 
     res.status(201).json(review);

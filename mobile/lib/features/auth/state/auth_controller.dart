@@ -28,6 +28,21 @@ class AuthController extends AsyncNotifier<AppUser?> {
     );
   }
 
+  /// Finishes a sign-in that stopped at the 2FA challenge. Throws on a wrong
+  /// code and leaves the user signed out so they can try again.
+  Future<void> verifySecondFactor(String code, {bool isBackupCode = false}) async {
+    final user = await ref
+        .read(authRepositoryProvider)
+        .verifySecondFactor(code, isBackupCode: isBackupCode);
+    state = AsyncData(user);
+  }
+
+  /// Re-reads the session user, e.g. after turning 2FA on or off.
+  Future<void> refreshUser() async {
+    final user = await ref.read(authRepositoryProvider).getSession();
+    if (user != null) state = AsyncData(user);
+  }
+
   Future<void> signUp({
     required String name,
     required String email,

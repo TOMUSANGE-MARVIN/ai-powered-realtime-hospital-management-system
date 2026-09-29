@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin } from "better-auth/plugins";
+import { admin, twoFactor } from "better-auth/plugins";
 import {
   polar,
   checkout,
@@ -20,6 +20,7 @@ export const polarClient = new Polar({
 });
 
 export const auth = betterAuth({
+  appName: "Ask Musawo",
   database: prismaAdapter(prisma, { provider: "mysql" }),
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
   // if you comment this out, thunder client will be able to create user, but let add origin on thunder client to test it out
@@ -36,6 +37,9 @@ export const auth = betterAuth({
   ],
   emailAndPassword: { enabled: true },
   plugins: [
+    // TOTP (authenticator app) only — there is no SMS/email provider wired up
+    // for the OTP method yet.
+    twoFactor({ issuer: "Ask Musawo" }),
     admin({
       defaultRole: "patient",
       // but we are going to work without it since will have a middleware to check permissions based on the role in the session

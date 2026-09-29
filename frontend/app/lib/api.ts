@@ -23,6 +23,8 @@ import type {
   Announcement,
   ReportsResponse,
   BlogPost,
+  AdminPayment,
+  AdminPaymentsResponse,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -813,3 +815,21 @@ export const updatePost = ({ id, data }: { id: string; data: Partial<BlogPost> }
   request<BlogPost>(`/blog/${id}`, { method: "PATCH", body: JSON.stringify(data) });
 
 export const deletePost = (id: string) => request<void>(`/blog/${id}`, { method: "DELETE" });
+
+export const getAdminPayments = (params: Record<string, string | number>) =>
+  request<AdminPaymentsResponse>(
+    `/admin/payments?${new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]))}`,
+  );
+
+export const syncAdminPayment = (id: string) =>
+  request<{ changed: boolean; payment: AdminPayment }>(`/admin/payments/${id}/sync`, { method: "POST" });
+
+export const refundAdminPayment = ({
+  id,
+  ...body
+}: {
+  id: string;
+  amount: number;
+  reason: string;
+  cancelAppointment: boolean;
+}) => request<AdminPayment>(`/admin/payments/${id}/refund`, { method: "POST", body: JSON.stringify(body) });

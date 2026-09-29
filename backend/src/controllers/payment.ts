@@ -19,23 +19,33 @@ type PaymentRecord = NonNullable<Awaited<ReturnType<typeof prisma.payment.findFi
 // yet", so it leaves a pending payment pending.
 const STATUS_BY_CODE: Record<number, string> = { 1: "paid", 2: "failed", 3: "reversed" };
 
-/** Pulls the latest status from Pesapal and persists it. Never throws. */
-async function syncWithPesapal(payment: PaymentRecord): Promise<PaymentRecord> {
-  if (payment.status !== "pending" || !payment.orderTrackingId) return payment;
+/**
+ * Pulls the latest status from Pesapal and persists it. Never throws.
+ * Follows pending payments, and paid ones with a refund in flight until
+ * Pesapal reports them reversed.
+ */
+export async function syncWithPesapal(payment: PaymentRecord): Promise<PaymentRecord> {
+  const followRefund = payment.status === "paid" && payment.refundStatus === "requested";
+  if ((payment.status !== "pending" && !followRefund) || !payment.orderTrackingId) {
+    return payment;
+  }
   try {
     const tx = await getTransactionStatus(payment.orderTrackingId);
     const status = STATUS_BY_CODE[tx.status_code];
-    if (!status) return payment;
+    if (!status || status === payment.status) return payment;
     const updated = await prisma.payment.update({
       where: { id: payment.id },
       data: {
         status,
         method: tx.payment_method || payment.method,
         reference: tx.confirmation_code || payment.reference,
+        ...(status === "reversed" && payment.refundStatus === "requested"
+          ? { refundStatus: "completed" }
+          : {}),
       },
     });
     // A voucher counts as used only once its payment actually goes through.
-    if (status === "paid" && payment.voucherCode) {
+    if (status === "paid" && payment.status === "pending" && payment.voucherCode) {
       await prisma.voucher.updateMany({
         where: { code: payment.voucherCode },
         data: { usedCount: { increment: 1 } },

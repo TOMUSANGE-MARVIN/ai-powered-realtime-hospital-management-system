@@ -11,7 +11,8 @@ const BASE_URLS = {
 } as const;
 
 const env = process.env.PESAPAL_ENV === "live" ? "live" : "sandbox";
-const baseUrl = BASE_URLS[env];
+// PESAPAL_BASE_URL is for local tests against a mock server only.
+const baseUrl = process.env.PESAPAL_BASE_URL || BASE_URLS[env];
 
 /** Public URL of this backend — Pesapal must be able to reach the IPN/callback. */
 export const publicApiUrl = () =>
@@ -133,4 +134,39 @@ export async function getTransactionStatus(orderTrackingId: string) {
     `/api/Transactions/GetTransactionStatus?orderTrackingId=${encodeURIComponent(orderTrackingId)}`,
     { method: "GET", token },
   );
+}
+
+export interface RefundInput {
+  /** The payment's confirmation code from GetTransactionStatus. */
+  confirmationCode: string;
+  amount: number;
+  /** Who asked for the refund (shown to the merchant approving it). */
+  username: string;
+  remarks: string;
+}
+
+/**
+ * Asks Pesapal to refund a COMPLETED payment. Pesapal allows one refund per
+ * payment, full-only for mobile money; the merchant approves it on Pesapal,
+ * after which GetTransactionStatus reports the payment REVERSED.
+ */
+export async function requestRefund(input: RefundInput) {
+  const token = await getToken();
+  const body = await call<{ status: string | number; message?: string }>(
+    "/api/Transactions/RefundRequest",
+    {
+      method: "POST",
+      token,
+      body: JSON.stringify({
+        confirmation_code: input.confirmationCode,
+        amount: input.amount,
+        username: input.username,
+        remarks: input.remarks.slice(0, 200),
+      }),
+    },
+  );
+  if (String(body.status) !== "200") {
+    throw new PesapalError(`Pesapal rejected the refund: ${body.message || body.status}`);
+  }
+  return body;
 }

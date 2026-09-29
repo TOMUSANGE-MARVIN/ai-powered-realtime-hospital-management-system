@@ -446,3 +446,49 @@ export interface BlogPost {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface AdminPayment {
+  id: string;
+  amount: number;
+  currency: string;
+  method: string;
+  methodType: "card" | "mobile" | null;
+  status: "pending" | "paid" | "failed" | "reversed";
+  reference: string | null;
+  voucherCode: string | null;
+  discount: number;
+  tax: number;
+  refundStatus: "requested" | "completed" | null;
+  refundAmount: number | null;
+  refundReason: string | null;
+  refundRequestedAt: string | null;
+  refundRequestedBy: string | null;
+  createdAt: string;
+  patient: { id: string; name: string; email: string } | null;
+  doctor: { id: string; name: string; email: string } | null;
+  appointment: {
+    id: string;
+    date: string;
+    time: string | null;
+    status: string;
+    consultationType: string | null;
+  } | null;
+}
+
+export interface AdminPaymentsResponse {
+  pesapalConfigured: boolean;
+  summary: {
+    collected: number;
+    paidCount: number;
+    pendingCount: number;
+    failedCount: number;
+    refunded: number;
+    refundedCount: number;
+    refundsRequested: number;
+    refundsRequestedAmount: number;
+    discounts: number;
+    tax: number;
+  };
+  payments: AdminPayment[];
+  pagination: { page: number; total: number; totalPages: number };
+}

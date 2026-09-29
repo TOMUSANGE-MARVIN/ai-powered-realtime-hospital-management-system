@@ -246,7 +246,7 @@ Design sidebar sections the web app lacks. Each needs its own page and task list
     - [x] Web: summary cards, filterable table, detail panel with a timeline, Call logs tab; flags virtual visits marked completed with no recorded call
     - [x] Sidebar now honours per-item `allowedRoles` (doctors don't see admin-only links)
     - [x] Verify: 13/13 API checks on seeded data; screenshots of table, detail panel and call logs; doctor sidebar hides the link
-- [ ] Payments (Pesapal transactions, refunds)
+- [x] Payments (Pesapal transactions, refunds) → E19
 - [ ] Subscriptions (no subscription product exists yet — needs a decision)
 - [x] Reviews & Ratings (moderation) → E15
 - [x] Notifications (announcement history) → E16
@@ -291,6 +291,20 @@ Design sidebar sections the web app lacks. Each needs its own page and task list
 - [x] Web: marketing Blog, BlogPost and home BlogSection load posts from the API (server-rendered loaders, graceful fallback); `lib/blogPosts.ts` removed
 - [x] Replace the hard-coded comment counts with an estimated reading time (there is no comment system)
 - [x] Verify: API checks (10); blog list, post and home strip server-render from the database; drafts 404 publicly; screenshots
+## E19. Payments & refunds (web)
+
+Pesapal refund rules ([RefundRequest docs](https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json/refund-request)): only COMPLETED payments; one refund per payment; mobile money refunds must be full, card refunds may be partial; the merchant approves each refund on Pesapal, which later reports the payment as REVERSED.
+
+- [x] Backend: `Payment` refund fields (`refundAmount`, `refundReason`, `refundStatus`, `refundRequestedAt`, `refundRequestedBy`) — migration `20260930120000_payment_refunds`
+- [x] Backend: `requestRefund` in `lib/pesapal.ts` (`POST /api/Transactions/RefundRequest`)
+- [x] Backend: `GET /api/admin/payments` — filters (period, status, method type, search), paging; summary: collected, pending, failed, refunded, discounts, tax; each row with patient, doctor and linked appointment
+- [x] Backend: `POST /api/admin/payments/:id/sync` — re-check status with Pesapal
+- [x] Backend: `POST /api/admin/payments/:id/refund` — enforces the rules above; optional "cancel the appointment too"
+- [x] Backend: status sync also follows payments with a requested refund until Pesapal reports them reversed
+- [x] Web: Payments page (Financial Records → Payments, admin only) — summary cards, filterable table, detail panel, Sync and Refund actions with the rules explained
+- [x] Verify: 24/24 API checks against a local Pesapal mock (`PESAPAL_BASE_URL`, tests only) covering listing, every refund rule, Pesapal rejection, and sync to reversed; screenshots
+- [ ] Verify: one real refund on production with a small card payment (needs your Pesapal merchant approval)
+
 ## Final pass
 
 - [ ] Re-render every design screen and compare side by side with the app

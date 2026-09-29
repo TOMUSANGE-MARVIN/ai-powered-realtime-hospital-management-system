@@ -254,6 +254,13 @@ model Payment {
   voucherCode String?
   discount    Int      @default(0)
   tax         Int      @default(0)
+  // Refund requested from Pesapal by an admin. "requested" until Pesapal
+  // reports the payment REVERSED ("completed"); Pesapal allows one per payment.
+  refundStatus      String?
+  refundAmount      Int?
+  refundReason      String?   @db.Text
+  refundRequestedAt DateTime?
+  refundRequestedBy String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

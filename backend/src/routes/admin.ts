@@ -14,6 +14,7 @@ import {
   moderateReview,
   sendAnnouncement,
 } from "../controllers/adminContent";
+import { listPayments, refundPayment, syncPayment } from "../controllers/adminPayments";
 
 const adminRouter = Router();
 
@@ -25,6 +26,9 @@ adminRouter.get("/announcements", requireAuth, checkRole(["admin"]), listAnnounc
 adminRouter.get("/announcements/recipients", requireAuth, checkRole(["admin"]), countRecipients);
 adminRouter.get("/reviews", requireAuth, checkRole(["admin"]), listReviews);
 adminRouter.patch("/reviews/:id", requireAuth, checkRole(["admin"]), moderateReview);
+adminRouter.get("/payments", requireAuth, checkRole(["admin"]), listPayments);
+adminRouter.post("/payments/:id/sync", requireAuth, checkRole(["admin"]), syncPayment);
+adminRouter.post("/payments/:id/refund", requireAuth, checkRole(["admin"]), refundPayment);
 adminRouter.get("/reports", requireAuth, checkRole(["admin"]), getReports);
 
 export default adminRouter;

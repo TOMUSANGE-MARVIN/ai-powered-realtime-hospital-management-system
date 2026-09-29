@@ -104,7 +104,10 @@ export const navConfig: {
       url: "/records",
       icon: ReceiptCent,
       allowedRoles: ["admin", "doctor"],
-      items: [{ title: "History", url: "/financial-history" }],
+      items: [
+        { title: "History", url: "/financial-history" },
+        { title: "Payments", url: "/payments", allowedRoles: ["admin"] },
+      ],
     },
     {
       title: "Appointments",

@@ -101,20 +101,20 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     );
     if (picked == null) return;
     final minutes = picked.hour * 60 + picked.minute;
-    // The clock face can't be restricted to the doctor's open slots, so an
-    // out-of-hours or already-taken half-hour is rejected with a hint here
-    // instead of silently accepted.
-    if (!openSlots.contains(minutes)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Choose a time within the doctor’s working hours, in 30-minute steps.'),
-          ),
-        );
-      }
-      return;
+    // The clock face lets the patient drop the hand on any minute, but the
+    // doctor's slots are 30-minute steps — snap to the closest open one
+    // instead of rejecting anything not exactly on the mark. Only an empty
+    // `openSlots` (already returned above) or a pick miles outside the
+    // working day would leave nothing to snap to.
+    final closest = openSlots.reduce(
+      (a, b) => (a - minutes).abs() <= (b - minutes).abs() ? a : b,
+    );
+    if (closest != minutes && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Rounded to the nearest open time, ${_formatSlot(closest)}.')),
+      );
     }
-    setState(() => _slotMinutes = minutes);
+    setState(() => _slotMinutes = closest);
   }
 
   BookingDraft? _draft(Doctor doctor) {

@@ -4,12 +4,21 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
+import '../../../core/widgets/soft_card.dart';
 import '../../doctors/data/doctor.dart';
+import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
 import '../../doctors/state/doctor_providers.dart';
-import '../../payments/state/payment_providers.dart';
+import '../data/booking_draft.dart';
 import '../state/appointment_providers.dart';
+
+const _ink = darkTealBackground;
+const _muted = Color(0xFF6B7A7A);
+const _danger = Color(0xFFD32F2F);
+
+/// How many days ahead the date strip offers.
+const _bookingWindowDays = 14;
 
 class BookAppointmentScreen extends ConsumerStatefulWidget {
   const BookAppointmentScreen({super.key, required this.doctorId});
@@ -17,14 +26,13 @@ class BookAppointmentScreen extends ConsumerStatefulWidget {
   final String doctorId;
 
   @override
-  ConsumerState<BookAppointmentScreen> createState() =>
-      _BookAppointmentScreenState();
+  ConsumerState<BookAppointmentScreen> createState() => _BookAppointmentScreenState();
 }
 
 class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
   final _reasonController = TextEditingController();
   DateTime? _date;
-  TimeOfDay? _time;
+  int? _slotMinutes;
   String _consultationType = 'video';
   bool _isEmergency = false;
   bool _submitting = false;
@@ -35,92 +43,78 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     super.dispose();
   }
 
-  Future<void> _pickDate() async {
+  static DateTime _dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  /// Slots on [day] that haven't already passed (only matters for today).
+  List<int> _openSlots(DateTime day, List<int> slots) {
     final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: now.add(const Duration(days: 1)),
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 180)),
-    );
-    if (picked != null) setState(() => _date = picked);
+    if (_dayOnly(now) != day) return slots;
+    final nowMinutes = now.hour * 60 + now.minute;
+    return slots.where((m) => m > nowMinutes).toList();
   }
 
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) setState(() => _time = picked);
+  bool _isDayBookable(DateTime day, Set<int>? weekdays, List<int> slots) {
+    if (weekdays != null && !weekdays.contains(day.weekday)) return false;
+    return _openSlots(day, slots).isNotEmpty;
   }
 
-  Future<void> _submit(Doctor doctor) async {
-    final date = _isEmergency ? DateTime.now() : _date;
-    if (date == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please choose a date')));
+  String _formatSlot(int minutes) =>
+      DateFormat.jm().format(DateTime(2000, 1, 1, minutes ~/ 60, minutes % 60));
+
+  BookingDraft? _draft(Doctor doctor) {
+    final reason = _reasonController.text.trim();
+    if (_isEmergency) {
+      return BookingDraft(
+        doctor: doctor,
+        date: DateTime.now(),
+        consultationType: _consultationType,
+        reason: reason.isEmpty ? null : reason,
+        isEmergency: true,
+      );
+    }
+    if (_date == null || _slotMinutes == null) return null;
+    return BookingDraft(
+      doctor: doctor,
+      date: _date!.add(Duration(minutes: _slotMinutes!)),
+      time: _formatSlot(_slotMinutes!),
+      consultationType: _consultationType,
+      reason: reason.isEmpty ? null : reason,
+    );
+  }
+
+  Future<void> _continue(Doctor doctor) async {
+    final draft = _draft(doctor);
+    if (draft == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Choose a date and time first')),
+      );
+      return;
+    }
+    // Doctors with a fee: pay first, the payment screen books on success.
+    if (doctor.consultationFee != null) {
+      context.push('/book/${doctor.id}/pay', extra: draft);
       return;
     }
 
-    // Pay-before-book: doctors with a fee require a completed payment first.
-    String? paymentId;
-    if (doctor.consultationFee != null) {
-      paymentId = await showModalBottomSheet<String>(
-        context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        builder: (context) => _PaymentSheet(doctor: doctor),
-      );
-      if (paymentId == null) return; // user backed out of payment
-    }
-    if (!mounted) return;
-
     setState(() => _submitting = true);
     try {
-      await ref
-          .read(appointmentRepositoryProvider)
-          .book(
-            doctorId: widget.doctorId,
-            date: date,
-            time: _time?.format(context),
-            reason: _reasonController.text.trim().isEmpty
-                ? null
-                : _reasonController.text.trim(),
-            consultationType: _consultationType,
-            isEmergency: _isEmergency,
-            paymentId: paymentId,
+      await ref.read(appointmentRepositoryProvider).book(
+            doctorId: doctor.id,
+            date: draft.date,
+            time: draft.time,
+            reason: draft.reason,
+            consultationType: draft.consultationType,
+            isEmergency: draft.isEmergency,
           );
       ref.invalidate(myAppointmentsProvider);
       if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          icon: const Icon(Icons.check_circle, color: Colors.green, size: 40),
-          title: Text(
-            _isEmergency ? 'Emergency request sent' : 'Appointment requested',
-          ),
-          content: Text(
-            _isEmergency
-                ? "Your emergency request has been sent — the doctor's team will attend to you as soon as possible."
-                : "We've sent your request to the doctor's team. You'll see it under My Appointments once confirmed.",
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.go('/home/appointments');
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Appointment requested — we'll notify you once it's confirmed")),
       );
+      context.go('/home/appointments');
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -130,283 +124,505 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
   @override
   Widget build(BuildContext context) {
     final doctorAsync = ref.watch(doctorDetailProvider(widget.doctorId));
-    final dateFormat = DateFormat('EEE, MMM d, yyyy');
-    final feeFormat = NumberFormat.decimalPattern();
 
     return Scaffold(
+      backgroundColor: tealBackground,
       appBar: AppBar(
-        title: Text(doctorAsync.value?.name ?? 'Book appointment'),
+        backgroundColor: tealBackground,
+        title: const Text('Book appointment'),
+        centerTitle: true,
       ),
       body: doctorAsync.when(
         loading: () => const SkeletonForm(),
         error: (error, _) => Center(child: Text(error.toString())),
-        data: (doctor) => SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        data: (doctor) {
+          final weekdays = parseAvailableWeekdays(doctor.availabilityDays);
+          final slots = parseSlotMinutes(doctor.availabilityHours);
+          final today = _dayOnly(DateTime.now());
+          final days = [
+            for (var i = 0; i < _bookingWindowDays; i++) today.add(Duration(days: i)),
+          ];
+          // Default to the first bookable day so the time grid is never empty.
+          _date ??= days.cast<DateTime?>().firstWhere(
+                (d) => _isDayBookable(d!, weekdays, slots),
+                orElse: () => null,
+              );
+          // Times already past today are dropped rather than shown disabled.
+          final openSlots = _date == null ? const <int>[] : _openSlots(_date!, slots);
+
+          return Column(
             children: [
-              const Text(
-                'Consultation type',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(
-                    value: 'physical',
-                    label: Text('Physical'),
-                    icon: Icon(Icons.local_hospital_outlined),
-                  ),
-                  ButtonSegment(
-                    value: 'voice',
-                    label: Text('Voice'),
-                    icon: Icon(Icons.call_outlined),
-                  ),
-                  ButtonSegment(
-                    value: 'video',
-                    label: Text('Video'),
-                    icon: Icon(Icons.videocam_outlined),
-                  ),
-                ],
-                selected: {_consultationType},
-                onSelectionChanged: (value) =>
-                    setState(() => _consultationType = value.first),
-              ),
-              const SizedBox(height: 12),
-              Card(
-                margin: EdgeInsets.zero,
-                color: _isEmergency
-                    ? Theme.of(context).colorScheme.errorContainer
-                    : null,
-                child: SwitchListTile(
-                  secondary: Icon(
-                    Icons.emergency,
-                    color: _isEmergency
-                        ? Theme.of(context).colorScheme.error
-                        : null,
-                  ),
-                  title: const Text('This is an emergency'),
-                  subtitle: Text(
-                    _isEmergency
-                        ? 'Booked for today — you will get immediate attention'
-                        : 'Need immediate attention today?',
-                  ),
-                  value: _isEmergency,
-                  onChanged: (value) => setState(() => _isEmergency = value),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (!_isEmergency)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today_outlined),
-                  title: Text(
-                    _date == null ? 'Choose a date' : dateFormat.format(_date!),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _pickDate,
-                )
-              else
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today_outlined),
-                  title: Text('Today, ${dateFormat.format(DateTime.now())}'),
-                  subtitle: const Text(
-                    'Emergency bookings are always for today',
-                  ),
-                ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.access_time),
-                title: Text(
-                  _time == null
-                      ? 'Choose a time (optional)'
-                      : _time!.format(context),
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _pickTime,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _reasonController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Reason for visit (optional)',
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (doctor.consultationFee != null)
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.payments_outlined),
-                        const SizedBox(width: 12),
-                        const Expanded(child: Text('Consultation fee')),
-                        Text(
-                          'UGX ${feeFormat.format(doctor.consultationFee)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  children: [
+                    _DoctorSummary(doctor: doctor),
+                    const SizedBox(height: 20),
+                    const _SectionLabel('Consultation type'),
+                    const SizedBox(height: 10),
+                    _ConsultationTypePicker(
+                      value: _consultationType,
+                      onChanged: (v) => setState(() => _consultationType = v),
                     ),
-                  ),
-                ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _submitting ? null : () => _submit(doctor),
-                child: _submitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                    const SizedBox(height: 12),
+                    _EmergencyToggle(
+                      value: _isEmergency,
+                      onChanged: (v) => setState(() => _isEmergency = v),
+                    ),
+                    const SizedBox(height: 20),
+                    if (!_isEmergency) ...[
+                      SoftCard(
+                        color: Colors.white,
+                        padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                children: [
+                                  const _SectionLabel('Choose date'),
+                                  const Spacer(),
+                                  if (_date != null)
+                                    Text(
+                                      DateFormat('MMMM yyyy').format(_date!),
+                                      style: const TextStyle(fontSize: 13, color: _muted),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              height: 72,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: days.length,
+                                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                                itemBuilder: (context, i) {
+                                  final day = days[i];
+                                  return _DateChip(
+                                    date: day,
+                                    selected: day == _date,
+                                    enabled: _isDayBookable(day, weekdays, slots),
+                                    onTap: () => setState(() {
+                                      _date = day;
+                                      _slotMinutes = null;
+                                    }),
+                                  );
+                                },
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+                              child: _SectionLabel('Choose time'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: _date == null
+                                  ? const Text(
+                                      'No open days in the next two weeks. '
+                                      'Message the doctor or mark this as an emergency.',
+                                      style: TextStyle(color: _muted),
+                                    )
+                                  : _SlotGrid(
+                                      slots: openSlots,
+                                      open: openSlots.toSet(),
+                                      selected: _slotMinutes,
+                                      label: _formatSlot,
+                                      onSelect: (m) => setState(() => _slotMinutes = m),
+                                    ),
+                            ),
+                            if (doctor.availabilityHours != null) ...[
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'Working hours: ${[doctor.availabilityDays, doctor.availabilityHours].whereType<String>().join(', ')}',
+                                  style: const TextStyle(fontSize: 12.5, color: _muted),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
-                      )
-                    : Text(
-                        doctor.consultationFee != null
-                            ? 'Pay & Book'
-                            : 'Request appointment',
                       ),
+                      const SizedBox(height: 20),
+                    ],
+                    const _SectionLabel('Reason for visit'),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _reasonController,
+                      maxLines: 3,
+                      minLines: 2,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(
+                        hintText: 'Briefly describe your symptoms (optional)',
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _CheckoutBar(
+                fee: doctor.consultationFee,
+                busy: _submitting,
+                ready: _isEmergency || (_date != null && _slotMinutes != null),
+                onPressed: () => _continue(doctor),
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
-      bottomNavigationBar: const AppBottomNav(),
     );
   }
 }
 
-/// Simulated payment sheet: choose MoMo provider, enter number, "pay".
-/// Pops with the paid payment's id on success.
-class _PaymentSheet extends ConsumerStatefulWidget {
-  const _PaymentSheet({required this.doctor});
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _ink),
+    );
+  }
+}
+
+class _DoctorSummary extends StatelessWidget {
+  const _DoctorSummary({required this.doctor});
 
   final Doctor doctor;
 
   @override
-  ConsumerState<_PaymentSheet> createState() => _PaymentSheetState();
+  Widget build(BuildContext context) {
+    final specialty = doctor.specialization ?? doctor.department;
+    return SoftCard(
+      color: Colors.white,
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 52,
+            height: 52,
+            child: ClipOval(child: DoctorImage(url: doctor.image, name: doctor.name)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  doctor.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _ink),
+                ),
+                if (specialty != null)
+                  Text(
+                    [specialty, ?doctor.hospitalName].join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13, color: _muted),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _PaymentSheetState extends ConsumerState<_PaymentSheet> {
-  final _phoneController = TextEditingController();
-  String _method = 'mtn_momo';
-  bool _processing = false;
-  String? _error;
+class _ConsultationTypePicker extends StatelessWidget {
+  const _ConsultationTypePicker({required this.value, required this.onChanged});
 
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
-  }
+  final String value;
+  final ValueChanged<String> onChanged;
 
-  Future<void> _pay() async {
-    final phone = _phoneController.text.trim();
-    if (phone.length < 9) {
-      setState(() => _error = 'Enter a valid phone number');
-      return;
-    }
-    setState(() {
-      _processing = true;
-      _error = null;
-    });
-    try {
-      final repo = ref.read(paymentRepositoryProvider);
-      final payment = await repo.initiate(
-        doctorId: widget.doctor.id,
-        method: _method,
-        phoneNumber: phone,
-      );
-      // Simulated processing delay — stands in for the user approving the
-      // MoMo prompt on their phone once a real provider is wired in.
-      await Future<void>.delayed(const Duration(seconds: 2));
-      final confirmed = await repo.confirm(payment.id);
-      if (!mounted) return;
-      Navigator.of(context).pop(confirmed.id);
-    } on ApiException catch (e) {
-      if (mounted) {
-        setState(() {
-          _processing = false;
-          _error = e.message;
-        });
-      }
-    }
-  }
+  static const _options = [
+    ('video', 'Video call', Icons.videocam_outlined),
+    ('voice', 'Voice call', Icons.call_outlined),
+    ('physical', 'In person', Icons.local_hospital_outlined),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final feeFormat = NumberFormat.decimalPattern();
-
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Pay consultation fee',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'UGX ${feeFormat.format(widget.doctor.consultationFee)} · ${widget.doctor.name}',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 20),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'mtn_momo', label: Text('MTN MoMo')),
-              ButtonSegment(value: 'airtel_money', label: Text('Airtel Money')),
-            ],
-            selected: {_method},
-            onSelectionChanged: _processing
-                ? null
-                : (value) => setState(() => _method = value.first),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            enabled: !_processing,
-            decoration: InputDecoration(
-              labelText: 'Mobile money number',
-              hintText: '07XXXXXXXX',
-              errorText: _error,
+    return Row(
+      children: [
+        for (final (key, label, icon) in _options) ...[
+          if (key != _options.first.$1) const SizedBox(width: 10),
+          Expanded(
+            child: _ChoiceTile(
+              selected: value == key,
+              onTap: () => onChanged(key),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 22, color: value == key ? Colors.white : seedTeal),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: value == key ? Colors.white : _ink,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-          FilledButton(
-            onPressed: _processing ? null : _pay,
-            child: _processing
-                ? const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Text('Processing payment…'),
-                    ],
-                  )
-                : const Text('Pay now'),
-          ),
         ],
+      ],
+    );
+  }
+}
+
+/// A flat selectable tile: teal fill when selected, white with a hairline
+/// border otherwise, muted when disabled.
+class _ChoiceTile extends StatelessWidget {
+  const _ChoiceTile({
+    required this.selected,
+    required this.child,
+    this.onTap,
+    this.enabled = true,
+    this.padding = const EdgeInsets.symmetric(vertical: 12),
+  });
+
+  final bool selected;
+  final bool enabled;
+  final Widget child;
+  final VoidCallback? onTap;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: selected
+          ? seedTeal
+          : enabled
+              ? Colors.white
+              : const Color(0xFFEFF3F3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kCardRadius),
+        side: selected ? BorderSide.none : BorderSide(color: scheme.outlineVariant),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        child: Padding(padding: padding, child: Center(child: child)),
+      ),
+    );
+  }
+}
+
+class _EmergencyToggle extends StatelessWidget {
+  const _EmergencyToggle({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      color: value ? const Color(0xFFFFE9E9) : Colors.white,
+      borderSide: value ? const BorderSide(color: Color(0xFFF6C4C4)) : null,
+      padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+      onTap: () => onChanged(!value),
+      child: Row(
+        children: [
+          Icon(Icons.emergency_outlined, color: value ? _danger : _muted),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'This is an emergency',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: value ? _danger : _ink,
+                  ),
+                ),
+                Text(
+                  value
+                      ? 'Booked for today — the doctor’s team attends to you as soon as possible'
+                      : 'Need to be seen today?',
+                  style: const TextStyle(fontSize: 12.5, color: _muted),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: value, activeTrackColor: _danger, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+}
+
+class _DateChip extends StatelessWidget {
+  const _DateChip({
+    required this.date,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final DateTime date;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = selected
+        ? Colors.white
+        : enabled
+            ? _ink
+            : const Color(0xFFA9B4B4);
+    return SizedBox(
+      width: 56,
+      child: _ChoiceTile(
+        selected: selected,
+        enabled: enabled,
+        onTap: onTap,
+        padding: EdgeInsets.zero,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '${date.day}',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: fg),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              DateFormat('EEE').format(date),
+              style: TextStyle(
+                fontSize: 12,
+                color: selected ? Colors.white : (enabled ? _muted : fg),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SlotGrid extends StatelessWidget {
+  const _SlotGrid({
+    required this.slots,
+    required this.open,
+    required this.selected,
+    required this.label,
+    required this.onSelect,
+  });
+
+  final List<int> slots;
+  final Set<int> open;
+  final int? selected;
+  final String Function(int) label;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 3,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      childAspectRatio: 2.6,
+      children: [
+        for (final m in slots)
+          _ChoiceTile(
+            selected: m == selected,
+            enabled: open.contains(m),
+            onTap: () => onSelect(m),
+            padding: EdgeInsets.zero,
+            child: Text(
+              label(m),
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: m == selected
+                    ? Colors.white
+                    : open.contains(m)
+                        ? _ink
+                        : const Color(0xFFA9B4B4),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _CheckoutBar extends StatelessWidget {
+  const _CheckoutBar({
+    required this.fee,
+    required this.busy,
+    required this.ready,
+    required this.onPressed,
+  });
+
+  final int? fee;
+  final bool busy;
+  final bool ready;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: scheme.outlineVariant)),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            if (fee != null) ...[
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Consultation fee', style: TextStyle(fontSize: 12.5, color: _muted)),
+                  Text(
+                    'UGX ${NumberFormat.decimalPattern().format(fee)}',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+            ],
+            Expanded(
+              child: SizedBox(
+                height: 52,
+                child: FilledButton(
+                  onPressed: busy || !ready ? null : onPressed,
+                  child: busy
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text(
+                          fee != null ? 'Continue to payment' : 'Request appointment',
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

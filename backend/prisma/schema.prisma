@@ -218,6 +218,8 @@ model Payment {
   phoneNumber String?
   status      String   @default("pending")
   reference   String?
+  // Pesapal's id for the order; IPN/callback requests are matched on it.
+  orderTrackingId String? @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

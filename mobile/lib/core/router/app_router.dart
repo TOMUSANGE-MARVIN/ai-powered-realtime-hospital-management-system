@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/appointments/data/booking_draft.dart';
 import '../../features/appointments/presentation/book_appointment_screen.dart';
 import '../../features/appointments/presentation/my_appointments_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
@@ -27,6 +28,7 @@ import '../../features/doctors/presentation/doctor_detail_screen.dart';
 import '../../features/doctors/presentation/doctors_list_screen.dart';
 import '../../features/home/presentation/home_shell.dart';
 import '../../features/home/presentation/patient_home_screen.dart';
+import '../../features/payments/presentation/payment_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/settings_screen.dart';
@@ -113,6 +115,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => BookAppointmentScreen(
           doctorId: state.pathParameters['doctorId']!,
         ),
+        routes: [
+          GoRoute(
+            path: 'pay',
+            // The draft only exists in memory; without it (e.g. restored
+            // after process death) fall back to the booking screen.
+            redirect: (context, state) =>
+                state.extra is BookingDraft ? null : '/book/${state.pathParameters['doctorId']}',
+            builder: (context, state) => PaymentScreen(draft: state.extra! as BookingDraft),
+          ),
+        ],
       ),
       GoRoute(
         path: '/chat/:otherUserId',

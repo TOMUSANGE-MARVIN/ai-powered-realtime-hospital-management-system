@@ -2,54 +2,70 @@ import 'package:dio/dio.dart';
 
 import '../../../core/api/api_exception.dart';
 
-class InitiatedPayment {
-  InitiatedPayment({
+class Payment {
+  Payment({
     required this.id,
     required this.amount,
     required this.status,
+    this.currency = 'UGX',
+    this.method,
+    this.reference,
+    this.redirectUrl,
   });
 
   final String id;
   final int amount;
+  final String currency;
+
+  /// pending | paid | failed | reversed
   final String status;
 
-  factory InitiatedPayment.fromJson(Map<String, dynamic> json) {
-    return InitiatedPayment(
+  /// Pesapal's payment method once paid (e.g. "MTN UG", "Visa").
+  final String? method;
+  final String? reference;
+
+  /// Pesapal hosted checkout URL — only present right after [PaymentRepository.initiate].
+  final String? redirectUrl;
+
+  bool get isPaid => status == 'paid';
+  bool get isPending => status == 'pending';
+
+  factory Payment.fromJson(Map<String, dynamic> json) {
+    return Payment(
       id: (json['id'] ?? json['_id']).toString(),
       amount: (json['amount'] as num?)?.toInt() ?? 0,
+      currency: json['currency'] as String? ?? 'UGX',
       status: json['status'] as String? ?? 'pending',
+      method: json['method'] as String?,
+      reference: json['reference'] as String?,
+      redirectUrl: json['redirectUrl'] as String?,
     );
   }
 }
 
-/// Pay-before-book flow. Currently backed by the backend's simulated rail;
-/// when a real provider (e.g. MarzPay) lands, initiate triggers the actual
-/// MoMo prompt and confirm becomes a status poll — this API stays the same.
+/// Pay-before-book through Pesapal. [initiate] creates the order and returns
+/// the hosted checkout URL; the patient pays there (card or mobile money) and
+/// [status] reports the result the backend got from Pesapal.
 class PaymentRepository {
   PaymentRepository(this._dio);
 
   final Dio _dio;
 
-  Future<InitiatedPayment> initiate({
-    required String doctorId,
-    required String method,
-    required String phoneNumber,
-  }) async {
+  /// Path Pesapal redirects to after checkout — the WebView closes on it.
+  static const callbackPath = '/api/payments/pesapal/callback';
+
+  Future<Payment> initiate({required String doctorId}) async {
     final response = await _dio.post(
       '/api/payments/initiate',
-      data: {
-        'doctorId': doctorId,
-        'method': method,
-        'phoneNumber': phoneNumber,
-      },
+      data: {'doctorId': doctorId},
     );
     ApiException.checkStatus(response);
-    return InitiatedPayment.fromJson(response.data as Map<String, dynamic>);
+    return Payment.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<InitiatedPayment> confirm(String paymentId) async {
-    final response = await _dio.post('/api/payments/$paymentId/confirm');
+  Future<Payment> status(String paymentId) async {
+    final response = await _dio.get('/api/payments/$paymentId/status');
     ApiException.checkStatus(response);
-    return InitiatedPayment.fromJson(response.data as Map<String, dynamic>);
+    return Payment.fromJson(response.data as Map<String, dynamic>);
   }
 }

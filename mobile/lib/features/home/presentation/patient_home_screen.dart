@@ -303,7 +303,7 @@ class _HeroHeader extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0E6E6F), seedTeal],
+          colors: [Color(0xFF0A4F50), Color(0xFF1BADAE)],
         ),
         borderRadius: BorderRadius.circular(kCardRadius),
       ),

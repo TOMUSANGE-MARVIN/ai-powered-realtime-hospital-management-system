@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -52,6 +54,7 @@ class PatientHomeScreen extends ConsumerWidget {
                 _HeroHeader(
                   greeting: _greetingFor(DateTime.now()),
                   firstName: firstName.isEmpty ? 'there' : firstName,
+                  image: user?.image,
                 ),
                 const SizedBox(height: 26),
                 _SectionHeader(
@@ -288,63 +291,412 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+const _mutedInk = Color(0xFF6B7A7A);
+
 class _HeroHeader extends StatelessWidget {
-  const _HeroHeader({required this.greeting, required this.firstName});
+  const _HeroHeader({
+    required this.greeting,
+    required this.firstName,
+    this.image,
+  });
 
   final String greeting;
   final String firstName;
+  final String? image;
 
   @override
   Widget build(BuildContext context) {
     final dateLabel = DateFormat('EEEE, MMMM d').format(DateTime.now());
-    const muted = Color(0xFF6B7A7A);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$greeting,',
+                      style: const TextStyle(
+                        color: _mutedInk,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$firstName 👋',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: darkTealBackground,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      dateLabel,
+                      style: const TextStyle(
+                        color: _mutedInk,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Semantics(
+                button: true,
+                label: 'Your profile',
+                child: GestureDetector(
+                  onTap: () => context.go('/home/profile'),
+                  child: CircleAvatar(
+                    radius: 26,
+                    backgroundColor: const Color(0xFFE0F2F2),
+                    backgroundImage: image != null ? NetworkImage(image!) : null,
+                    child: image == null
+                        ? Text(
+                            firstName.characters.first.toUpperCase(),
+                            style: const TextStyle(
+                              color: seedTeal,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        const _PromoCarousel(),
+        const SizedBox(height: 18),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: _HeroSearchBar(),
+        ),
+      ],
+    );
+  }
+}
+
+class _Promo {
+  const _Promo({
+    required this.image,
+    required this.tagIcon,
+    required this.tag,
+    required this.title,
+    required this.subtitle,
+    required this.features,
+    required this.cta,
+    required this.route,
+  });
+
+  final String image;
+  final IconData tagIcon;
+  final String tag;
+  final String title;
+  final String subtitle;
+  final List<(IconData, String, String)> features;
+  final String cta;
+  final String route;
+}
+
+const _promos = [
+  _Promo(
+    image: 'assets/images/home_slides/slide-app.webp',
+    tagIcon: Icons.monitor_heart_outlined,
+    tag: 'Ask Musawo',
+    title: 'Ask Musawo',
+    subtitle: 'Healthcare, simplified',
+    features: [
+      (Icons.forum_outlined, 'Consult doctors', 'Anytime, anywhere'),
+      (Icons.calendar_month_outlined, 'Book appointments', 'Quick and easy'),
+      (Icons.health_and_safety_outlined, 'Manage your health', 'All in one place'),
+    ],
+    cta: 'Explore now',
+    route: '/search',
+  ),
+  _Promo(
+    image: 'assets/images/home_slides/slide-doctor.webp',
+    tagIcon: Icons.verified_outlined,
+    tag: 'Verified doctors',
+    title: 'See a doctor today',
+    subtitle: 'Licensed specialists near you',
+    features: [
+      (Icons.videocam_outlined, 'Video & voice calls', 'From your phone'),
+      (Icons.local_hospital_outlined, 'In-person visits', 'At trusted hospitals'),
+      (Icons.phone_android_outlined, 'Mobile money', 'MTN, Airtel or card'),
+    ],
+    cta: 'Book a visit',
+    route: '/search',
+  ),
+  _Promo(
+    image: 'assets/images/home_slides/slide-ai.webp',
+    tagIcon: Icons.auto_awesome,
+    tag: 'AI assistant',
+    title: 'Not sure who to see?',
+    subtitle: 'Describe how you feel',
+    features: [
+      (Icons.edit_note_outlined, 'Describe symptoms', 'In your own words'),
+      (Icons.bolt_outlined, 'Get guidance', 'In seconds'),
+      (Icons.person_search_outlined, 'Find a specialist', 'Matched to you'),
+    ],
+    cta: 'Ask AI',
+    route: '/ai-search',
+  ),
+];
+
+class _PromoCarousel extends StatefulWidget {
+  const _PromoCarousel();
+
+  @override
+  State<_PromoCarousel> createState() => _PromoCarouselState();
+}
+
+class _PromoCarouselState extends State<_PromoCarousel> {
+  final _controller = PageController();
+  Timer? _timer;
+  int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoplay();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (final promo in _promos) {
+      precacheImage(AssetImage(promo.image), context);
+    }
+  }
+
+  void _startAutoplay() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 6), (_) {
+      if (!_controller.hasClients) return;
+      _controller.animateToPage(
+        (_page + 1) % _promos.length,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final cardWidth = constraints.maxWidth - 40;
+            return SizedBox(
+              height: cardWidth * 1.1,
+              child: NotificationListener<ScrollStartNotification>(
+                // A manual swipe restarts the countdown so autoplay doesn't
+                // yank the page away right after the patient chose it.
+                onNotification: (n) {
+                  if (n.dragDetails != null) _startAutoplay();
+                  return false;
+                },
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: _promos.length,
+                  onPageChanged: (i) => setState(() => _page = i),
+                  itemBuilder: (context, i) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _PromoSlide(promo: _promos[i], width: cardWidth),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < _promos.length; i++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: i == _page ? 22 : 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: i == _page ? seedTeal : seedTeal.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(kCardRadius),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _PromoSlide extends StatelessWidget {
+  const _PromoSlide({required this.promo, required this.width});
+
+  final _Promo promo;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    final textWidth = width * 0.56 - 20;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(kCardRadius),
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Text(
-            greeting,
-            style: const TextStyle(
-              color: muted,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            firstName,
-            style: const TextStyle(
-              color: darkTealBackground,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            dateLabel,
-            style: const TextStyle(
-              color: muted,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(kCardRadius),
-            child: AspectRatio(
-              aspectRatio: 2752 / 1536,
-              child: Image.asset(
-                'assets/images/marketing/ask-musawo-home-screen-banner-2752x1536.webp',
-                fit: BoxFit.cover,
-                semanticLabel: 'Ask Musawo — Healthcare, simplified',
+          const ColoredBox(color: Color(0xFF0E6E6F)),
+          Image.asset(promo.image, fit: BoxFit.cover),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              // Scales the text block down on narrow phones instead of
+              // overflowing the fixed-ratio card.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: textWidth,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(kCardRadius),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(promo.tagIcon, size: 15, color: Colors.white),
+                            const SizedBox(width: 6),
+                            Text(
+                              promo.tag,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        promo.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 25,
+                          height: 1.15,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        promo.subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.88),
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      for (final (icon, title, sub) in promo.features)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withValues(alpha: 0.16),
+                                ),
+                                child: Icon(icon, size: 19, color: Colors.white),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      title,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      sub,
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.8),
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 44,
+                        child: FilledButton(
+                          onPressed: () => context.push(promo.route),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: darkTealBackground,
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(kCardRadius),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                promo.cta,
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward, size: 18),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          _HeroSearchBar(),
         ],
       ),
     );
@@ -352,6 +704,8 @@ class _HeroHeader extends StatelessWidget {
 }
 
 class _HeroSearchBar extends StatelessWidget {
+  const _HeroSearchBar();
+
   @override
   Widget build(BuildContext context) {
     return Container(

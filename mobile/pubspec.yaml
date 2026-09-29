@@ -80,7 +80,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/healthcare_illustration.webp
-    - assets/images/marketing/ask-musawo-home-screen-banner-2752x1536.webp
+    - assets/images/home_slides/
     # Payment brand marks (Wikimedia Commons originals) for the Pesapal method picker.
     - assets/images/payments/
     - assets/images/illustrations/ask-musawo-logo.svg

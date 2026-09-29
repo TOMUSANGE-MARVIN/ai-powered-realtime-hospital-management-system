@@ -297,84 +297,55 @@ class _HeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateLabel = DateFormat('EEEE, MMMM d').format(DateTime.now());
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0A4F50), Color(0xFF1BADAE)],
-        ),
-        borderRadius: BorderRadius.circular(kCardRadius),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(kCardRadius),
-        child: Stack(
-          children: [
-            Positioned(top: -50, right: -40, child: _DecorativeBlob(size: 160)),
-            Positioned(
-              bottom: -70,
-              left: -30,
-              child: _DecorativeBlob(size: 180),
+    const muted = Color(0xFF6B7A7A);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            greeting,
+            style: const TextStyle(
+              color: muted,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
             ),
-            Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    greeting,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    firstName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    dateLabel,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _HeroSearchBar(),
-                ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            firstName,
+            style: const TextStyle(
+              color: darkTealBackground,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            dateLabel,
+            style: const TextStyle(
+              color: muted,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(kCardRadius),
+            child: AspectRatio(
+              aspectRatio: 2752 / 1536,
+              child: Image.asset(
+                'assets/images/marketing/ask-musawo-home-screen-banner-2752x1536.webp',
+                fit: BoxFit.cover,
+                semanticLabel: 'Ask Musawo — Healthcare, simplified',
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DecorativeBlob extends StatelessWidget {
-  const _DecorativeBlob({required this.size});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.08),
+          ),
+          const SizedBox(height: 16),
+          _HeroSearchBar(),
+        ],
       ),
     );
   }

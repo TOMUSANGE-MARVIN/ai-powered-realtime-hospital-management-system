@@ -248,12 +248,49 @@ Design sidebar sections the web app lacks. Each needs its own page and task list
     - [x] Verify: 13/13 API checks on seeded data; screenshots of table, detail panel and call logs; doctor sidebar hides the link
 - [ ] Payments (Pesapal transactions, refunds)
 - [ ] Subscriptions (no subscription product exists yet — needs a decision)
-- [ ] Reviews & Ratings (moderation)
-- [ ] Notifications (announcement history)
-- [ ] Reports & Analytics
-- [ ] Content Management (blog posts are currently in `frontend/app/lib/blogPosts.ts`)
+- [x] Reviews & Ratings (moderation) → E15
+- [x] Notifications (announcement history) → E16
+- [x] Reports & Analytics → E17
+- [x] Content Management → E18
 - [ ] Rename existing sections to the design's names: Support → Support Tickets, Administrators → Admin Users, Activities Log → Audit Logs, Settings → System Settings
 
+## E15. Reviews & Ratings moderation (web)
+
+- [x] Backend: `Review.hidden`, `hiddenReason`, `hiddenAt` (migration `20260930090000_admin_content`, shared by E15–E18)
+- [x] Backend: `GET /api/admin/reviews` — filters (rating, doctor search, replied / not, hidden / visible, period), paging; summary: average, total, 1–5 distribution, low ratings (≤ 2), reply rate
+- [x] Backend: `PATCH /api/admin/reviews/:id` hide (with reason) / unhide
+- [x] Backend: hidden reviews excluded from public doctor reviews and doctor averages; the doctor still sees them marked hidden
+- [x] Web: Reviews & Ratings page — summary cards, rating distribution bars, filterable table, hide / unhide with reason
+- [x] Mobile: doctor's review list shows a "Hidden by admin" label
+- [x] Verify: API checks + screenshot
+## E16. Notifications / announcements (web)
+
+- [x] Backend: `Announcement` model (title, message, audience, link, sentCount, sentBy) and `Notification.announcementId` (migration)
+- [x] Backend: sending records the announcement; `GET /api/admin/announcements` with read counts
+- [x] Web: Notifications page — compose (audience, title, message, optional link) with preview and recipient count, history table with read rate
+- [x] Dashboard "Send Announcement" opens this page
+- [x] Verify: API checks + screenshot
+- [ ] Follow-up (not in this round): the mobile app has no notifications inbox yet, so announcements only reach web users
+## E17. Reports & Analytics (web)
+
+- [x] Backend: `GET /api/admin/reports?from&to&granularity=day|week|month`
+    - [x] Consultations over time by status; cancellation rate
+    - [x] Revenue over time (paid), discounts given, tax collected
+    - [x] New sign-ups over time (patients, doctors)
+    - [x] Consultations and revenue by specialty
+    - [x] Doctor leaderboard: consultations, completed, revenue, average rating
+    - [x] Voucher usage (uses, discount given per code)
+    - [x] Payouts: requested, paid, outstanding
+- [x] Web: Reports page — date range + granularity, charts for each report, per-report CSV export
+- [x] Verify: numbers match seeded data (9 API checks) + screenshot
+## E18. Content Management — blog (web)
+
+- [x] Backend: `BlogPost` model (slug, title, excerpt, content, category, image, accent, author, published, publishedAt); migration seeds the current posts from `lib/blogPosts.ts`
+- [x] Backend: public `GET /api/blog`, `GET /api/blog/:slug` (published only); admin create / update / delete / publish
+- [x] Web: Content Management page — list with status, editor (title, slug, excerpt, category, image, accent, content), live preview, publish / unpublish, delete
+- [x] Web: marketing Blog, BlogPost and home BlogSection load posts from the API (server-rendered loaders, graceful fallback); `lib/blogPosts.ts` removed
+- [x] Replace the hard-coded comment counts with an estimated reading time (there is no comment system)
+- [x] Verify: API checks (10); blog list, post and home strip server-render from the database; drafts 404 publicly; screenshots
 ## Final pass
 
 - [ ] Re-render every design screen and compare side by side with the app

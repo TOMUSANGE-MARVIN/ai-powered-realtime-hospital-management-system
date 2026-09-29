@@ -61,6 +61,62 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
   String _formatSlot(int minutes) =>
       DateFormat.jm().format(DateTime(2000, 1, 1, minutes ~/ 60, minutes % 60));
 
+  /// The doctor's next bookable day on/after [from] — used both to seed the
+  /// screen's default date and as the earliest [showDatePicker] will offer.
+  DateTime? _nextBookableDay(DateTime from, Set<int>? weekdays, List<int> slots) {
+    for (var i = 0; i < _bookingWindowDays; i++) {
+      final day = from.add(Duration(days: i));
+      if (_isDayBookable(day, weekdays, slots)) return day;
+    }
+    return null;
+  }
+
+  Future<void> _pickDate(Set<int>? weekdays, List<int> slots) async {
+    final today = _dayOnly(DateTime.now());
+    final lastDay = today.add(const Duration(days: _bookingWindowDays - 1));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _date ?? _nextBookableDay(today, weekdays, slots) ?? today,
+      firstDate: today,
+      lastDate: lastDay,
+      selectableDayPredicate: (day) => _isDayBookable(day, weekdays, slots),
+      helpText: 'Choose appointment date',
+    );
+    if (picked != null) {
+      setState(() {
+        _date = picked;
+        _slotMinutes = null;
+      });
+    }
+  }
+
+  Future<void> _pickTime(List<int> slots) async {
+    final openSlots = _date == null ? slots : _openSlots(_date!, slots);
+    if (openSlots.isEmpty) return;
+    final initial = _slotMinutes ?? openSlots.first;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: initial ~/ 60, minute: initial % 60),
+      helpText: 'Choose appointment time',
+    );
+    if (picked == null) return;
+    final minutes = picked.hour * 60 + picked.minute;
+    // The clock face can't be restricted to the doctor's open slots, so an
+    // out-of-hours or already-taken half-hour is rejected with a hint here
+    // instead of silently accepted.
+    if (!openSlots.contains(minutes)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Choose a time within the doctor’s working hours, in 30-minute steps.'),
+          ),
+        );
+      }
+      return;
+    }
+    setState(() => _slotMinutes = minutes);
+  }
+
   BookingDraft? _draft(Doctor doctor) {
     final reason = _reasonController.text.trim();
     if (_isEmergency) {
@@ -139,16 +195,8 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
           final weekdays = parseAvailableWeekdays(doctor.availabilityDays);
           final slots = parseSlotMinutes(doctor.availabilityHours);
           final today = _dayOnly(DateTime.now());
-          final days = [
-            for (var i = 0; i < _bookingWindowDays; i++) today.add(Duration(days: i)),
-          ];
-          // Default to the first bookable day so the time grid is never empty.
-          _date ??= days.cast<DateTime?>().firstWhere(
-                (d) => _isDayBookable(d!, weekdays, slots),
-                orElse: () => null,
-              );
-          // Times already past today are dropped rather than shown disabled.
-          final openSlots = _date == null ? const <int>[] : _openSlots(_date!, slots);
+          // Default to the first bookable day so a time can be picked right away.
+          _date ??= _nextBookableDay(today, weekdays, slots);
 
           return Column(
             children: [
@@ -171,81 +219,47 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                     ),
                     const SizedBox(height: 20),
                     if (!_isEmergency) ...[
-                      SoftCard(
-                        color: Colors.white,
-                        padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      const _SectionLabel('Date & time'),
+                      const SizedBox(height: 10),
+                      if (_date == null)
+                        SoftCard(
+                          color: Colors.white,
+                          child: const Text(
+                            'No open days in the next two weeks. '
+                            'Message the doctor or mark this as an emergency.',
+                            style: TextStyle(color: _muted),
+                          ),
+                        )
+                      else
+                        Row(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                children: [
-                                  const _SectionLabel('Choose date'),
-                                  const Spacer(),
-                                  if (_date != null)
-                                    Text(
-                                      DateFormat('MMMM yyyy').format(_date!),
-                                      style: const TextStyle(fontSize: 13, color: _muted),
-                                    ),
-                                ],
+                            Expanded(
+                              child: _PickerField(
+                                icon: Icons.calendar_month_outlined,
+                                label: 'Date',
+                                value: DateFormat('EEE, MMM d, yyyy').format(_date!),
+                                onTap: () => _pickDate(weekdays, slots),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: 72,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                itemCount: days.length,
-                                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                                itemBuilder: (context, i) {
-                                  final day = days[i];
-                                  return _DateChip(
-                                    date: day,
-                                    selected: day == _date,
-                                    enabled: _isDayBookable(day, weekdays, slots),
-                                    onTap: () => setState(() {
-                                      _date = day;
-                                      _slotMinutes = null;
-                                    }),
-                                  );
-                                },
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _PickerField(
+                                icon: Icons.access_time_outlined,
+                                label: 'Time',
+                                value: _slotMinutes == null ? 'Choose time' : _formatSlot(_slotMinutes!),
+                                placeholder: _slotMinutes == null,
+                                onTap: () => _pickTime(slots),
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
-                              child: _SectionLabel('Choose time'),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: _date == null
-                                  ? const Text(
-                                      'No open days in the next two weeks. '
-                                      'Message the doctor or mark this as an emergency.',
-                                      style: TextStyle(color: _muted),
-                                    )
-                                  : _SlotGrid(
-                                      slots: openSlots,
-                                      open: openSlots.toSet(),
-                                      selected: _slotMinutes,
-                                      label: _formatSlot,
-                                      onSelect: (m) => setState(() => _slotMinutes = m),
-                                    ),
-                            ),
-                            if (doctor.availabilityHours != null) ...[
-                              const SizedBox(height: 12),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'Working hours: ${[doctor.availabilityDays, doctor.availabilityHours].whereType<String>().join(', ')}',
-                                  style: const TextStyle(fontSize: 12.5, color: _muted),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
-                      ),
+                      if (doctor.availabilityHours != null) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          'Working hours: ${[doctor.availabilityDays, doctor.availabilityHours].whereType<String>().join(', ')}',
+                          style: const TextStyle(fontSize: 12.5, color: _muted),
+                        ),
+                      ],
                       const SizedBox(height: 20),
                     ],
                     const _SectionLabel('Reason for visit'),
@@ -383,39 +397,30 @@ class _ConsultationTypePicker extends StatelessWidget {
 }
 
 /// A flat selectable tile: teal fill when selected, white with a hairline
-/// border otherwise, muted when disabled.
+/// border otherwise.
 class _ChoiceTile extends StatelessWidget {
-  const _ChoiceTile({
-    required this.selected,
-    required this.child,
-    this.onTap,
-    this.enabled = true,
-    this.padding = const EdgeInsets.symmetric(vertical: 12),
-  });
+  const _ChoiceTile({required this.selected, required this.child, this.onTap});
 
   final bool selected;
-  final bool enabled;
   final Widget child;
   final VoidCallback? onTap;
-  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: selected
-          ? seedTeal
-          : enabled
-              ? Colors.white
-              : const Color(0xFFEFF3F3),
+      color: selected ? seedTeal : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kCardRadius),
         side: selected ? BorderSide.none : BorderSide(color: scheme.outlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: enabled ? onTap : null,
-        child: Padding(padding: padding, child: Center(child: child)),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Center(child: child),
+        ),
       ),
     );
   }
@@ -465,100 +470,64 @@ class _EmergencyToggle extends StatelessWidget {
   }
 }
 
-class _DateChip extends StatelessWidget {
-  const _DateChip({
-    required this.date,
-    required this.selected,
-    required this.enabled,
+/// A tappable field styled like the other form controls that opens a native
+/// Material picker (showDatePicker / showTimePicker) instead of inline chips.
+class _PickerField extends StatelessWidget {
+  const _PickerField({
+    required this.icon,
+    required this.label,
+    required this.value,
     required this.onTap,
+    this.placeholder = false,
   });
 
-  final DateTime date;
-  final bool selected;
-  final bool enabled;
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool placeholder;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final fg = selected
-        ? Colors.white
-        : enabled
-            ? _ink
-            : const Color(0xFFA9B4B4);
-    return SizedBox(
-      width: 56,
-      child: _ChoiceTile(
-        selected: selected,
-        enabled: enabled,
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kCardRadius),
+        side: BorderSide(color: scheme.outlineVariant),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: onTap,
-        padding: EdgeInsets.zero,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '${date.day}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: fg),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              DateFormat('EEE').format(date),
-              style: TextStyle(
-                fontSize: 12,
-                color: selected ? Colors.white : (enabled ? _muted : fg),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: seedTeal),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: const TextStyle(fontSize: 11.5, color: _muted)),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: placeholder ? _muted : _ink,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    );
-  }
-}
-
-class _SlotGrid extends StatelessWidget {
-  const _SlotGrid({
-    required this.slots,
-    required this.open,
-    required this.selected,
-    required this.label,
-    required this.onSelect,
-  });
-
-  final List<int> slots;
-  final Set<int> open;
-  final int? selected;
-  final String Function(int) label;
-  final ValueChanged<int> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      childAspectRatio: 2.6,
-      children: [
-        for (final m in slots)
-          _ChoiceTile(
-            selected: m == selected,
-            enabled: open.contains(m),
-            onTap: () => onSelect(m),
-            padding: EdgeInsets.zero,
-            child: Text(
-              label(m),
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: m == selected
-                    ? Colors.white
-                    : open.contains(m)
-                        ? _ink
-                        : const Color(0xFFA9B4B4),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

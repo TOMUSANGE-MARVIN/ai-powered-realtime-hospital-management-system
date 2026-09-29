@@ -103,17 +103,10 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     final minutes = picked.hour * 60 + picked.minute;
     // The clock face lets the patient drop the hand on any minute, but the
     // doctor's slots are 30-minute steps — snap to the closest open one
-    // instead of rejecting anything not exactly on the mark. Only an empty
-    // `openSlots` (already returned above) or a pick miles outside the
-    // working day would leave nothing to snap to.
+    // instead of rejecting anything not exactly on the mark.
     final closest = openSlots.reduce(
       (a, b) => (a - minutes).abs() <= (b - minutes).abs() ? a : b,
     );
-    if (closest != minutes && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Rounded to the nearest open time, ${_formatSlot(closest)}.')),
-      );
-    }
     setState(() => _slotMinutes = closest);
   }
 

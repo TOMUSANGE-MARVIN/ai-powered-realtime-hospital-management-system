@@ -166,40 +166,42 @@ Design: *Appointments*.
 
 Design: *Payout* (within decision 5).
 
-- [ ] Payment summary card: Service, Amount, Tax/Fees (from settings; 0 hidden), Discount (E7), Total
-- [ ] Method list styled like the design (cards with logos, selected state)
-- [ ] Footer: "A receipt will be sent to your email upon confirmation." and "Payments are secure and encrypted"
+- [x] Payment summary card: Service, Amount, Tax/Fees (Settings → Billing tax rate, priced on the server; hidden when 0), Discount (E7), Total — migration `20260929210000_payment_tax`, `GET /api/payments/quote`
+- [x] Method list styled like the design (existing cards with logos and selected state kept)
+- [x] Footer: receipt note and secure-payment note
 - [ ] Verify: totals match what Pesapal charges
 
 ## E10. Upload Prescription upgrade
 
 Design: *HealthSync - Upload Prescription*.
 
-- [ ] Backend: `POST /api/prescriptions/extract` — image URL in, `{ dateIssued, doctorName, licenseNo, patientName }` out, via the existing AI provider
-- [ ] Backend: `Prescription` gains `status` (`draft` / `sent`), `licenseNo`, `dateIssued`
-- [ ] Mobile: title "Upload Prescription" with consultation ID; patient strip with "Required Action" tag
-- [ ] Mobile: document preview with quality badge, rotate, retake, delete
-- [ ] Mobile: Open Camera / Gallery buttons when empty
-- [ ] Mobile: Extracted Information rows, each editable, pre-filled from the extract call
-- [ ] Mobile: confirmation checkbox + digital signature (existing `signature` package)
-- [ ] Mobile: Save Draft and Send to Patient; "Prescription Ready" bottom sheet on send
-- [ ] Mobile: keep the medication rows from the current screen below the extracted fields
+- [x] Backend: `POST /api/prescriptions/extract` — uploaded photo in (read from `/uploads` on disk, no URL fetching), `{ quality, dateIssued, doctorName, licenseNo, patientName, medications }` out, via Gemini
+- [x] Backend: `Prescription` gains `appointmentId`, `licenseNo`, `dateIssued` (migration `20260929220000_prescription_details`); drafts stay on the doctor's device so they never reach the pharmacy queue
+- [x] Mobile: title "Upload Prescription" with consultation ID; patient strip with "Required Action" tag
+- [x] Mobile: document preview with quality badge, rotate (re-encodes the photo), retake, delete
+- [x] Mobile: Open Camera / Gallery buttons when empty
+- [x] Mobile: Extracted Information rows, each editable, pre-filled from the extract call (medications too, when none typed yet)
+- [x] Mobile: confirmation checkbox (required to send) + digital signature
+- [x] Mobile: Save Draft (on device, restored on reopen) and Send to Patient; "Prescription Ready" bottom sheet on send
+- [x] Mobile: keep the medication rows from the current screen below the extracted fields
 - [ ] Verify: draft reopens; sent prescription appears in the patient's Prescriptions
 
 ## E11. Doctor withdrawals
 
 Design: *Doctor Earnings* (withdraw section).
 
-- [ ] Backend: `Withdrawal` model (doctorId, amount, method mobile_money / bank, destination details, status requested / approved / paid / rejected)
-- [ ] Backend: doctor `POST/GET /api/withdrawals`; amount ≤ available balance
-- [ ] Backend: admin approve / reject / mark paid; available balance subtracts pending and paid withdrawals
-- [ ] Mobile: Withdraw to Mobile Money sheet (network MTN / Airtel, number, amount)
-- [ ] Mobile: Withdraw to Bank sheet (bank from Stanbic / Centenary / other, account name, number, amount)
-- [ ] Mobile: withdrawals listed in Recent Transactions with status
-- [ ] Web: admin withdrawals page (list, approve, reject, mark paid)
+- [x] Backend: `Withdrawal` model (doctorId, amount, method mobile_money / bank, destination details, status requested / approved / paid / rejected) — migration `20260929230000_withdrawals`
+- [x] Backend: doctor `POST /api/withdrawals`, `GET /api/withdrawals/mine`; UGX 5,000 minimum, amount ≤ available balance (checked in a serializable transaction)
+- [x] Backend: admin approve / reject / mark paid with note; available balance subtracts requested, approved and paid withdrawals; earnings returns pending amount and recent withdrawals
+- [x] Mobile: Withdraw to Mobile Money sheet (network MTN / Airtel, number, amount)
+- [x] Mobile: Withdraw to Bank sheet (Stanbic, Centenary, Absa, dfcu, Equity, Other; account name, number, amount)
+- [x] Mobile: withdrawals listed in Recent Transactions with status and admin note
+- [x] Web: Settings → Doctor Payouts (filter by status, approve, reject with reason, mark paid with reference)
 - [ ] Verify: balance updates through each status
 
 ## E12. Sign in with Google
+
+Blocked until the owner creates the OAuth client IDs (first subtask).
 
 Designs: *Login screen*, *Regester screen*.
 

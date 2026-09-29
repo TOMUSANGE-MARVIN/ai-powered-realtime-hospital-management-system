@@ -253,6 +253,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return NewPrescriptionScreen(
             patientId: extra['patientId'] as String? ?? '',
             patientName: extra['patientName'] as String? ?? 'Patient',
+            appointmentId: extra['appointmentId'] as String?,
           );
         },
       ),

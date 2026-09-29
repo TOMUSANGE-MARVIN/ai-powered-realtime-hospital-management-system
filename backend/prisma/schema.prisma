@@ -407,6 +407,11 @@ model Prescription {
   notes        String?            @db.Text
   imageUrl     String?            @db.Text
   signatureUrl String?            @db.Text
+  // Set when written from an appointment (shown as the consultation ID).
+  appointmentId String?
+  licenseNo    String?
+  // ISO date (YYYY-MM-DD) printed on the prescription
+  dateIssued   String?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
@@ -488,4 +493,28 @@ model Voucher {
   updatedAt    DateTime  @updatedAt
 
   @@map("voucher")
+}
+
+// Doctor asks to be paid out part of their earnings; an admin pays it
+// manually (mobile money or bank) and marks it paid.
+model Withdrawal {
+  id            String    @id @default(cuid())
+  doctorId      String
+  doctorName    String
+  amount        Int
+  // "mobile_money" | "bank"
+  method        String
+  // MTN / Airtel, or the bank name
+  provider      String
+  accountName   String
+  accountNumber String
+  // requested → approved → paid, or rejected
+  status        String    @default("requested")
+  adminNote     String?   @db.Text
+  processedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([doctorId])
+  @@map("withdrawal")
 }

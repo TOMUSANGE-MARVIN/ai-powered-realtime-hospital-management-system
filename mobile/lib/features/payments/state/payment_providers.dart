@@ -7,6 +7,6 @@ final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
   return PaymentRepository(ref.watch(dioProvider));
 });
 
-final voucherRepositoryProvider = Provider<VoucherRepository>((ref) {
-  return VoucherRepository(ref.watch(dioProvider));
+final pricingRepositoryProvider = Provider<PricingRepository>((ref) {
+  return PricingRepository(ref.watch(dioProvider));
 });

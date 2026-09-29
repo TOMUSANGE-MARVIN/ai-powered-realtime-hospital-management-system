@@ -258,6 +258,7 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                       extra: {
                         'patientId': appointment.patientId,
                         'patientName': appointment.patientName,
+                        'appointmentId': appointment.id,
                       },
                     ),
                     label: const Text('Write Prescription'),

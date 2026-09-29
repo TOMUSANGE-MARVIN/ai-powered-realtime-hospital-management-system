@@ -128,6 +128,7 @@ export const navConfig: {
         { title: "Billing", url: "/settings/billing" },
         { title: "Categories", url: "/settings/categories" },
         { title: "Vouchers", url: "/settings/vouchers" },
+        { title: "Doctor Payouts", url: "/settings/payouts" },
       ],
     },
   ],

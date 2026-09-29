@@ -78,10 +78,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             );
       _payment = payment;
       final url = payment.redirectUrl;
-      if (url == null)
+      if (url == null) {
         throw ApiException(
           'The payment page is unavailable. Please try again.',
         );
+      }
       if (!mounted) return;
 
       final attempted = await Navigator.of(context).push<bool>(
@@ -325,6 +326,12 @@ class _Review extends StatelessWidget {
                       value:
                           'UGX ${NumberFormat.decimalPattern().format(draft.fee)}',
                     ),
+                    if (draft.tax > 0)
+                      _Line(
+                        label: 'Tax/Fees',
+                        value:
+                            'UGX ${NumberFormat.decimalPattern().format(draft.tax)}',
+                      ),
                     if (draft.discount > 0)
                       _Line(
                         label: 'Voucher ${draft.voucherCode}',
@@ -439,7 +446,9 @@ class _Review extends StatelessWidget {
                     SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Processed by Pesapal. Ask Musawo never sees your card details.',
+                        'A receipt will be sent to your email upon confirmation. '
+                        'Payments are processed securely by Pesapal; Ask Musawo '
+                        'never sees your card details.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 12, color: _muted),
                       ),

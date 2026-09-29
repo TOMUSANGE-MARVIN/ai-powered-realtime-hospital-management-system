@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { balancesFor } from "./withdrawal";
 
 const sumFees = async (doctorId: string, from?: Date) => {
   const where: any = { doctorId, status: "completed" };
@@ -27,8 +28,18 @@ export const getMyEarnings = async (req: Request, res: Response) => {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const yearStart = new Date(now.getFullYear(), 0, 1);
 
-    const [today, week, month, year, allTime, virtual, inPerson, recent] =
-      await Promise.all([
+    const [
+      today,
+      week,
+      month,
+      year,
+      allTime,
+      virtual,
+      inPerson,
+      recent,
+      balances,
+      withdrawals,
+    ] = await Promise.all([
         sumFees(doctor.id, todayStart),
         sumFees(doctor.id, weekStart),
         sumFees(doctor.id, monthStart),
@@ -53,6 +64,12 @@ export const getMyEarnings = async (req: Request, res: Response) => {
           orderBy: { date: "desc" },
           take: 10,
         }),
+        balancesFor(doctor.id),
+        prisma.withdrawal.findMany({
+          where: { doctorId: doctor.id },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        }),
       ]);
 
     res.json({
@@ -61,8 +78,8 @@ export const getMyEarnings = async (req: Request, res: Response) => {
       thisWeek: week.total,
       thisMonth: month.total,
       thisYear: year.total,
-      availableBalance: allTime.total,
-      pendingPayments: 0,
+      availableBalance: balances.available,
+      pendingPayments: balances.pending,
       consultationStats: {
         total: allTime.count,
         virtual: virtual._count,
@@ -78,6 +95,15 @@ export const getMyEarnings = async (req: Request, res: Response) => {
         amount: a.fee ?? 0,
         date: a.date,
         isVirtual: a.isVirtual,
+      })),
+      withdrawals: withdrawals.map((w) => ({
+        id: w.id,
+        amount: w.amount,
+        method: w.method,
+        provider: w.provider,
+        status: w.status,
+        adminNote: w.adminNote,
+        date: w.createdAt,
       })),
     });
   } catch (error) {

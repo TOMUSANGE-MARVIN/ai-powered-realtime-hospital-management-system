@@ -24,6 +24,45 @@ class RecentTransaction {
   }
 }
 
+/// A payout the doctor asked for (see `/api/withdrawals`).
+class WithdrawalEntry {
+  WithdrawalEntry({
+    required this.id,
+    required this.amount,
+    required this.method,
+    required this.provider,
+    required this.status,
+    required this.date,
+    this.adminNote,
+  });
+
+  final String id;
+  final int amount;
+
+  /// Reason given by the admin (e.g. for a rejection) or payout reference.
+  final String? adminNote;
+
+  /// mobile_money | bank
+  final String method;
+  final String provider;
+
+  /// requested | approved | paid | rejected
+  final String status;
+  final DateTime date;
+
+  factory WithdrawalEntry.fromJson(Map<String, dynamic> json) {
+    return WithdrawalEntry(
+      id: json['id'] as String,
+      amount: (json['amount'] as num?)?.toInt() ?? 0,
+      method: json['method'] as String? ?? 'mobile_money',
+      provider: json['provider'] as String? ?? '',
+      status: json['status'] as String? ?? 'requested',
+      date: DateTime.parse(json['date'] as String).toLocal(),
+      adminNote: json['adminNote'] as String?,
+    );
+  }
+}
+
 class Earnings {
   Earnings({
     required this.totalEarnings,
@@ -39,6 +78,7 @@ class Earnings {
     required this.revenueVirtual,
     required this.revenueInPerson,
     required this.recentTransactions,
+    this.withdrawals = const [],
   });
 
   final int totalEarnings;
@@ -54,6 +94,7 @@ class Earnings {
   final int revenueVirtual;
   final int revenueInPerson;
   final List<RecentTransaction> recentTransactions;
+  final List<WithdrawalEntry> withdrawals;
 
   factory Earnings.fromJson(Map<String, dynamic> json) {
     final stats = json['consultationStats'] as Map<String, dynamic>? ?? {};
@@ -76,6 +117,10 @@ class Earnings {
       revenueVirtual: breakdown['virtual'] as int? ?? 0,
       revenueInPerson: breakdown['inPerson'] as int? ?? 0,
       recentTransactions: transactions,
+      withdrawals: [
+        for (final w in json['withdrawals'] as List? ?? const [])
+          WithdrawalEntry.fromJson(w as Map<String, dynamic>),
+      ],
     );
   }
 }

@@ -7,6 +7,7 @@ import {
   dispensePrescription,
   cancelPrescription,
   getMyPrescriptions,
+  extractPrescription,
 } from "../controllers/prescription";
 
 const prescriptionRouter = Router();
@@ -24,6 +25,12 @@ prescriptionRouter.get(
   requireAuth,
   checkRole(["admin", "pharmacist", "doctor", "nurse"]),
   getPrescriptions,
+);
+prescriptionRouter.post(
+  "/extract",
+  requireAuth,
+  checkRole(["doctor"]),
+  extractPrescription,
 );
 prescriptionRouter.post(
   "/",

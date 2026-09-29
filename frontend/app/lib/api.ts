@@ -14,6 +14,7 @@ import type {
   Category,
   CategoryOptions,
   Voucher,
+  Withdrawal,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -652,6 +653,36 @@ export const updateVoucher = async ({
   if (!res.ok) {
     const error = await res.json().catch(() => null);
     throw new Error(error?.message || "Failed to update voucher");
+  }
+  return res.json();
+};
+
+export const getWithdrawals = async (status = "all"): Promise<Withdrawal[]> => {
+  const res = await fetch(`${API_URL}/withdrawals?status=${status}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch withdrawals");
+  return res.json();
+};
+
+export const updateWithdrawal = async ({
+  id,
+  status,
+  adminNote,
+}: {
+  id: string;
+  status: Withdrawal["status"];
+  adminNote?: string;
+}) => {
+  const res = await fetch(`${API_URL}/withdrawals/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, adminNote }),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || "Failed to update withdrawal");
   }
   return res.json();
 };

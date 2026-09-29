@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
+import '../../payments/data/payment_repository.dart';
 import '../../payments/state/payment_providers.dart';
 import '../data/booking_draft.dart';
 import '../state/appointment_providers.dart';
@@ -36,6 +37,32 @@ class _BookingConfirmationScreenState
   String? _voucherError;
 
   @override
+  void initState() {
+    super.initState();
+    if (_draft.fee > 0) _loadQuote();
+  }
+
+  /// Picks up tax before any voucher is entered.
+  Future<void> _loadQuote() async {
+    try {
+      final quote = await ref
+          .read(pricingRepositoryProvider)
+          .quote(_draft.doctor.id);
+      if (mounted && _draft.voucherCode == null) {
+        setState(() => _draft = _applyQuote(quote));
+      }
+    } on ApiException {
+      // Without a quote the payment screen still charges the server total.
+    }
+  }
+
+  BookingDraft _applyQuote(PriceQuote quote) => _draft.withPricing(
+    voucherCode: quote.voucherCode,
+    discount: quote.discount,
+    tax: quote.tax,
+  );
+
+  @override
   void dispose() {
     _voucherController.dispose();
     super.dispose();
@@ -51,9 +78,9 @@ class _BookingConfirmationScreenState
     });
     try {
       final quote = await ref
-          .read(voucherRepositoryProvider)
-          .validate(code: code, doctorId: _draft.doctor.id);
-      setState(() => _draft = _draft.withVoucher(quote.code, quote.discount));
+          .read(pricingRepositoryProvider)
+          .applyVoucher(code: code, doctorId: _draft.doctor.id);
+      setState(() => _draft = _applyQuote(quote));
     } on ApiException catch (e) {
       setState(() => _voucherError = e.message);
     } finally {
@@ -64,9 +91,10 @@ class _BookingConfirmationScreenState
   void _removeVoucher() {
     _voucherController.clear();
     setState(() {
-      _draft = _draft.withVoucher(null, 0);
+      _draft = _draft.withPricing(voucherCode: null, discount: 0, tax: 0);
       _voucherError = null;
     });
+    _loadQuote();
   }
 
   Future<void> _confirm() async {

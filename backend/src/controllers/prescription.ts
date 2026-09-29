@@ -1,4 +1,7 @@
 import type { Request, Response } from "express";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "../lib/prisma";
 import { logActivity } from "../lib/activity";
 
@@ -41,8 +44,17 @@ export const getPrescriptions = async (req: Request, res: Response) => {
 export const createPrescription = async (req: Request, res: Response) => {
   try {
     const currentUser = (req as any).user;
-    const { patient, patientName, items, notes, imageUrl, signatureUrl } =
-      req.body;
+    const {
+      patient,
+      patientName,
+      items,
+      notes,
+      imageUrl,
+      signatureUrl,
+      appointmentId,
+      licenseNo,
+      dateIssued,
+    } = req.body;
 
     const prescription = await prisma.prescription.create({
       data: {
@@ -53,6 +65,9 @@ export const createPrescription = async (req: Request, res: Response) => {
         notes,
         imageUrl,
         signatureUrl,
+        appointmentId: appointmentId || null,
+        licenseNo: licenseNo || null,
+        dateIssued: dateIssued || null,
         status: "pending",
         items: {
           create: (items || []).map((item: any) => ({
@@ -187,5 +202,81 @@ export const cancelPrescription = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error cancelling prescription:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY!);
+// Same folder src/routes/upload.ts writes to.
+const UPLOADS_DIR = path.join(__dirname, "../../uploads");
+
+// Doctor photographs a paper prescription; Gemini reads the header fields and
+// medications so the doctor only has to check them. Nothing is saved here.
+export const extractPrescription = async (req: Request, res: Response) => {
+  try {
+    const { imageUrl } = req.body;
+    if (!imageUrl || typeof imageUrl !== "string") {
+      return res.status(400).json({ message: "imageUrl is required" });
+    }
+
+    // Only photos the app uploaded to this server (/uploads/<file>) — read
+    // from disk rather than fetching an arbitrary URL.
+    let pathname = "";
+    try {
+      pathname = new URL(imageUrl).pathname;
+    } catch {
+      return res.status(400).json({ message: "Invalid imageUrl" });
+    }
+    if (!pathname.startsWith("/uploads/")) {
+      return res.status(400).json({ message: "Upload the photo through the app first" });
+    }
+    const filePath = path.join(UPLOADS_DIR, path.basename(pathname));
+    let buffer: Buffer;
+    try {
+      buffer = await readFile(filePath);
+    } catch {
+      return res.status(404).json({ message: "Photo not found" });
+    }
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeType =
+      ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
+    const data = buffer.toString("base64");
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-3-flash-preview",
+      generationConfig: { responseMimeType: "application/json" },
+    });
+    const prompt = `This is a photo of a handwritten or printed medical prescription.
+Read it and return JSON exactly in this shape:
+{"quality": "good" | "poor", "dateIssued": "YYYY-MM-DD" | null, "doctorName": string | null, "licenseNo": string | null, "patientName": string | null, "medications": [{"name": string, "dosage": string, "quantity": number, "instructions": string | null}]}
+"quality" is "poor" when the photo is blurry, dark, cut off or hard to read.
+Use null for anything you cannot read with confidence. Never guess.`;
+
+    const result = await model.generateContent([
+      prompt,
+      { inlineData: { data, mimeType } },
+    ]);
+    const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(text);
+
+    res.json({
+      quality: parsed.quality === "poor" ? "poor" : "good",
+      dateIssued: parsed.dateIssued ?? null,
+      doctorName: parsed.doctorName ?? null,
+      licenseNo: parsed.licenseNo ?? null,
+      patientName: parsed.patientName ?? null,
+      medications: Array.isArray(parsed.medications)
+        ? parsed.medications
+            .filter((m: any) => m && typeof m.name === "string" && m.name.trim())
+            .map((m: any) => ({
+              name: m.name.trim(),
+              dosage: typeof m.dosage === "string" ? m.dosage : "",
+              quantity: Number.isInteger(m.quantity) && m.quantity > 0 ? m.quantity : 1,
+              instructions: typeof m.instructions === "string" ? m.instructions : null,
+            }))
+        : [],
+    });
+  } catch (error) {
+    console.error("Error extracting prescription:", error);
+    res.status(502).json({ message: "Couldn't read the prescription. Fill in the details by hand." });
   }
 };

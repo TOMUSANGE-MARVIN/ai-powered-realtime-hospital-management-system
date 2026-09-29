@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../data/earnings.dart';
 import '../state/doctor_providers.dart';
+import 'withdraw_sheet.dart';
 
 class DoctorEarningsScreen extends ConsumerStatefulWidget {
   const DoctorEarningsScreen({super.key});
@@ -31,10 +32,25 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
     }
   }
 
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(
+  Future<void> _withdraw(Earnings earnings, {required bool toBank}) async {
+    if (earnings.availableBalance < 5000) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You need at least UGX 5,000 available to withdraw.'),
+        ),
+      );
+      return;
+    }
+    final requested = await showWithdrawSheet(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Payouts are coming soon.')));
+      toBank: toBank,
+      available: earnings.availableBalance,
+    );
+    if (requested && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Withdrawal requested')));
+    }
   }
 
   @override
@@ -83,13 +99,13 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                       FilledButton.icon(
                         icon: const Icon(Icons.phone_android),
                         label: const Text('Withdraw to Mobile Money'),
-                        onPressed: () => _showComingSoon(context),
+                        onPressed: () => _withdraw(earnings, toBank: false),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.account_balance),
                         label: const Text('Withdraw to Bank Account'),
-                        onPressed: () => _showComingSoon(context),
+                        onPressed: () => _withdraw(earnings, toBank: true),
                       ),
                     ],
                   ),
@@ -193,7 +209,44 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
-              if (earnings.recentTransactions.isEmpty)
+              for (final w in earnings.withdrawals)
+                Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: Icon(
+                      w.method == 'bank'
+                          ? Icons.account_balance_outlined
+                          : Icons.phone_android,
+                    ),
+                    title: Text('Withdrawal · ${w.provider}'),
+                    subtitle: Text(
+                      [
+                        DateFormat('MMM d, yyyy').format(w.date),
+                        if (w.adminNote?.isNotEmpty == true) w.adminNote!,
+                      ].join('\n'),
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('-${currency.format(w.amount)}'),
+                        Text(
+                          w.status,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: w.status == 'rejected'
+                                ? const Color(0xFFD32F2F)
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (earnings.recentTransactions.isEmpty &&
+                  earnings.withdrawals.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Text('No completed consultations yet.'),
@@ -265,7 +318,11 @@ class _EarningsSkeleton extends StatelessWidget {
         const SizedBox(height: 24),
         const SkeletonBox(width: 160, height: 16),
         const SizedBox(height: 12),
-        const SkeletonBox(width: double.infinity, height: 80, borderRadius: kCardRadius),
+        const SkeletonBox(
+          width: double.infinity,
+          height: 80,
+          borderRadius: kCardRadius,
+        ),
         const SizedBox(height: 24),
         const SkeletonBox(width: 160, height: 16),
         const SizedBox(height: 12),

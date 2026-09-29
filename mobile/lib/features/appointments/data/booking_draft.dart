@@ -13,6 +13,7 @@ class BookingDraft {
     this.isEmergency = false,
     this.voucherCode,
     this.discount = 0,
+    this.tax = 0,
   });
 
   final Doctor doctor;
@@ -33,18 +34,27 @@ class BookingDraft {
   /// UGX taken off the consultation fee by [voucherCode].
   final int discount;
 
-  int get fee => doctor.consultationFee ?? 0;
-  int get total => fee - discount;
+  /// Tax on the discounted fee, from the server's quote.
+  final int tax;
 
-  BookingDraft withVoucher(String? code, int discount) => BookingDraft(
+  int get fee => doctor.consultationFee ?? 0;
+  int get total => fee - discount + tax;
+
+  /// Applies a server price quote (voucher discount and tax).
+  BookingDraft withPricing({
+    required String? voucherCode,
+    required int discount,
+    required int tax,
+  }) => BookingDraft(
     doctor: doctor,
     date: date,
     consultationType: consultationType,
     time: time,
     reason: reason,
     isEmergency: isEmergency,
-    voucherCode: code,
-    discount: code == null ? 0 : discount,
+    voucherCode: voucherCode,
+    discount: discount,
+    tax: tax,
   );
 
   String get serviceLabel => switch (consultationType) {
@@ -62,8 +72,9 @@ const _weekdayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 Set<int>? parseAvailableWeekdays(String? text) {
   if (text == null) return null;
   final lower = text.toLowerCase();
-  if (lower.contains('daily') || lower.contains('every'))
+  if (lower.contains('daily') || lower.contains('every')) {
     return {1, 2, 3, 4, 5, 6, 7};
+  }
 
   final matches = RegExp(
     r'(mon|tue|wed|thu|fri|sat|sun)[a-z]*',

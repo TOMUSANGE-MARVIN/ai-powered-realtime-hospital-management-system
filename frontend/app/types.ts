@@ -154,6 +154,21 @@ export interface Category {
   updatedAt: string;
 }
 
+export interface Withdrawal {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  amount: number;
+  method: "mobile_money" | "bank";
+  provider: string;
+  accountName: string;
+  accountNumber: string;
+  status: "requested" | "approved" | "paid" | "rejected";
+  adminNote?: string | null;
+  processedAt?: string | null;
+  createdAt: string;
+}
+
 export interface Voucher {
   id: string;
   code: string;

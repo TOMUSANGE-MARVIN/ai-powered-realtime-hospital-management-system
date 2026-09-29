@@ -73,40 +73,57 @@ class PaymentRepository {
   }
 }
 
-/// Result of checking a voucher code against a doctor's fee.
-class VoucherQuote {
-  const VoucherQuote({
-    required this.code,
+/// Server price for a consultation: voucher discount, tax and total.
+class PriceQuote {
+  const PriceQuote({
     required this.discount,
+    required this.tax,
     required this.total,
+    this.voucherCode,
   });
 
-  final String code;
+  final String? voucherCode;
   final int discount;
+  final int tax;
   final int total;
+
+  factory PriceQuote.fromJson(Map<String, dynamic> json) => PriceQuote(
+    voucherCode: json['voucherCode'] as String?,
+    discount: (json['discount'] as num?)?.toInt() ?? 0,
+    tax: (json['tax'] as num?)?.toInt() ?? 0,
+    total: (json['total'] as num?)?.toInt() ?? 0,
+  );
 }
 
-class VoucherRepository {
-  VoucherRepository(this._dio);
+class PricingRepository {
+  PricingRepository(this._dio);
 
   final Dio _dio;
 
-  Future<VoucherQuote> validate({
+  /// Price without a voucher (shows tax up front).
+  Future<PriceQuote> quote(String doctorId) => _call(
+    () => _dio.get(
+      '/api/payments/quote',
+      queryParameters: {'doctorId': doctorId},
+    ),
+  );
+
+  /// Price with [code] applied; throws [ApiException] if it can't be used.
+  Future<PriceQuote> applyVoucher({
     required String code,
     required String doctorId,
-  }) async {
+  }) => _call(
+    () => _dio.post(
+      '/api/vouchers/validate',
+      data: {'code': code, 'doctorId': doctorId},
+    ),
+  );
+
+  Future<PriceQuote> _call(Future<Response> Function() request) async {
     try {
-      final response = await _dio.post(
-        '/api/vouchers/validate',
-        data: {'code': code, 'doctorId': doctorId},
-      );
+      final response = await request();
       ApiException.checkStatus(response);
-      final data = response.data as Map<String, dynamic>;
-      return VoucherQuote(
-        code: data['code'] as String,
-        discount: (data['discount'] as num).toInt(),
-        total: (data['total'] as num).toInt(),
-      );
+      return PriceQuote.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (error) {
       throw ApiException.fromDioError(error);
     }

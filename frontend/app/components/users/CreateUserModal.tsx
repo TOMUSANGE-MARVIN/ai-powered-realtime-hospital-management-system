@@ -47,9 +47,18 @@ interface UserModalProps {
   role: Role;
   user?: User;
   loading?: boolean;
+  /** Overrides the create button's styling (e.g. full-width quick actions). */
+  triggerClassName?: string;
+  triggerVariant?: "default" | "outline";
 }
 
-const CreateUserModal = ({ role, user, loading }: UserModalProps) => {
+const CreateUserModal = ({
+  role,
+  user,
+  loading,
+  triggerClassName,
+  triggerVariant = "default",
+}: UserModalProps) => {
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false); // Local loading for Create
 
@@ -236,7 +245,10 @@ const CreateUserModal = ({ role, user, loading }: UserModalProps) => {
             Edit
           </Button>
         ) : (
-          <Button className="gap-2">
+          <Button
+            variant={triggerVariant}
+            className={triggerClassName ?? "gap-2"}
+          >
             <Plus size={16} /> Add {roleLabel}
           </Button>
         )}

@@ -46,11 +46,11 @@ Design: *2FA Setup*. Entry point: Settings → Two-Factor Authentication.
 - [x] Mobile: route `/settings/two-factor`
 - [x] Mobile: Settings row showing On / Off (restyled in E5)
 - [x] Verify: `flutter analyze` and `tsc` clean
-- [ ] Verify: enable → sign out → sign in asks for code → correct code signs in
-- [ ] Verify: wrong code shows an error and stays signed out
-- [ ] Verify: recovery code signs in once and is then rejected
-- [ ] Verify: new recovery codes replace the old ones
-- [ ] Verify: disable → sign in no longer asks for a code
+- [ ] Verify: enable → sign out → sign in asks for code → correct code signs in — API ✓ (smoke test 2026-09-29); device check pending
+- [ ] Verify: wrong code shows an error and stays signed out — API ✓ (smoke test 2026-09-29); device check pending
+- [ ] Verify: recovery code signs in once and is then rejected — API ✓ (smoke test 2026-09-29); device check pending
+- [ ] Verify: new recovery codes replace the old ones — API ✓ (smoke test 2026-09-29); device check pending
+- [ ] Verify: disable → sign in no longer asks for a code — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E2. Full History (doctor)
 
@@ -68,7 +68,7 @@ Design: *Full History*. Entry point: doctor chat header (E3) and doctor appointm
     - [x] Loading skeleton, empty states, error with retry
 - [x] Mobile: route `/patients/:id/history`
 - [x] Mobile: "Full History" action on doctor appointment cards
-- [ ] Verify: doctor linked to patient sees documents; unlinked doctor gets a clear error
+- [ ] Verify: doctor linked to patient sees documents; unlinked doctor gets a clear error — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E3. Doctor chat header
 
@@ -97,7 +97,7 @@ Design: *Review and Ratings*.
 - [x] Mobile: route `/review/:appointmentId`; My Appointments "Review" opens it instead of the dialog
 - [x] Mobile: remove the old `_ReviewDialog`
 - [x] Mobile: show helped-with tags on the doctor's Reviews screen and the doctor profile reviews tab
-- [ ] Verify: review saves, shows on the doctor profile, and the appointment shows "Reviewed"
+- [ ] Verify: review saves, shows on the doctor profile, and the appointment shows "Reviewed" — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E5. Settings redesign
 
@@ -130,7 +130,7 @@ Designs: *Edit Profile*, *Ask Musawo - User Profile*.
 - [x] Mobile: Health Snapshot — Insurance (Active / none) and Primary Doctor row (→ doctor profile)
 - [x] Mobile: Personal Information — email, phone, location rows with edit icons (→ Edit Profile)
 - [x] Mobile: Preferences — Push Notifications and Health Insights & Tips switches
-- [ ] Verify: fields round-trip (edit → save → reopen app → still there)
+- [ ] Verify: fields round-trip (edit → save → reopen app → still there) — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E7. Booking Confirmation step
 
@@ -150,7 +150,7 @@ Design: *Confirmation*. Flow becomes Book → Confirm → Pay.
     - [x] "Confirm Appointment" → payment route (or books directly when the doctor has no fee)
 - [x] Mobile: route `/book/:doctorId/confirm`; Book screen goes there instead of `pay`; payment summary shows the voucher line
 - [x] Web (small): voucher list / create / enable-disable page at Settings → Vouchers
-- [ ] Verify: valid, expired, used-up and unknown codes; paid amount equals discounted total
+- [ ] Verify: valid, expired, used-up and unknown codes; paid amount equals discounted total — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E8. Patient appointment actions
 
@@ -160,7 +160,7 @@ Design: *Appointments*.
 - [x] Mobile: Reschedule sheet using the doctor's working days and half-hour slots (same parsers as booking)
 - [x] Mobile: Reschedule button on requested / confirmed appointments (not emergencies)
 - [x] Mobile: Join call button on confirmed / in-progress voice / video appointments from 10 min before start until 60 min after; starts the call with the doctor
-- [ ] Verify: doctor sees the rescheduled request; join works for both call types
+- [ ] Verify: doctor sees the rescheduled request; join works for both call types — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E9. Payment screen polish
 
@@ -169,7 +169,7 @@ Design: *Payout* (within decision 5).
 - [x] Payment summary card: Service, Amount, Tax/Fees (Settings → Billing tax rate, priced on the server; hidden when 0), Discount (E7), Total — migration `20260929210000_payment_tax`, `GET /api/payments/quote`
 - [x] Method list styled like the design (existing cards with logos and selected state kept)
 - [x] Footer: receipt note and secure-payment note
-- [ ] Verify: totals match what Pesapal charges
+- [ ] Verify: totals match what Pesapal charges — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E10. Upload Prescription upgrade
 
@@ -184,7 +184,7 @@ Design: *HealthSync - Upload Prescription*.
 - [x] Mobile: confirmation checkbox (required to send) + digital signature
 - [x] Mobile: Save Draft (on device, restored on reopen) and Send to Patient; "Prescription Ready" bottom sheet on send
 - [x] Mobile: keep the medication rows from the current screen below the extracted fields
-- [ ] Verify: draft reopens; sent prescription appears in the patient's Prescriptions
+- [ ] Verify: draft reopens; sent prescription appears in the patient's Prescriptions — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E11. Doctor withdrawals
 
@@ -197,7 +197,7 @@ Design: *Doctor Earnings* (withdraw section).
 - [x] Mobile: Withdraw to Bank sheet (Stanbic, Centenary, Absa, dfcu, Equity, Other; account name, number, amount)
 - [x] Mobile: withdrawals listed in Recent Transactions with status and admin note
 - [x] Web: Settings → Doctor Payouts (filter by status, approve, reject with reason, mark paid with reference)
-- [ ] Verify: balance updates through each status
+- [ ] Verify: balance updates through each status — API ✓ (smoke test 2026-09-29); device check pending
 
 ## E12. Sign in with Google
 
@@ -211,13 +211,43 @@ Designs: *Login screen*, *Regester screen*.
 - [ ] Mobile: "Sign in with Google" button on Login and Register
 - [ ] Verify: new Google user lands as patient; existing email links to the same account
 
-## E13. Admin Dashboard (web) — next round
+## E13. Admin Dashboard (web)
 
-Design: *Ask Musawo - Admin Dashboard* (1440 px).
+Design: *Ask Musawo - Admin Dashboard* (1440 px). Compared with `frontend/app/routes/protected/Dashboard.tsx` on 2026-09-29: the current page is built around hospital operations (admissions, patient status, team composition) and its stat cards are hard-coded. The design is a telehealth platform overview. The design's numbers are placeholders; every figure below comes from real data.
 
-- [ ] Compare the design's dashboard body (KPI cards, revenue analytics, consultations by specialty, and the rest) with `frontend/app/routes/protected/Dashboard.tsx`
-- [ ] Compare the design sidebar with `nav-config.ts`: Consultations, Payments, Subscriptions, Support Tickets, Reviews & Ratings, Notifications, Reports & Analytics, Content Management, Audit Logs
-- [ ] Write the E13 task list here from that comparison
+- [x] Compare the design's dashboard body with `Dashboard.tsx`
+- [x] Compare the design sidebar with `nav-config.ts` (missing sections → E14)
+- [x] Backend: `GET /api/admin/overview` (admin only)
+    - [x] KPI cards with change vs last month: Total Patients, Total Doctors, Active Consultations (in progress), Appointments Today, Monthly Revenue (paid payments), Platform Growth (new sign-ups this quarter vs last)
+    - [x] Revenue series for Today (by hour), This Week (by day), This Month (by day), This Year (by month)
+    - [x] Consultations by specialty (last 30 days)
+    - [x] Doctor performance: top doctors by rating with review count and Active / Suspended status
+    - [x] Incomplete doctor profiles (fee, qualifications, hospital, availability → x/4), in place of the design's "Pending Verifications" — there is no verification workflow
+    - [x] Recent support tickets (latest 3 with priority and status)
+    - [x] System health: server load, database status and latency, API latency
+- [x] Web: header "Platform Overview" with Export Data (CSV of the KPIs and revenue series) and period filter (drives revenue and specialty sections)
+- [x] Web: 6 KPI cards (Platform Growth highlighted) replacing the hard-coded `StatsCards` on the admin view
+- [x] Web: Revenue Analytics chart with Today / This Week / This Month / This Year tabs
+- [x] Web: Consultations by Specialty donut
+- [x] Web: Doctor Performance and Incomplete Doctor Profiles tables
+- [x] Web: Recent Support Tickets and System Health cards
+- [x] Web: right rail — Quick Actions (Add New Doctor, Add Admin User, Send Announcement, Generate Report, Process Withdrawal) and Recent Activity
+- [x] Backend + web: Send Announcement → notifications to all users, patients or doctors
+- [x] Keep the doctor / nurse dashboard unchanged
+- [x] Verify: numbers match the database (15/15 API checks on seeded data); light + dark at 1440 px and 820 px checked by screenshot — period tabs still to click through by hand
+
+## E14. Admin sidebar sections (web) — later round
+
+Design sidebar sections the web app lacks. Each needs its own page and task list.
+
+- [ ] Consultations (all appointments across doctors, with call logs)
+- [ ] Payments (Pesapal transactions, refunds)
+- [ ] Subscriptions (no subscription product exists yet — needs a decision)
+- [ ] Reviews & Ratings (moderation)
+- [ ] Notifications (announcement history)
+- [ ] Reports & Analytics
+- [ ] Content Management (blog posts are currently in `frontend/app/lib/blogPosts.ts`)
+- [ ] Rename existing sections to the design's names: Support → Support Tickets, Administrators → Admin Users, Activities Log → Audit Logs, Settings → System Settings
 
 ## Final pass
 

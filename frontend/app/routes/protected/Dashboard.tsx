@@ -12,6 +12,7 @@ import ActiveAssignmentsBoard from "@/components/dashboard/ActiveAssignmentsBoar
 import { PatientStatusChart } from "@/components/dashboard/PatientStatusChart";
 import { RoleDistributionChart } from "@/components/dashboard/RoleDistributionChart";
 import { MetricGauges } from "@/components/dashboard/MetricGauges";
+import PlatformOverview from "@/components/dashboard/PlatformOverview";
 
 export function meta() {
   return [{ title: "Dashboard" }];
@@ -26,11 +27,16 @@ export default function HMSDashboard() {
     navigate(`/profile/${session?.user.id}`); // 👈 Redirect user after login
   }
 
-  // Fetch users for StatsCards calculation
+  const isAdmin = user?.role === "admin";
+
+  // Fetch users for StatsCards calculation (staff dashboard only)
   const { data: userData, isLoading: isDataLoading } = useQuery({
     queryKey: ["patients"],
     queryFn: () => getUsers({ role: "patient", limit: 100 }),
+    enabled: !!user && !isAdmin,
   });
+
+  if (!isAuthLoading && isAdmin) return <PlatformOverview />;
 
   if (isAuthLoading || isDataLoading)
     return (
@@ -39,7 +45,6 @@ export default function HMSDashboard() {
       </div>
     );
 
-  const isAdmin = user?.role === "admin";
   const isMedicalStaff = ["doctor", "nurse"].includes(user?.role || "");
 
   return (

@@ -15,6 +15,8 @@ import type {
   CategoryOptions,
   Voucher,
   Withdrawal,
+  AdminOverview,
+  OverviewPeriod,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -683,6 +685,34 @@ export const updateWithdrawal = async ({
   if (!res.ok) {
     const error = await res.json().catch(() => null);
     throw new Error(error?.message || "Failed to update withdrawal");
+  }
+  return res.json();
+};
+
+export const getAdminOverview = async (
+  period: OverviewPeriod,
+): Promise<AdminOverview> => {
+  const res = await fetch(`${API_URL}/admin/overview?period=${period}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to load the overview");
+  return res.json();
+};
+
+export const sendAnnouncement = async (data: {
+  audience: "all" | "patients" | "doctors";
+  title: string;
+  message: string;
+}): Promise<{ sent: number }> => {
+  const res = await fetch(`${API_URL}/admin/announcements`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || "Failed to send announcement");
   }
   return res.json();
 };

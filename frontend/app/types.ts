@@ -154,6 +154,51 @@ export interface Category {
   updatedAt: string;
 }
 
+export type OverviewPeriod = "today" | "week" | "month" | "year";
+
+export interface Kpi {
+  value: number;
+  change: number | null;
+}
+
+export interface AdminOverview {
+  kpis: {
+    totalPatients: Kpi;
+    totalDoctors: Kpi;
+    activeConsultations: Kpi;
+    appointmentsToday: Kpi;
+    monthlyRevenue: Kpi;
+    platformGrowth: { value: number | null; signupsThisQuarter: number };
+  };
+  revenue: { period: OverviewPeriod; series: { label: string; revenue: number }[] };
+  specialties: { name: string; count: number }[];
+  doctorPerformance: {
+    id: string;
+    name: string;
+    image?: string | null;
+    specialization?: string | null;
+    rating: number;
+    reviews: number;
+    status: "active" | "suspended";
+  }[];
+  incompleteProfiles: {
+    id: string;
+    name: string;
+    image?: string | null;
+    specialization?: string | null;
+    joinedAt: string;
+    completed: number;
+    total: number;
+  }[];
+  supportTickets: { recent: SupportTicket[]; open: number };
+  systemHealth: {
+    serverLoadPercent: number;
+    database: string;
+    databaseLatencyMs: number;
+    apiLatencyMs: number;
+  };
+}
+
 export interface Withdrawal {
   id: string;
   doctorId: string;

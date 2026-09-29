@@ -35,7 +35,7 @@ Design: *2FA Setup*. Entry point: Settings → Two-Factor Authentication.
 - [x] Backend: add `twoFactor({ issuer: "Ask Musawo" })` plugin and `appName` in `src/lib/auth.ts`
 - [x] Backend: `TwoFactor` model and `User.twoFactorEnabled` in `schema.prisma`
 - [x] Backend: migration `20260929180000_two_factor_review_tags`
-- [ ] Backend: apply the migrations and regenerate the Prisma client — client regenerated; `migrate deploy` blocked locally (Prisma can't use MySQL's `sha256_password` plugin and the `.env` credentials are rejected), owner to run
+- [x] Backend: apply the migrations and regenerate the Prisma client — applied on the VPS (backup: `~/backups/askmusawo-20260929-192852-pre-migrations.sql.gz`) and locally (new `hospital` database)
 - [x] Mobile: `AppUser.twoFactorEnabled`
 - [x] Mobile: `AuthRepository` — `enableTwoFactor`, `confirmTotp`, `disableTwoFactor`, `regenerateBackupCodes`, `verifySecondFactor`
 - [x] Mobile: `signIn` throws `TwoFactorRequiredException` on `twoFactorRedirect`

@@ -5,7 +5,7 @@ paths:
 
 # Ask Musawo mobile UI style
 
-These rules apply to every Flutter screen and widget. They override generic UI defaults such as large rounded cards, pill buttons and pastel tints.
+These rules apply to every Flutter screen and widget. They override generic UI defaults such as large rounded cards, pill buttons, drop shadows and pastel tints.
 
 ## Corners: nearly sharp
 
@@ -31,9 +31,21 @@ These rules apply to every Flutter screen and widget. They override generic UI d
 - The page background is `tealBackground` (`#F2FAFA`). Cards are white.
 - Only use colors from `app_colors.dart`. Never invent new hex values when a palette color fits.
 
+## Elevation: flat, no shadows
+
+- Never use `BoxShadow`, `boxShadow`, `shadowColor`, or a non-zero `elevation` on cards, tiles, buttons, badges, bubbles or nav bars. Every surface is flat.
+- Separate surfaces with, in order of preference:
+  1. **Whitespace:** group content with spacing before reaching for a container at all.
+  2. **Tonal contrast:** white cards on the `tealBackground` page, or a tinted inner panel inside a card.
+  3. **A 1px hairline border** in `Theme.of(context).colorScheme.outlineVariant`. Use this color, not a hard-coded grey, so dark mode works. It is tuned in `app_theme.dart` (`#DDE9E9` light, `#2A4242` dark), so change it there, not per widget.
+  4. **Dividers** (`Divider`) between rows inside a card.
+- Use `SoftCard` for card surfaces. It is already flat with a hairline border, and passing `borderSide` overrides the border.
+- Solid-color surfaces (primary buttons, own chat bubbles, vivid action tiles) need no border. Their fill is the contrast.
+- Only system overlays keep Material's default elevation: dialogs, bottom sheets, menus and snackbars.
+
 ## General
 
-- Keep shadows subtle: at most the `SoftCard` shadow. No gradients except the brand `heroGradient` on hero/promo surfaces.
+- No gradients except the brand `heroGradient` on hero/promo surfaces.
 - Keep the text hierarchy clear: titles in `darkTealBackground` (`#102828`), secondary text in muted grey-teal (`#6B7A7A`).
 - Make touch targets at least 48px tall.
 - Use real content. Never use lorem ipsum or "John Doe".
@@ -41,4 +53,5 @@ These rules apply to every Flutter screen and widget. They override generic UI d
 ## Before finishing UI work
 
 - Run `grep -rnE "circular\((1[0-9]|[5-9]|[2-9][0-9]+)(\.[0-9]+)?\)|StadiumBorder|circular\(999\)" mobile/lib`. It should return nothing.
+- Run `grep -rnE "BoxShadow|boxShadow|shadowColor|elevation: [1-9]" mobile/lib`. It should return nothing.
 - Run `flutter analyze` on the changed files, and format only those files. Never run `dart format lib`.

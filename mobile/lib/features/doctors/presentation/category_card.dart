@@ -51,7 +51,6 @@ class CategoryCard extends StatelessWidget {
         color: accent.foreground.withValues(alpha: 0.2),
         width: 1.2,
       ),
-      showShadow: false,
       child: SizedBox(
         width: width,
         child: Column(
@@ -99,7 +98,6 @@ class CategoryCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       borderRadius: BorderRadius.circular(kCardRadius),
       borderSide: BorderSide(color: accent.foreground.withValues(alpha: 0.18)),
-      showShadow: false,
       child: SizedBox(
         width: width,
         child: Column(

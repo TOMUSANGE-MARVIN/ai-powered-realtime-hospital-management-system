@@ -622,13 +622,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(kCardRadius),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
             ),
             child: Row(
               children: [
@@ -829,13 +825,11 @@ class _MessageBubble extends StatelessWidget {
               bottomLeft: Radius.circular(kCardRadius),
               bottomRight: Radius.circular(kCardRadius),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: isMine
+                ? null
+                : Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,

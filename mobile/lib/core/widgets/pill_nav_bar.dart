@@ -38,13 +38,7 @@ class PillNavBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: scheme.surface,
             borderRadius: BorderRadius.circular(kPillRadius),
-            boxShadow: [
-              BoxShadow(
-                color: seedTeal.withValues(alpha: 0.18),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            border: Border.all(color: scheme.outlineVariant),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -84,15 +78,6 @@ class _NavIcon extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: selected ? scheme.primary : Colors.transparent,
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: scheme.primary.withValues(alpha: 0.4),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
         ),
         child: Icon(
           selected ? (item.selectedIcon ?? item.icon) : item.icon,

@@ -7,6 +7,10 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   final colorScheme = ColorScheme.fromSeed(
     seedColor: seedTeal,
     brightness: brightness,
+  ).copyWith(
+    // Surfaces are flat (no shadows), so this is the hairline border that
+    // separates cards and bars — kept light enough to read as a line, not a frame.
+    outlineVariant: isDark ? const Color(0xFF2A4242) : const Color(0xFFDDE9E9),
   );
   final backgroundColor = isDark ? darkTealBackground : tealBackground;
 
@@ -30,8 +34,10 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       elevation: 0,
       color: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
-      shadowColor: seedTeal.withValues(alpha: 0.15),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kCardRadius),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(

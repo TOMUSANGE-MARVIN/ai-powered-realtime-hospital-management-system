@@ -301,13 +301,7 @@ class _AppointmentCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(kCardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: seedTeal.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(

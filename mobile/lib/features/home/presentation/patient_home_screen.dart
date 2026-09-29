@@ -980,13 +980,7 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: accent.background,
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          border: Border.all(color: Colors.white, width: 1.5),
                         ),
                         child: Icon(
                           iconForSpecialization(

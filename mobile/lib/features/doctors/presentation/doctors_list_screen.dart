@@ -241,9 +241,10 @@ class _DoctorTile extends ConsumerWidget {
 
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(kCardRadius),
-      elevation: 1,
-      shadowColor: Colors.black.withValues(alpha: 0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kCardRadius),
+        side: BorderSide(color: scheme.outlineVariant),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(kCardRadius),
         onTap: () => _openDetails(context, ref),

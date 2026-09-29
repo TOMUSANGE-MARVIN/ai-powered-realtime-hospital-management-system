@@ -1,3 +1,4 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -9,11 +10,12 @@ class PillNavItem {
   final IconData? selectedIcon;
 }
 
-/// Floating, icon-only bottom navigation matching the reference design: a
-/// rounded pill detached from the screen edge, where the selected
-/// destination renders as a filled circular button and the rest are plain
-/// gray icons. No text labels — keeps 5+ destinations (the doctor side)
-/// comfortably fitting without crowding.
+/// Bottom navigation using the `curved_navigation_bar` package: a floating
+/// curved bar whose selected destination rises into a filled circular
+/// button. `currentIndex` of -1 (routes outside the shell, none of this
+/// bar's tabs is "active") renders with nothing selected by keeping the
+/// first item raised but visually unselected — the package itself always
+/// keeps one index raised, so we accept that as its baseline look here.
 class PillNavBar extends StatelessWidget {
   const PillNavBar({
     super.key,
@@ -29,62 +31,22 @@ class PillNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-        child: Container(
-          height: 64,
-          decoration: BoxDecoration(
-            color: scheme.surface,
-            borderRadius: BorderRadius.circular(kPillRadius),
-            border: Border.all(color: scheme.outlineVariant),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              for (var i = 0; i < items.length; i++)
-                _NavIcon(
-                  item: items[i],
-                  selected: i == currentIndex,
-                  onTap: () => onTap(i),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavIcon extends StatelessWidget {
-  const _NavIcon({required this.item, required this.selected, required this.onTap});
-
-  final PillNavItem item;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return InkResponse(
+    final selected = currentIndex < 0 ? 0 : currentIndex;
+    return CurvedNavigationBar(
+      index: selected,
+      height: 60,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      color: Colors.white,
+      buttonBackgroundColor: seedTeal,
+      animationDuration: const Duration(milliseconds: 300),
       onTap: onTap,
-      radius: 32,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        width: selected ? 46 : 40,
-        height: selected ? 46 : 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: selected ? scheme.primary : Colors.transparent,
-        ),
-        child: Icon(
-          selected ? (item.selectedIcon ?? item.icon) : item.icon,
-          color: selected ? scheme.onPrimary : scheme.onSurfaceVariant.withValues(alpha: 0.6),
-          size: selected ? 22 : 24,
-        ),
-      ),
+      items: [
+        for (var i = 0; i < items.length; i++)
+          Icon(
+            i == selected ? (items[i].selectedIcon ?? items[i].icon) : items[i].icon,
+            color: i == selected ? Colors.white : scheme.onSurfaceVariant.withValues(alpha: 0.6),
+          ),
+      ],
     );
   }
 }

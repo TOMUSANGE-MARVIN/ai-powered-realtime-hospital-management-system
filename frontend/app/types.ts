@@ -199,6 +199,72 @@ export interface AdminOverview {
   };
 }
 
+export interface ConsultationCall {
+  id: string;
+  type: "voice" | "video" | string;
+  status: string;
+  durationSeconds: number | null;
+  byDoctor: boolean;
+  createdAt: string;
+}
+
+export interface Consultation {
+  id: string;
+  patientId: string | null;
+  patientName: string;
+  doctorId: string | null;
+  doctorName: string | null;
+  date: string;
+  time: string | null;
+  status: string;
+  consultationType: "physical" | "voice" | "video" | string;
+  isEmergency: boolean;
+  reason: string | null;
+  fee: number | null;
+  createdAt: string;
+  payment: {
+    amount: number;
+    status: string;
+    method: string;
+    voucherCode: string | null;
+    discount: number;
+    createdAt: string;
+  } | null;
+  calls: ConsultationCall[];
+  talkSeconds: number;
+  review: { rating: number; comment: string | null; helpedWith: string | null } | null;
+  prescription: { id: string; status: string; createdAt: string } | null;
+}
+
+export interface ConsultationsResponse {
+  period: OverviewPeriod;
+  summary: {
+    total: number;
+    completed: number;
+    inProgress: number;
+    upcoming: number;
+    cancelled: number;
+    completionRate: number | null;
+    avgCallSeconds: number | null;
+    missedCalls: number;
+    revenue: number;
+  };
+  consultations: Consultation[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export interface CallLogEntry {
+  id: string;
+  callerId: string;
+  callerName: string;
+  calleeId: string;
+  calleeName: string;
+  type: string;
+  status: string;
+  durationSeconds: number | null;
+  createdAt: string;
+}
+
 export interface Withdrawal {
   id: string;
   doctorId: string;

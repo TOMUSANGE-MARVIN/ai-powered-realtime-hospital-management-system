@@ -308,3 +308,210 @@ export const sendAnnouncement = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// --- Consultations ----------------------------------------------------------
+
+const CONSULTATION_TYPES = ["physical", "voice", "video"];
+const CALL_WINDOW_MS = 12 * 3600_000;
+
+/** Calls between a patient and doctor near a visit (12h before → 24h after). */
+function callsForVisit(
+  calls: { callerId: string; calleeId: string; status: string; durationSeconds: number | null; createdAt: Date; type: string; id: string }[],
+  patientId: string | null,
+  doctorId: string | null,
+  date: Date,
+) {
+  if (!patientId || !doctorId) return [];
+  const from = date.getTime() - CALL_WINDOW_MS;
+  const to = date.getTime() + 2 * CALL_WINDOW_MS;
+  return calls.filter(
+    (c) =>
+      ((c.callerId === patientId && c.calleeId === doctorId) ||
+        (c.callerId === doctorId && c.calleeId === patientId)) &&
+      c.createdAt.getTime() >= from &&
+      c.createdAt.getTime() <= to,
+  );
+}
+
+export const getConsultations = async (req: Request, res: Response) => {
+  try {
+    const now = new Date();
+    const period = (["today", "week", "month", "year"].includes(req.query.period as string)
+      ? req.query.period
+      : "month") as Period;
+    const from = periodStart(period, now);
+    const status = req.query.status as string | undefined;
+    const type = req.query.type as string | undefined;
+    const search = ((req.query.search as string) || "").trim();
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+
+    const inPeriod = { date: { gte: from }, doctorId: { not: null } };
+    const where: any = { ...inPeriod };
+    if (status && status !== "all") where.status = status;
+    if (type && CONSULTATION_TYPES.includes(type)) where.consultationType = type;
+    if (search) {
+      where.OR = [
+        { patientName: { contains: search } },
+        { doctorName: { contains: search } },
+      ];
+    }
+
+    const [total, rows, byStatus, periodCalls, paidRevenue] = await Promise.all([
+      prisma.appointment.count({ where }),
+      prisma.appointment.findMany({
+        where,
+        orderBy: { date: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.appointment.groupBy({
+        by: ["status"],
+        where: inPeriod,
+        _count: { _all: true },
+      }),
+      prisma.callLog.findMany({
+        where: { createdAt: { gte: new Date(from.getTime() - CALL_WINDOW_MS) } },
+        select: {
+          id: true,
+          callerId: true,
+          calleeId: true,
+          status: true,
+          type: true,
+          durationSeconds: true,
+          createdAt: true,
+        },
+      }),
+      prisma.payment.aggregate({
+        where: { status: "paid", createdAt: { gte: from } },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    const ids = rows.map((r) => r.id);
+    const paymentIds = rows.map((r) => r.paymentId).filter((id): id is string => !!id);
+    const [payments, reviews, prescriptions] = await Promise.all([
+      prisma.payment.findMany({ where: { id: { in: paymentIds } } }),
+      prisma.review.findMany({ where: { appointmentId: { in: ids } } }),
+      prisma.prescription.findMany({
+        where: { appointmentId: { in: ids } },
+        select: { id: true, appointmentId: true, status: true, createdAt: true },
+      }),
+    ]);
+    const paymentById = new Map(payments.map((p) => [p.id, p]));
+    const reviewByAppt = new Map(reviews.map((r) => [r.appointmentId, r]));
+    const rxByAppt = new Map(prescriptions.map((p) => [p.appointmentId, p]));
+
+    const counts = Object.fromEntries(byStatus.map((s) => [s.status, s._count._all]));
+    const totalInPeriod = byStatus.reduce((sum, s) => sum + s._count._all, 0);
+    const answered = periodCalls.filter(
+      (c) => c.status === "answered" && c.createdAt >= from && c.durationSeconds,
+    );
+    const avgCallSeconds = answered.length
+      ? Math.round(answered.reduce((s, c) => s + (c.durationSeconds ?? 0), 0) / answered.length)
+      : null;
+    const missedCalls = periodCalls.filter(
+      (c) => c.createdAt >= from && ["missed", "declined", "busy"].includes(c.status),
+    ).length;
+    const closed = (counts.completed ?? 0) + (counts.cancelled ?? 0);
+
+    res.json({
+      period,
+      summary: {
+        total: totalInPeriod,
+        completed: counts.completed ?? 0,
+        inProgress: counts.in_progress ?? 0,
+        upcoming: (counts.requested ?? 0) + (counts.scheduled ?? 0) + (counts.confirmed ?? 0),
+        cancelled: counts.cancelled ?? 0,
+        completionRate: closed ? Math.round(((counts.completed ?? 0) / closed) * 100) : null,
+        avgCallSeconds,
+        missedCalls,
+        revenue: paidRevenue._sum.amount ?? 0,
+      },
+      consultations: rows.map((a) => {
+        const calls = callsForVisit(periodCalls, a.patientId, a.doctorId, a.date).sort(
+          (x, y) => x.createdAt.getTime() - y.createdAt.getTime(),
+        );
+        const payment = a.paymentId ? paymentById.get(a.paymentId) : undefined;
+        const review = reviewByAppt.get(a.id);
+        const rx = rxByAppt.get(a.id);
+        return {
+          id: a.id,
+          patientId: a.patientId,
+          patientName: a.patientName,
+          doctorId: a.doctorId,
+          doctorName: a.doctorName,
+          date: a.date,
+          time: a.time,
+          status: a.status,
+          consultationType: a.consultationType ?? (a.isVirtual ? "video" : "physical"),
+          isEmergency: a.isEmergency,
+          reason: a.reason,
+          fee: a.fee,
+          createdAt: a.createdAt,
+          payment: payment
+            ? {
+                amount: payment.amount,
+                status: payment.status,
+                method: payment.method,
+                voucherCode: payment.voucherCode,
+                discount: payment.discount,
+                createdAt: payment.createdAt,
+              }
+            : null,
+          calls: calls.map((c) => ({
+            id: c.id,
+            type: c.type,
+            status: c.status,
+            durationSeconds: c.durationSeconds,
+            byDoctor: c.callerId === a.doctorId,
+            createdAt: c.createdAt,
+          })),
+          talkSeconds: calls.reduce(
+            (s, c) => s + (c.status === "answered" ? (c.durationSeconds ?? 0) : 0),
+            0,
+          ),
+          review: review
+            ? { rating: review.rating, comment: review.comment, helpedWith: review.helpedWith }
+            : null,
+          prescription: rx ? { id: rx.id, status: rx.status, createdAt: rx.createdAt } : null,
+        };
+      }),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error("Error fetching consultations:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getCallLogs = async (req: Request, res: Response) => {
+  try {
+    const now = new Date();
+    const period = (["today", "week", "month", "year"].includes(req.query.period as string)
+      ? req.query.period
+      : "month") as Period;
+    const status = req.query.status as string | undefined;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 25));
+    const where: any = { createdAt: { gte: periodStart(period, now) } };
+    if (status && status !== "all") where.status = status;
+
+    const [total, calls] = await Promise.all([
+      prisma.callLog.count({ where }),
+      prisma.callLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+    res.json({
+      calls,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error("Error fetching call logs:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

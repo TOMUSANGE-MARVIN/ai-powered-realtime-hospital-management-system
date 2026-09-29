@@ -17,6 +17,8 @@ import type {
   Withdrawal,
   AdminOverview,
   OverviewPeriod,
+  ConsultationsResponse,
+  CallLogEntry,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -714,5 +716,45 @@ export const sendAnnouncement = async (data: {
     const error = await res.json().catch(() => null);
     throw new Error(error?.message || "Failed to send announcement");
   }
+  return res.json();
+};
+export const getConsultations = async (params: {
+  period: OverviewPeriod;
+  status?: string;
+  type?: string;
+  search?: string;
+  page?: number;
+}): Promise<ConsultationsResponse> => {
+  const query = new URLSearchParams({
+    period: params.period,
+    status: params.status || "all",
+    type: params.type || "all",
+    search: params.search || "",
+    page: String(params.page || 1),
+  });
+  const res = await fetch(`${API_URL}/admin/consultations?${query}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to load consultations");
+  return res.json();
+};
+
+export const getCallLogs = async (params: {
+  period: OverviewPeriod;
+  status?: string;
+  page?: number;
+}): Promise<{
+  calls: CallLogEntry[];
+  pagination: { page: number; total: number; totalPages: number };
+}> => {
+  const query = new URLSearchParams({
+    period: params.period,
+    status: params.status || "all",
+    page: String(params.page || 1),
+  });
+  const res = await fetch(`${API_URL}/admin/calls?${query}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to load call logs");
   return res.json();
 };

@@ -39,6 +39,7 @@ export default [
     route("lab/results", "routes/protected/lab/Results.tsx"),
     route("appointments", "routes/protected/Appointments.tsx"),
     route("telemedicine", "routes/protected/Telemedicine.tsx"),
+    route("consultations", "routes/protected/Consultations.tsx"),
     route("settings/general", "routes/protected/settings/General.tsx"),
     route("settings/roles", "routes/protected/settings/Roles.tsx"),
     route("settings/billing", "routes/protected/settings/Billing.tsx"),

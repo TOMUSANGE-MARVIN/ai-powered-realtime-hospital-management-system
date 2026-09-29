@@ -45,7 +45,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const userRole = (session?.user?.role as Role) || "patient";
 
   const filterNav = (items: NavItem[]) => {
-    return items.filter((item) => item.allowedRoles.includes(userRole));
+    return items
+      .filter((item) => item.allowedRoles.includes(userRole))
+      .map((item) => ({
+        ...item,
+        // Sub-items without their own roles inherit the group's.
+        items: item.items?.filter(
+          (sub) => !sub.allowedRoles || sub.allowedRoles.includes(userRole),
+        ),
+      }));
   };
   const filteredMain = filterNav(navConfig.navMain);
   const filteredAdmin = filterNav(navConfig.navAdmin);

@@ -240,7 +240,12 @@ Design: *Ask Musawo - Admin Dashboard* (1440 px). Compared with `frontend/app/ro
 
 Design sidebar sections the web app lacks. Each needs its own page and task list.
 
-- [ ] Consultations (all appointments across doctors, with call logs)
+- [x] Consultations (all appointments across doctors, with call logs) — Appointments → Consultations, admin only
+    - [x] Backend: `GET /api/admin/consultations` (period, status, type, search, paging; summary: totals, completion rate, avg call length, missed calls, revenue) and `GET /api/admin/calls`
+    - [x] Each consultation joined with its payment (incl. voucher), calls between the pair from 12 h before to 24 h after the visit, review and prescription
+    - [x] Web: summary cards, filterable table, detail panel with a timeline, Call logs tab; flags virtual visits marked completed with no recorded call
+    - [x] Sidebar now honours per-item `allowedRoles` (doctors don't see admin-only links)
+    - [x] Verify: 13/13 API checks on seeded data; screenshots of table, detail panel and call logs; doctor sidebar hides the link
 - [ ] Payments (Pesapal transactions, refunds)
 - [ ] Subscriptions (no subscription product exists yet — needs a decision)
 - [ ] Reviews & Ratings (moderation)

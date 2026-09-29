@@ -113,6 +113,11 @@ export const navConfig: {
       items: [
         { title: "All Appointments", url: "/appointments" },
         { title: "Telemedicine", url: "/telemedicine" },
+        {
+          title: "Consultations",
+          url: "/consultations",
+          allowedRoles: ["admin"],
+        },
       ],
     },
   ],

@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/soft_card.dart';
+import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
+import 'profile_screen.dart' show pushNotificationsPrefKey;
 
-const _pushPrefKey = 'notif_push';
 const _emailPrefKey = 'notif_email';
 const _smsPrefKey = 'notif_sms';
+const supportEmail = 'care@askmusawo.co.ug';
+
+final _appVersionProvider = FutureProvider<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return 'v${info.version}';
+});
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -35,7 +46,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _push = prefs.getBool(_pushPrefKey) ?? true;
+      _push = prefs.getBool(pushNotificationsPrefKey) ?? true;
       _email = prefs.getBool(_emailPrefKey) ?? false;
       _sms = prefs.getBool(_smsPrefKey) ?? true;
       _loaded = true;
@@ -47,132 +58,194 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await prefs.setBool(key, value);
   }
 
-  Future<void> _confirmDeleteAccount() async {
-    final confirmed = await showDialog<bool>(
+  Future<void> _showHelp() {
+    return showModalBottomSheet<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete account?'),
-        content: const Text(
-          'This permanently deletes your account and all associated data. This cannot be undone.',
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.email_outlined),
+              title: const Text('Email support'),
+              subtitle: const Text(supportEmail),
+              onTap: () => launchUrl(Uri.parse('mailto:$supportEmail')),
+            ),
+            const SizedBox(height: 8),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
       ),
     );
-    if (confirmed != true || !mounted) return;
-
-    try {
-      await ref.read(profileRepositoryProvider).deleteMe();
-      if (mounted) context.go('/login');
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+    final user = ref.watch(authControllerProvider).value;
+    final isDoctor = user?.role == 'doctor';
+    final version = ref.watch(_appVersionProvider).value ?? '';
 
-    if (!_loaded) {
+    if (!_loaded || user == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const Text('Settings'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Help',
+            onPressed: _showHelp,
+          ),
+        ],
+      ),
       body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          const _SectionHeader('Account'),
-          ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: const Text('Edit Profile'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/edit-profile'),
-          ),
-          const _SectionHeader('Notifications'),
-          SwitchListTile(
-            secondary: const Icon(Icons.notifications_outlined),
-            title: const Text('Push Notifications'),
-            value: _push,
-            onChanged: (value) {
-              setState(() => _push = value);
-              _setPref(_pushPrefKey, value);
-            },
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.email_outlined),
-            title: const Text('Email Updates'),
-            value: _email,
-            onChanged: (value) {
-              setState(() => _email = value);
-              _setPref(_emailPrefKey, value);
-            },
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.sms_outlined),
-            title: const Text('SMS Alerts'),
-            value: _sms,
-            onChanged: (value) {
-              setState(() => _sms = value);
-              _setPref(_smsPrefKey, value);
-            },
-          ),
-          const _SectionHeader('Preferences'),
-          SwitchListTile(
-            secondary: const Icon(Icons.dark_mode_outlined),
-            title: const Text('Dark Mode'),
-            value: themeMode == ThemeMode.dark,
-            onChanged: (value) =>
-                ref.read(themeModeProvider.notifier).setDarkMode(value),
-          ),
-          const _SectionHeader('Support'),
-          ListTile(
-            leading: const Icon(Icons.help_outline),
-            title: const Text('Help & Support'),
-            subtitle: const Text('care@askmusawo.co.ug'),
-            trailing: const Icon(Icons.chevron_right),
-          ),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('About Ask Musawo'),
-            trailing: const Text('v1.0.0'),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text('Log Out', style: TextStyle(color: Colors.red)),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.red),
+          _ProfileCard(user: user),
+          _Group(
+            title: isDoctor ? 'Account' : 'Profile & Health',
+            children: [
+              _NavRow(
+                icon: Icons.person_outline,
+                label: 'Account Settings',
+                onTap: () => context.push('/edit-profile'),
               ),
-              onPressed: () =>
-                  ref.read(authControllerProvider.notifier).signOut(),
+              if (!isDoctor)
+                _NavRow(
+                  icon: Icons.monitor_heart_outlined,
+                  label: 'Health Profile',
+                  onTap: () => context.push('/settings/health-profile'),
+                ),
+            ],
+          ),
+          _Group(
+            title: 'Notifications',
+            children: [
+              _SwitchRow(
+                icon: Icons.notifications_outlined,
+                label: 'Push Notifications',
+                value: _push,
+                onChanged: (value) {
+                  setState(() => _push = value);
+                  _setPref(pushNotificationsPrefKey, value);
+                },
+              ),
+              _SwitchRow(
+                icon: Icons.email_outlined,
+                label: 'Email Updates',
+                value: _email,
+                onChanged: (value) {
+                  setState(() => _email = value);
+                  _setPref(_emailPrefKey, value);
+                },
+              ),
+              _SwitchRow(
+                icon: Icons.smartphone,
+                label: 'SMS Alerts',
+                value: _sms,
+                onChanged: (value) {
+                  setState(() => _sms = value);
+                  _setPref(_smsPrefKey, value);
+                },
+              ),
+            ],
+          ),
+          _Group(
+            title: 'Privacy & Security',
+            children: [
+              _NavRow(
+                icon: Icons.lock_outline,
+                label: 'Privacy Settings',
+                onTap: () => context.push('/settings/privacy'),
+              ),
+              _NavRow(
+                icon: Icons.verified_user_outlined,
+                label: 'Two-Factor Authentication',
+                value: user.twoFactorEnabled ? 'Enabled' : 'Disabled',
+                onTap: () => context.push('/settings/two-factor'),
+              ),
+            ],
+          ),
+          _Group(
+            title: isDoctor ? 'Practice & Financial' : 'Medical & Financial',
+            children: [
+              _NavRow(
+                icon: Icons.calendar_today_outlined,
+                label: 'Appointments History',
+                onTap: () => context.go(
+                  isDoctor ? '/doctor-home/appointments' : '/home/appointments',
+                ),
+              ),
+              _NavRow(
+                icon: Icons.credit_card_outlined,
+                label: isDoctor ? 'Earnings & Payouts' : 'Payments & Billing',
+                onTap: () => context.go(
+                  isDoctor ? '/doctor-home/earnings' : '/home/profile',
+                ),
+              ),
+            ],
+          ),
+          _Group(
+            title: 'Preferences',
+            children: [
+              _SwitchRow(
+                icon: Icons.dark_mode_outlined,
+                label: 'Dark Mode',
+                value: themeMode == ThemeMode.dark,
+                onChanged: (value) =>
+                    ref.read(themeModeProvider.notifier).setDarkMode(value),
+              ),
+            ],
+          ),
+          _Group(
+            title: 'More',
+            children: [
+              _NavRow(
+                icon: Icons.help_outline,
+                label: 'Help & Support',
+                onTap: _showHelp,
+              ),
+              _NavRow(
+                icon: Icons.info_outline,
+                label: 'About Ask Musawo',
+                value: version,
+                onTap: () => showAboutDialog(
+                  context: context,
+                  applicationName: 'Ask Musawo',
+                  applicationVersion: version,
+                  applicationLegalese:
+                      'Connecting patients with trusted doctors.',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+              foregroundColor: Theme.of(context).colorScheme.error,
             ),
+            icon: const Icon(Icons.logout),
+            label: const Text('Log Out'),
+            onPressed: () =>
+                ref.read(authControllerProvider.notifier).signOut(),
           ),
           const SizedBox(height: 8),
           Center(
             child: TextButton(
-              onPressed: _confirmDeleteAccount,
+              onPressed: () => confirmDeleteAccount(context, ref),
               child: Text(
                 'Delete Account',
-                style: TextStyle(color: Colors.grey.shade600),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
       bottomNavigationBar: const AppBottomNav(),
@@ -180,23 +253,252 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.label);
+/// Shared by Settings and Privacy Settings.
+Future<void> confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete account?'),
+      content: const Text(
+        'This permanently deletes your account and all associated data. '
+        'This cannot be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
 
-  final String label;
+  try {
+    await ref.read(profileRepositoryProvider).deleteMe();
+    if (context.mounted) context.go('/login');
+  } on ApiException catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
+    }
+  }
+}
+
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.user});
+
+  final AppUser user;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade600,
-        ),
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final chips = <(IconData, String, bool)>[
+      if (user.role == 'doctor') (Icons.verified_outlined, 'Verified', false),
+      if (user.twoFactorEnabled) (Icons.shield_outlined, '2FA on', false),
+      if (user.hasInsurance)
+        (Icons.health_and_safety_outlined, user.insuranceProvider!, false),
+      if (user.bloodgroup != null)
+        (Icons.bloodtype_outlined, '${user.bloodgroup} Blood', true),
+    ];
+    return SoftCard(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: seedTeal.withValues(alpha: 0.12),
+                backgroundImage: user.image != null
+                    ? NetworkImage(user.image!)
+                    : null,
+                child: user.image == null
+                    ? const Icon(Icons.person, color: seedTeal)
+                    : null,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      user.phoneNumber?.isNotEmpty == true
+                          ? user.phoneNumber!
+                          : user.email,
+                      style: TextStyle(color: muted),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: seedTeal.withValues(alpha: 0.1),
+                ),
+                onPressed: () => context.push('/edit-profile'),
+                child: const Text('Edit Profile'),
+              ),
+            ],
+          ),
+          if (chips.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final (icon, label, alert) in chips)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: alert
+                          ? Theme.of(context).colorScheme.errorContainer
+                          : Theme.of(context).colorScheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(kPillRadius),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          icon,
+                          size: 14,
+                          color: alert
+                              ? Theme.of(context).colorScheme.error
+                              : null,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: alert
+                                ? Theme.of(context).colorScheme.error
+                                : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
       ),
+    );
+  }
+}
+
+class _Group extends StatelessWidget {
+  const _Group({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
+          child: Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        SoftCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                if (i > 0) const Divider(height: 1, indent: 52),
+                children[i],
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NavRow extends StatelessWidget {
+  const _NavRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String? value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return ListTile(
+      leading: Icon(icon, color: muted),
+      title: Text(label),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (value != null && value!.isNotEmpty)
+            Text(value!, style: TextStyle(color: muted, fontSize: 13)),
+          Icon(Icons.chevron_right, color: muted),
+        ],
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+class _SwitchRow extends StatelessWidget {
+  const _SwitchRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      secondary: Icon(
+        icon,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      title: Text(label),
+      value: value,
+      onChanged: onChanged,
     );
   }
 }

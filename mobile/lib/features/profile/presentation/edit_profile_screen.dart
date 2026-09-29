@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
@@ -36,6 +37,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _hospitalNameController = TextEditingController();
   final _hospitalAddressController = TextEditingController();
   final _feeController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _insuranceProviderController = TextEditingController();
+  final _insuranceMemberNoController = TextEditingController();
+  String _email = '';
+  DateTime? _dateOfBirth;
   bool _initialized = false;
   bool _saving = false;
   bool _uploadingPhoto = false;
@@ -76,6 +83,32 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _hospitalNameController.text = user.hospitalName ?? '';
     _hospitalAddressController.text = user.hospitalAddress ?? '';
     _feeController.text = user.consultationFee?.toString() ?? '';
+    _email = user.email;
+    _phoneController.text = user.phoneNumber ?? '';
+    _addressController.text = user.address ?? '';
+    _insuranceProviderController.text = user.insuranceProvider ?? '';
+    _insuranceMemberNoController.text = user.insuranceMemberNo ?? '';
+    _dateOfBirth = DateTime.tryParse(user.dateOfBirth ?? '');
+  }
+
+  Future<void> _pickDateOfBirth() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dateOfBirth ?? DateTime(now.year - 30),
+      firstDate: DateTime(now.year - 120),
+      lastDate: now,
+    );
+    if (picked == null) return;
+    var age = now.year - picked.year;
+    if (now.month < picked.month ||
+        (now.month == picked.month && now.day < picked.day)) {
+      age--;
+    }
+    setState(() {
+      _dateOfBirth = picked;
+      _ageController.text = '$age';
+    });
   }
 
   @override
@@ -89,6 +122,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _hospitalNameController.dispose();
     _hospitalAddressController.dispose();
     _feeController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _insuranceProviderController.dispose();
+    _insuranceMemberNoController.dispose();
     super.dispose();
   }
 
@@ -153,6 +190,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'emergencyContactName': _emergencyNameController.text.trim(),
         'emergencyContactPhone': _emergencyPhoneController.text.trim(),
         'emergencyContactRelation': _emergencyRelationController.text.trim(),
+        'phoneNumber': _phoneController.text.trim(),
+        if (_role != 'doctor') ...{
+          'address': _addressController.text.trim(),
+          'insuranceProvider': _insuranceProviderController.text.trim(),
+          'insuranceMemberNo': _insuranceMemberNoController.text.trim(),
+          if (_dateOfBirth != null)
+            'dateOfBirth': DateFormat('yyyy-MM-dd').format(_dateOfBirth!),
+        },
         if (_role == 'doctor') ...{
           'bio': _bioController.text.trim(),
           'hospitalName': _hospitalNameController.text.trim(),
@@ -231,7 +276,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const SizedBox(height: 24),
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Full Name'),
+            decoration: const InputDecoration(labelText: 'Full Name*'),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            initialValue: _email,
+            readOnly: true,
+            enabled: false,
+            decoration: const InputDecoration(
+              labelText: 'Email Address',
+              helperText: 'Contact support to change your sign-in email.',
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Phone Number',
+              hintText: '+256 7XX XXX XXX',
+              helperText: 'Used for appointment reminders and 2FA.',
+            ),
           ),
           const SizedBox(height: 16),
           if (_role == 'doctor') ..._doctorFields() else ..._patientFields(),
@@ -311,10 +376,51 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         onChanged: (value) => setState(() => _maritalStatus = value),
       ),
       const SizedBox(height: 12),
+      InkWell(
+        onTap: _pickDateOfBirth,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'Date of Birth',
+            suffixIcon: Icon(Icons.calendar_today_outlined, size: 20),
+          ),
+          child: Text(
+            _dateOfBirth == null
+                ? 'Select date'
+                : DateFormat('d MMM yyyy').format(_dateOfBirth!),
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
       TextField(
         controller: _ageController,
         keyboardType: TextInputType.number,
         decoration: const InputDecoration(labelText: 'Age'),
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _addressController,
+        minLines: 1,
+        maxLines: 3,
+        decoration: const InputDecoration(labelText: 'Home Address'),
+      ),
+      const SizedBox(height: 16),
+      const Text(
+        'Insurance',
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _insuranceProviderController,
+        decoration: const InputDecoration(
+          labelText: 'Primary Insurance',
+          hintText: 'e.g. Jubilee, AAR, UAP Old Mutual',
+          helperText: 'Keep this updated to avoid billing issues.',
+        ),
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _insuranceMemberNoController,
+        decoration: const InputDecoration(labelText: 'Member Number'),
       ),
       const SizedBox(height: 16),
     ];

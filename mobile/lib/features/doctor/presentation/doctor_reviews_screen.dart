@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../doctors/data/review.dart';
+import '../../doctors/presentation/review_help_tags.dart';
 import '../../doctors/state/doctor_providers.dart';
 
 final myReviewsProvider = FutureProvider((ref) {
@@ -173,6 +174,10 @@ class _DoctorReviewCard extends ConsumerWidget {
             if (review.comment != null && review.comment!.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(review.comment!),
+            ],
+            if (review.helpedWith.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              ReviewHelpTags(labels: review.helpedWith),
             ],
             if (review.doctorReply != null &&
                 review.doctorReply!.isNotEmpty) ...[

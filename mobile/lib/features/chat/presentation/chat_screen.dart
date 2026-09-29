@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +18,7 @@ import '../../../core/realtime/socket_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/chat_background.dart';
 import '../../../core/widgets/skeleton.dart';
+import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../calls/state/call_controller.dart';
 import '../data/chat_message.dart';
@@ -421,7 +423,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myId = ref.watch(authControllerProvider).value?.id;
+    final me = ref.watch(authControllerProvider).value;
+    final myId = me?.id;
+    final isDoctor = me?.role == 'doctor';
 
     return Scaffold(
       backgroundColor: tealBackground,
@@ -487,6 +491,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             onPressed: () => _placeCall(isVideo: true),
           ),
         ],
+        bottom: isDoctor
+            ? _DoctorPatientStrip(patientId: widget.otherUserId)
+            : null,
       ),
       body: ChatBackground(
         child: Column(
@@ -516,6 +523,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _buildInputRow() {
     final hasText = _textController.text.trim().isNotEmpty;
+    final isDoctor = ref.watch(authControllerProvider).value?.role == 'doctor';
     const iconColor = Color(0xFF3B4254);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -554,7 +562,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     onSubmitted: (_) => _send(),
                     style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Message',
+                      hintText: isDoctor
+                          ? 'Type message or prescription...'
+                          : 'Message',
                       hintMaxLines: 1,
                       hintStyle: TextStyle(
                         color: Colors.grey.shade500,
@@ -1283,6 +1293,67 @@ class _AudioAttachmentState extends State<_AudioAttachment> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown to doctors under the chat app bar: consultation status and a
+/// shortcut to the patient's Full History.
+class _DoctorPatientStrip extends ConsumerWidget
+    implements PreferredSizeWidget {
+  const _DoctorPatientStrip({required this.patientId});
+
+  final String patientId;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(52);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final inConsultation = ref
+            .watch(todaysAssignedAppointmentsProvider)
+            .value
+            ?.any(
+              (a) => a.patientId == patientId && a.status == 'in_progress',
+            ) ??
+        false;
+    return Container(
+      height: preferredSize.height,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+      ),
+      child: Row(
+        children: [
+          OutlinedButton.icon(
+            icon: const Icon(Icons.history, size: 18),
+            label: const Text('Full History'),
+            style: OutlinedButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+            ),
+            onPressed: () => context.push('/patients/$patientId/history'),
+          ),
+          const Spacer(),
+          if (inConsultation)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: seedTeal.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(kPillRadius),
+              ),
+              child: const Text(
+                'In Consultation',
+                style: TextStyle(
+                  color: seedTeal,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
         ],
       ),
     );

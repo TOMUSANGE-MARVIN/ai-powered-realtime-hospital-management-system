@@ -40,6 +40,7 @@ class ReviewRepository {
     required String appointmentId,
     required int rating,
     String? comment,
+    List<String> helpedWith = const [],
   }) async {
     final response = await _dio.post(
       '/api/reviews',
@@ -47,6 +48,7 @@ class ReviewRepository {
         'appointmentId': appointmentId,
         'rating': rating,
         if (comment != null && comment.isNotEmpty) 'comment': comment,
+        if (helpedWith.isNotEmpty) 'helpedWith': helpedWith,
       },
     );
     ApiException.checkStatus(response);

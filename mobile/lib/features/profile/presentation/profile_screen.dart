@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -129,6 +131,8 @@ class ProfileScreen extends ConsumerWidget {
     return [
       _HealthSnapshotSection(),
       const SizedBox(height: 16),
+      _PersonalInfoSection(),
+      const SizedBox(height: 16),
       _ConsultationHistorySection(),
       const SizedBox(height: 16),
       _PrescriptionsSection(),
@@ -138,6 +142,8 @@ class ProfileScreen extends ConsumerWidget {
       _MedicalDocumentsSection(),
       const SizedBox(height: 16),
       _EmergencyContactSection(),
+      const SizedBox(height: 16),
+      const _PreferencesSection(),
     ];
   }
 }
@@ -184,13 +190,44 @@ class _ProfileSkeleton extends StatelessWidget {
   }
 }
 
+/// Short, stable, human-readable member ID derived from the user id.
+String memberIdFor(AppUser user) {
+  final year = (user.createdAt ?? DateTime.now()).year;
+  final tail = user.id.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+  final code = tail.length > 5 ? tail.substring(tail.length - 5) : tail;
+  return 'AM-$year-${code.toUpperCase()}';
+}
+
 class _Header extends StatelessWidget {
   const _Header({required this.user});
 
   final AppUser user;
 
+  void _share() {
+    final lines = [
+      user.name,
+      'Ask Musawo ID: ${memberIdFor(user)}',
+      if (user.bloodgroup != null) 'Blood group: ${user.bloodgroup}',
+      if (user.age != null) 'Age: ${user.age}',
+      if (user.gender != null) 'Gender: ${user.gender}',
+      if (user.hasInsurance)
+        'Insurance: ${user.insuranceProvider}'
+            '${user.insuranceMemberNo?.isNotEmpty == true ? ' (${user.insuranceMemberNo})' : ''}',
+      if (user.emergencyContactName != null)
+        'Emergency contact: ${user.emergencyContactName}'
+            '${user.emergencyContactPhone != null ? ', ${user.emergencyContactPhone}' : ''}',
+    ];
+    SharePlus.instance.share(ShareParams(text: lines.join('\n')));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final idLine = [
+      if (user.role != 'doctor') 'ID: ${memberIdFor(user)}',
+      if (user.createdAt != null)
+        'Joined ${DateFormat('MMM yyyy').format(user.createdAt!)}',
+    ].join('  •  ');
     return Column(
       children: [
         CircleAvatar(
@@ -202,12 +239,31 @@ class _Header extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(user.name, style: Theme.of(context).textTheme.titleLarge),
-        Text(user.email, style: TextStyle(color: Colors.grey.shade600)),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.edit_outlined, size: 16),
-          label: const Text('Edit Profile'),
-          onPressed: () => context.push('/edit-profile'),
+        if (idLine.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(idLine, style: TextStyle(color: muted, fontSize: 13)),
+        ],
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: FilledButton.icon(
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Edit Profile'),
+                onPressed: () => context.push('/edit-profile'),
+              ),
+            ),
+            if (user.role != 'doctor') ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.ios_share, size: 16),
+                  label: const Text('Share Profile'),
+                  onPressed: _share,
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );
@@ -253,6 +309,20 @@ class _HealthSnapshotSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(authControllerProvider);
     final user = userAsync.value;
+    // Primary doctor = the doctor seen most often in completed visits.
+    final history = ref.watch(myConsultationHistoryProvider).value ?? const [];
+    final counts = <String, int>{};
+    for (final a in history) {
+      counts[a.doctorName] = (counts[a.doctorName] ?? 0) + 1;
+    }
+    final primaryName = counts.isEmpty
+        ? null
+        : (counts.entries.toList()..sort((a, b) => b.value - a.value))
+              .first
+              .key;
+    final primary = primaryName == null
+        ? null
+        : history.firstWhere((a) => a.doctorName == primaryName);
     return _SectionCard(
       title: 'Health Snapshot',
       child: Column(
@@ -272,12 +342,30 @@ class _HealthSnapshotSection extends ConsumerWidget {
               Expanded(child: _snapshotItem('Gender', user?.gender ?? '—')),
               Expanded(
                 child: _snapshotItem(
-                  'Marital Status',
-                  user?.maritalStatus ?? '—',
+                  'Insurance',
+                  user?.hasInsurance == true ? user!.insuranceProvider! : 'None',
                 ),
               ),
             ],
           ),
+          if (primary != null) ...[
+            const Divider(height: 24),
+            InkWell(
+              onTap: primary.doctorId == null
+                  ? null
+                  : () => context.push('/doctors/${primary.doctorId}'),
+              child: Row(
+                children: [
+                  const Icon(Icons.medical_services_outlined, color: seedTeal),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _snapshotItem('Primary Doctor', primary.doctorName),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -488,6 +576,116 @@ class _EmergencyContactSection extends ConsumerWidget {
             Text(user.emergencyContactRelation!),
           if (user.emergencyContactPhone != null)
             Text(user.emergencyContactPhone!),
+        ],
+      ),
+    );
+  }
+}
+
+class _PersonalInfoSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    if (user == null) return const SizedBox.shrink();
+    Widget row(String label, String? value) => InkWell(
+      onTap: () => context.push('/edit-profile'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value?.isNotEmpty == true ? value! : 'Not set',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.edit_outlined, size: 18, color: Colors.grey.shade600),
+          ],
+        ),
+      ),
+    );
+    return _SectionCard(
+      title: 'Personal Information',
+      child: Column(
+        children: [
+          row('Email Address', user.email),
+          row('Phone Number', user.phoneNumber),
+          row('Location', user.address),
+        ],
+      ),
+    );
+  }
+}
+
+/// Keys shared with the Settings screen so both toggles stay in sync.
+const pushNotificationsPrefKey = 'notif_push';
+const healthTipsPrefKey = 'notif_health_tips';
+
+class _PreferencesSection extends StatefulWidget {
+  const _PreferencesSection();
+
+  @override
+  State<_PreferencesSection> createState() => _PreferencesSectionState();
+}
+
+class _PreferencesSectionState extends State<_PreferencesSection> {
+  bool? _push;
+  bool? _tips;
+
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((prefs) {
+      if (!mounted) return;
+      setState(() {
+        _push = prefs.getBool(pushNotificationsPrefKey) ?? true;
+        _tips = prefs.getBool(healthTipsPrefKey) ?? false;
+      });
+    });
+  }
+
+  Future<void> _set(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_push == null) return const SizedBox.shrink();
+    return _SectionCard(
+      title: 'Preferences',
+      child: Column(
+        children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            secondary: const Icon(Icons.notifications_outlined),
+            title: const Text('Push Notifications'),
+            value: _push!,
+            onChanged: (value) {
+              setState(() => _push = value);
+              _set(pushNotificationsPrefKey, value);
+            },
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            secondary: const Icon(Icons.monitor_heart_outlined),
+            title: const Text('Health Insights & Tips'),
+            value: _tips!,
+            onChanged: (value) {
+              setState(() => _tips = value);
+              _set(healthTipsPrefKey, value);
+            },
+          ),
         ],
       ),
     );

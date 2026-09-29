@@ -164,6 +164,26 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      phoneNumber: {
+        type: "string",
+        required: false,
+      },
+      dateOfBirth: {
+        type: "string",
+        required: false,
+      },
+      address: {
+        type: "string",
+        required: false,
+      },
+      insuranceProvider: {
+        type: "string",
+        required: false,
+      },
+      insuranceMemberNo: {
+        type: "string",
+        required: false,
+      },
     },
   },
 });

@@ -264,6 +264,14 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                   ),
                 if (appointment.patientId != null)
                   OutlinedButton.icon(
+                    icon: const Icon(Icons.history, size: 16),
+                    onPressed: () => context.push(
+                      '/patients/${appointment.patientId}/history',
+                    ),
+                    label: const Text('Full History'),
+                  ),
+                if (appointment.patientId != null)
+                  OutlinedButton.icon(
                     icon: const Icon(Icons.chat_bubble_outline, size: 16),
                     onPressed: () => context.push(
                       '/chat/${appointment.patientId}',

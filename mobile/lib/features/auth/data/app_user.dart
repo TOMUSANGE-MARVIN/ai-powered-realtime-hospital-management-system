@@ -18,6 +18,12 @@ class AppUser {
     this.emergencyContactName,
     this.emergencyContactPhone,
     this.emergencyContactRelation,
+    this.phoneNumber,
+    this.dateOfBirth,
+    this.address,
+    this.insuranceProvider,
+    this.insuranceMemberNo,
+    this.createdAt,
     this.twoFactorEnabled = false,
   });
 
@@ -40,6 +46,14 @@ class AppUser {
   final String? emergencyContactPhone;
   final String? emergencyContactRelation;
   final bool twoFactorEnabled;
+  final String? phoneNumber;
+  final String? dateOfBirth;
+  final String? address;
+  final String? insuranceProvider;
+  final String? insuranceMemberNo;
+  final DateTime? createdAt;
+
+  bool get hasInsurance => insuranceProvider?.isNotEmpty == true;
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
@@ -62,6 +76,12 @@ class AppUser {
       emergencyContactPhone: json['emergencyContactPhone'] as String?,
       emergencyContactRelation: json['emergencyContactRelation'] as String?,
       twoFactorEnabled: json['twoFactorEnabled'] as bool? ?? false,
+      phoneNumber: json['phoneNumber'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      address: json['address'] as String?,
+      insuranceProvider: json['insuranceProvider'] as String?,
+      insuranceMemberNo: json['insuranceMemberNo'] as String?,
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? ''),
     );
   }
 }

@@ -254,33 +254,18 @@ class _AppointmentCard extends ConsumerWidget {
   }
 
   Future<void> _review(BuildContext context, WidgetRef ref) async {
-    final result = await showDialog<({int rating, String comment})>(
-      context: context,
-      builder: (context) => _ReviewDialog(doctorName: appointment.doctorName),
+    final saved = await context.push<bool>(
+      '/review/${appointment.id}',
+      extra: appointment,
     );
-    if (result == null) return;
-    try {
-      await ref
-          .read(reviewRepositoryProvider)
-          .submit(
-            appointmentId: appointment.id,
-            rating: result.rating,
-            comment: result.comment.isEmpty ? null : result.comment,
-          );
-      ref
-          .read(_reviewedAppointmentsProvider.notifier)
-          .update((ids) => {...ids, appointment.id});
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thanks for your review!')),
-        );
-      }
-    } on ApiException catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
+    if (saved != true) return;
+    ref
+        .read(_reviewedAppointmentsProvider.notifier)
+        .update((ids) => {...ids, appointment.id});
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Thanks for your review!')),
+      );
     }
   }
 
@@ -564,71 +549,6 @@ class _ActionButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ReviewDialog extends StatefulWidget {
-  const _ReviewDialog({required this.doctorName});
-
-  final String doctorName;
-
-  @override
-  State<_ReviewDialog> createState() => _ReviewDialogState();
-}
-
-class _ReviewDialogState extends State<_ReviewDialog> {
-  final _commentController = TextEditingController();
-  int _rating = 0;
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Rate ${widget.doctorName}'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (i) {
-              return IconButton(
-                icon: Icon(
-                  i < _rating ? Icons.star : Icons.star_border,
-                  color: Colors.amber,
-                  size: 32,
-                ),
-                onPressed: () => setState(() => _rating = i + 1),
-              );
-            }),
-          ),
-          TextField(
-            controller: _commentController,
-            maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Comment (optional)'),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: _rating == 0
-              ? null
-              : () => Navigator.of(context).pop((
-                  rating: _rating,
-                  comment: _commentController.text.trim(),
-                )),
-          child: const Text('Submit'),
-        ),
-      ],
     );
   }
 }

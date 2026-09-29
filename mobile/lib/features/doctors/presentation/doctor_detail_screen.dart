@@ -12,6 +12,7 @@ import '../../chat/data/chat_args.dart';
 import '../data/doctor.dart';
 import '../data/review.dart';
 import '../state/doctor_providers.dart';
+import 'review_help_tags.dart';
 import 'doctor_card.dart';
 
 const _pageBg = Color(0xFFF1F7F7);
@@ -1085,6 +1086,10 @@ class _ReviewRow extends StatelessWidget {
                         height: 1.35,
                       ),
                     ),
+                  ],
+                  if (!compact && review.helpedWith.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    ReviewHelpTags(labels: review.helpedWith),
                   ],
                   if (!compact && hasReply) ...[
                     const SizedBox(height: 8),

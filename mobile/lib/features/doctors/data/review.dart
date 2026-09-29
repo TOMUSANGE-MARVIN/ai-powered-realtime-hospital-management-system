@@ -1,3 +1,11 @@
+/// Tags for the rating screen's "What did the doctor help you?" checklist,
+/// keyed by the value stored in `Review.helpedWith`.
+const reviewHelpTags = {
+  'online_examination': 'Online examination',
+  'consultation': 'Consultation',
+  'medicine_instruction': 'Medicine instruction',
+};
+
 class Review {
   Review({
     required this.id,
@@ -7,6 +15,7 @@ class Review {
     required this.createdAt,
     this.doctorReply,
     this.doctorRepliedAt,
+    this.helpedWith = const [],
   });
 
   final String id;
@@ -16,6 +25,9 @@ class Review {
   final DateTime createdAt;
   final String? doctorReply;
   final DateTime? doctorRepliedAt;
+
+  /// Labels of the checklist items the patient ticked.
+  final List<String> helpedWith;
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
@@ -30,6 +42,10 @@ class Review {
       doctorRepliedAt: json['doctorRepliedAt'] != null
           ? DateTime.tryParse(json['doctorRepliedAt'] as String)
           : null,
+      helpedWith: [
+        for (final tag in (json['helpedWith'] as String? ?? '').split(','))
+          if (reviewHelpTags[tag.trim()] != null) reviewHelpTags[tag.trim()]!,
+      ],
     );
   }
 }

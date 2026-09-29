@@ -181,6 +181,11 @@ export const updateMe = async (req: Request, res: Response) => {
       emergencyContactName,
       emergencyContactPhone,
       emergencyContactRelation,
+      phoneNumber,
+      dateOfBirth,
+      address,
+      insuranceProvider,
+      insuranceMemberNo,
     } = req.body;
 
     const updatePayload: Record<string, unknown> = {
@@ -206,6 +211,11 @@ export const updateMe = async (req: Request, res: Response) => {
       emergencyContactName,
       emergencyContactPhone,
       emergencyContactRelation,
+      phoneNumber,
+      dateOfBirth,
+      address,
+      insuranceProvider,
+      insuranceMemberNo,
     };
     Object.keys(updatePayload).forEach(
       (key) =>

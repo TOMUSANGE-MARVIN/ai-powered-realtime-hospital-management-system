@@ -32,6 +32,12 @@ import '../../features/payments/presentation/payment_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/settings_screen.dart';
+import '../../features/profile/presentation/two_factor_setup_screen.dart';
+import '../../features/profile/presentation/health_profile_screen.dart';
+import '../../features/profile/presentation/privacy_settings_screen.dart';
+import '../../features/doctor/presentation/patient_history_screen.dart';
+import '../../features/appointments/presentation/rate_doctor_screen.dart';
+import '../../features/appointments/data/appointment.dart';
 
 /// Bridges Riverpod's [authControllerProvider] to go_router's
 /// [Listenable]-based `refreshListenable`, so navigation reacts immediately
@@ -141,6 +147,28 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/calls', builder: (context, state) => const CallsScreen()),
       GoRoute(path: '/edit-profile', builder: (context, state) => const EditProfileScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+      GoRoute(
+        path: '/review/:appointmentId',
+        builder: (context, state) =>
+            RateDoctorScreen(appointment: state.extra! as Appointment),
+      ),
+      GoRoute(
+        path: '/patients/:id/history',
+        builder: (context, state) =>
+            PatientHistoryScreen(patientId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/settings/health-profile',
+        builder: (context, state) => const HealthProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings/privacy',
+        builder: (context, state) => const PrivacySettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/two-factor',
+        builder: (context, state) => const TwoFactorSetupScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => HomeShell(navigationShell: navigationShell),
         branches: [

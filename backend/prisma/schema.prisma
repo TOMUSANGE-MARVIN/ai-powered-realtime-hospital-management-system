@@ -53,6 +53,12 @@ model User {
   emergencyContactPhone    String?   @db.Text
   emergencyContactRelation String?   @db.Text
   twoFactorEnabled         Boolean?  @default(false)
+  phoneNumber              String?   @db.Text
+  // ISO date (YYYY-MM-DD)
+  dateOfBirth              String?   @db.Text
+  address                  String?   @db.Text
+  insuranceProvider        String?   @db.Text
+  insuranceMemberNo        String?   @db.Text
   sessions                 Session[]
   accounts                 Account[]
   twoFactors               TwoFactor[]

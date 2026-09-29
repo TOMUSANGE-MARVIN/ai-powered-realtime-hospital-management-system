@@ -24,7 +24,7 @@ import { format } from "date-fns"; // Recommended for date formatting
 import GlobalSearch from "@/components/global/GlobalSearch";
 
 export function meta() {
-  return [{ title: "System Activities" }];
+  return [{ title: "Audit Logs | Ask Musawo" }];
 }
 const ActivitiesLog = () => {
   const [page, setPage] = useState(1);
@@ -64,7 +64,7 @@ const ActivitiesLog = () => {
     <Card className="card shadow-sm border-none">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="font-bold text-xl">System Activities</CardTitle>
+          <CardTitle className="font-bold text-xl">Audit Logs</CardTitle>
           <CardDescription>
             A history of all actions performed by hospital staff.
           </CardDescription>

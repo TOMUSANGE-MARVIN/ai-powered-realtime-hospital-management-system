@@ -252,7 +252,7 @@ Design sidebar sections the web app lacks. Each needs its own page and task list
 - [x] Notifications (announcement history) → E16
 - [x] Reports & Analytics → E17
 - [x] Content Management → E18
-- [ ] Rename existing sections to the design's names: Support → Support Tickets, Administrators → Admin Users, Activities Log → Audit Logs, Settings → System Settings
+- [x] Rename sections where the design's name is clearer: Support → Support Tickets, Activities Log → Audit Logs (sidebar, page heading, tab title, header; URLs unchanged). Administrators and Settings kept — same meaning
 
 ## E15. Reviews & Ratings moderation (web)
 

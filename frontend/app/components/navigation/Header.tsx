@@ -7,6 +7,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import Notifications from "./Notifications";
 
+// Pages whose display name differs from their URL (URLs kept for bookmarks).
+const PAGE_TITLES: Record<string, string> = {
+  "/support": "Support Tickets",
+  "/activities-log": "Audit Logs",
+};
+
 const Header = () => {
   const { pathname } = useLocation();
   const { data: session } = authClient.useSession();
@@ -20,7 +26,7 @@ const Header = () => {
           <h1 className="capitalize font-bold text-lg">
             {pathname.split("/").includes("profile")
               ? "Profile"
-              : pathname.split("/").pop()}
+              : (PAGE_TITLES[pathname] ?? pathname.split("/").pop())}
           </h1>
           <p className="text-sm text-muted-foreground">
             Welcome back, {session?.user.role === "doctor" ? "Dr. " : ""}

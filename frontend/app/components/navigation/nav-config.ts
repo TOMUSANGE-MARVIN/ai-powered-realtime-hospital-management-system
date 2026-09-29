@@ -39,7 +39,7 @@ export const navConfig: {
       allowedRoles: ["admin", "doctor", "nurse", "pharmacist", "lab_tech"],
       items: [
         { title: "Overview", url: "/dashboard" },
-        { title: "Activities Log", url: "/activities-log" },
+        { title: "Audit Logs", url: "/activities-log" },
       ],
     },
     {
@@ -155,7 +155,7 @@ export const navConfig: {
   ],
   navSecondary: [
     {
-      title: "Support",
+      title: "Support Tickets",
       url: "/support",
       icon: LifeBuoy,
       allowedRoles: ["admin", "doctor", "nurse", "pharmacist", "lab_tech"],

@@ -37,7 +37,7 @@ import Loader from "@/components/global/Loader";
 import { LifeBuoy, Plus } from "lucide-react";
 
 export function meta() {
-  return [{ title: "Support | Ask Musawo" }];
+  return [{ title: "Support Tickets | Ask Musawo" }];
 }
 
 function statusBadge(status: string) {
@@ -162,7 +162,7 @@ export default function Support() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">Support</h1>
+          <h1 className="text-3xl font-black tracking-tight">Support Tickets</h1>
           <p className="text-slate-500 font-medium">
             {isAdmin
               ? "All support requests raised by staff and patients."

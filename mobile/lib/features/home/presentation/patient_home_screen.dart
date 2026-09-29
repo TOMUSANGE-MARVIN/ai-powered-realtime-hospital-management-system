@@ -395,7 +395,6 @@ class _Promo {
     required this.tag,
     required this.title,
     required this.subtitle,
-    required this.features,
     required this.cta,
     required this.route,
   });
@@ -405,7 +404,6 @@ class _Promo {
   final String tag;
   final String title;
   final String subtitle;
-  final List<(IconData, String, String)> features;
   final String cta;
   final String route;
 }
@@ -417,11 +415,6 @@ const _promos = [
     tag: 'Ask Musawo',
     title: 'Ask Musawo',
     subtitle: 'Healthcare, simplified',
-    features: [
-      (Icons.forum_outlined, 'Consult doctors', 'Anytime, anywhere'),
-      (Icons.calendar_month_outlined, 'Book appointments', 'Quick and easy'),
-      (Icons.health_and_safety_outlined, 'Manage your health', 'All in one place'),
-    ],
     cta: 'Explore now',
     route: '/search',
   ),
@@ -431,11 +424,6 @@ const _promos = [
     tag: 'Verified doctors',
     title: 'See a doctor today',
     subtitle: 'Licensed specialists near you',
-    features: [
-      (Icons.videocam_outlined, 'Video & voice calls', 'From your phone'),
-      (Icons.local_hospital_outlined, 'In-person visits', 'At trusted hospitals'),
-      (Icons.phone_android_outlined, 'Mobile money', 'MTN, Airtel or card'),
-    ],
     cta: 'Book a visit',
     route: '/search',
   ),
@@ -445,11 +433,6 @@ const _promos = [
     tag: 'AI assistant',
     title: 'Not sure who to see?',
     subtitle: 'Describe how you feel',
-    features: [
-      (Icons.edit_note_outlined, 'Describe symptoms', 'In your own words'),
-      (Icons.bolt_outlined, 'Get guidance', 'In seconds'),
-      (Icons.person_search_outlined, 'Find a specialist', 'Matched to you'),
-    ],
     cta: 'Ask AI',
     route: '/ai-search',
   ),
@@ -508,7 +491,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
           builder: (context, constraints) {
             final cardWidth = constraints.maxWidth - 40;
             return SizedBox(
-              height: cardWidth * 1.1,
+              height: cardWidth * 0.64,
               child: NotificationListener<ScrollStartNotification>(
                 // A manual swipe restarts the countdown so autoplay doesn't
                 // yank the page away right after the patient chose it.
@@ -566,9 +549,13 @@ class _PromoSlide extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           const ColoredBox(color: Color(0xFF0E6E6F)),
-          Image.asset(promo.image, fit: BoxFit.cover),
+          Image.asset(
+            promo.image,
+            fit: BoxFit.cover,
+            alignment: const Alignment(0, -0.35),
+          ),
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             child: Align(
               alignment: Alignment.centerLeft,
               // Scales the text block down on narrow phones instead of
@@ -604,7 +591,7 @@ class _PromoSlide extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 12),
                       Text(
                         promo.title,
                         style: const TextStyle(
@@ -624,48 +611,7 @@ class _PromoSlide extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      for (final (icon, title, sub) in promo.features)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.16),
-                                ),
-                                child: Icon(icon, size: 19, color: Colors.white),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      title,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    Text(
-                                      sub,
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.8),
-                                        fontSize: 11.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
                       SizedBox(
                         height: 44,
                         child: FilledButton(

@@ -192,7 +192,11 @@ class _PatientHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              UserAvatar(url: history.image, radius: 28),
+              UserAvatar(
+                url: history.image,
+                gender: history.gender,
+                radius: 28,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

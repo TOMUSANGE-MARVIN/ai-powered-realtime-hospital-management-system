@@ -94,6 +94,7 @@ class InCallScreen extends ConsumerWidget {
                     UserAvatar(
                       url: peerImage,
                       kind: AvatarKind.peer,
+                      gender: state.peerGender,
                       radius: 56,
                     ),
                     const SizedBox(height: 20),

@@ -31,11 +31,13 @@ class ChatScreen extends ConsumerStatefulWidget {
     required this.otherUserId,
     required this.otherUserName,
     this.otherUserImage,
+    this.otherUserGender,
   });
 
   final String otherUserId;
   final String otherUserName;
   final String? otherUserImage;
+  final String? otherUserGender;
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -418,6 +420,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           widget.otherUserName,
           isVideo: isVideo,
           peerImage: widget.otherUserImage,
+          peerGender: widget.otherUserGender,
         );
   }
 
@@ -439,6 +442,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             UserAvatar(
               url: widget.otherUserImage,
               kind: AvatarKind.peer,
+              gender: widget.otherUserGender,
               radius: 18,
             ),
             const SizedBox(width: 10),

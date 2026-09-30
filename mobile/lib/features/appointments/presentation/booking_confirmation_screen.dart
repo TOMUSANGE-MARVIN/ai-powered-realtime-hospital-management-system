@@ -185,6 +185,7 @@ class _BookingConfirmationScreenState
                       child: DoctorImage(
                         url: draft.doctor.image,
                         name: draft.doctor.name,
+                        gender: draft.doctor.gender,
                       ),
                     ),
                   ),

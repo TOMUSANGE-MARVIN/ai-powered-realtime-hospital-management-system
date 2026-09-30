@@ -7,6 +7,7 @@ const DOCTOR_SELECT = {
   name: true,
   email: true,
   image: true,
+  gender: true,
   specialization: true,
   department: true,
   bio: true,

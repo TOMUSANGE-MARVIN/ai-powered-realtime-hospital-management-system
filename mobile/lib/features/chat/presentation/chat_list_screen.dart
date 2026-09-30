@@ -370,6 +370,7 @@ class _RecentContactsRow extends StatelessWidget {
                   extra: ChatArgs(
                     name: c.otherUserName,
                     image: c.otherUserImage,
+                    gender: c.otherUserGender,
                   ),
                 ),
                 child: Column(
@@ -378,7 +379,8 @@ class _RecentContactsRow extends StatelessWidget {
                       children: [
                         UserAvatar(
                           url: c.otherUserImage,
-                          kind: AvatarKind.peer,
+                          kind: avatarKindForRole(c.otherUserRole),
+                          gender: c.otherUserGender,
                           radius: 28,
                         ),
                         Positioned(
@@ -465,6 +467,7 @@ class _ConversationTile extends StatelessWidget {
         extra: ChatArgs(
           name: conversation.otherUserName,
           image: conversation.otherUserImage,
+          gender: conversation.otherUserGender,
         ),
       ),
       onLongPress: onToggleFavorite,
@@ -482,7 +485,8 @@ class _ConversationTile extends StatelessWidget {
               children: [
                 UserAvatar(
                   url: conversation.otherUserImage,
-                  kind: AvatarKind.peer,
+                  kind: avatarKindForRole(conversation.otherUserRole),
+                  gender: conversation.otherUserGender,
                   radius: 26,
                 ),
                 Positioned(

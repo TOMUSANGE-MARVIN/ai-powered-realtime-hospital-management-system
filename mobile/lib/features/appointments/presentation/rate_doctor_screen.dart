@@ -88,6 +88,7 @@ class _RateDoctorScreenState extends ConsumerState<RateDoctorScreen> {
                 child: DoctorImage(
                   url: doctor?.image,
                   name: appointment.doctorName,
+                  gender: doctor?.gender,
                 ),
               ),
             ),

@@ -25,6 +25,7 @@ class IncomingCallScreen extends ConsumerWidget {
               UserAvatar(
                 url: call.peerImage,
                 kind: AvatarKind.peer,
+                gender: call.peerGender,
                 radius: 56,
               ),
               const SizedBox(height: 20),

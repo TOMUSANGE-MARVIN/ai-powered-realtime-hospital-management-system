@@ -264,7 +264,11 @@ class _DoctorTile extends ConsumerWidget {
                     child: SizedBox(
                       width: 48,
                       height: 48,
-                      child: DoctorImage(url: doctor.image, name: doctor.name),
+                      child: DoctorImage(
+                        url: doctor.image,
+                        name: doctor.name,
+                        gender: doctor.gender,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),

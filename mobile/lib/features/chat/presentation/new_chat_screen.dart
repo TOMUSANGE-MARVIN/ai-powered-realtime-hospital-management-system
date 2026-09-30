@@ -89,6 +89,7 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
                     leading: UserAvatar(
                       url: doctor.image,
                       kind: AvatarKind.doctor,
+                      gender: doctor.gender,
                     ),
                     title: Text(doctor.name),
                     subtitle: Text(
@@ -96,7 +97,11 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
                     ),
                     onTap: () => context.pushReplacement(
                       '/chat/${doctor.id}',
-                      extra: ChatArgs(name: doctor.name, image: doctor.image),
+                      extra: ChatArgs(
+                        name: doctor.name,
+                        image: doctor.image,
+                        gender: doctor.gender,
+                      ),
                     ),
                   );
                 },

@@ -118,6 +118,7 @@ class CallController extends Notifier<CallState> {
     String peerName, {
     bool isVideo = false,
     String? peerImage,
+    String? peerGender,
   }) async {
     if (state is! CallIdle) return;
     if (!await _checkMicPermission()) return;
@@ -133,6 +134,7 @@ class CallController extends Notifier<CallState> {
       peerName: peerName,
       isVideo: isVideo,
       peerImage: peerImage,
+      peerGender: peerGender,
     );
     _ringbackPlayer.play(AssetSource('sounds/ringback.m4a'));
 
@@ -150,6 +152,7 @@ class CallController extends Notifier<CallState> {
       'callerId': me.id,
       'callerName': me.name,
       'callerImage': me.image,
+      'callerGender': me.gender,
       'type': isVideo ? 'video' : 'voice',
       'sdp': offer.toMap(),
     });
@@ -177,6 +180,7 @@ class CallController extends Notifier<CallState> {
       isVideo: data['type'] == 'video',
       offerSdp: Map<String, dynamic>.from(sdp),
       peerImage: data['callerImage'] as String?,
+      peerGender: data['callerGender'] as String?,
     );
     _ringtonePlayer.play(AssetSource('sounds/ringtone.m4a'));
   }
@@ -200,6 +204,7 @@ class CallController extends Notifier<CallState> {
       peerName: current.peerName,
       isVideo: current.isVideo,
       peerImage: current.peerImage,
+      peerGender: current.peerGender,
     );
 
     final rtc = WebRtcService();
@@ -245,6 +250,7 @@ class CallController extends Notifier<CallState> {
       peerName: current.peerName,
       isVideo: current.isVideo,
       peerImage: current.peerImage,
+      peerGender: current.peerGender,
     );
 
     final sdp = data['sdp'] as Map;
@@ -266,6 +272,7 @@ class CallController extends Notifier<CallState> {
           isVideo: current.isVideo,
           connectedAt: _connectedAt!,
           peerImage: current.peerImage,
+          peerGender: current.peerGender,
         );
       }
     } else if (connectionState ==

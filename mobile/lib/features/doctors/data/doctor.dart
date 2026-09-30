@@ -56,7 +56,11 @@ class Doctor {
     this.availableToday = false,
     this.timeOff = const [],
     this.patientCount,
+    this.gender,
   });
+
+  /// Profile gender (Male / Female / Other), picks the default portrait.
+  final String? gender;
 
   /// Upcoming time off (only included on the doctor detail endpoint).
   final List<TimeOffRange> timeOff;
@@ -112,6 +116,7 @@ class Doctor {
       availabilityHours: json['availabilityHours'] as String?,
       availableToday: json['availableToday'] as bool? ?? false,
       patientCount: (json['patientCount'] as num?)?.toInt(),
+      gender: json['gender'] as String?,
       timeOff: [
         for (final t in json['timeOff'] as List? ?? const [])
           TimeOffRange.fromJson(t as Map<String, dynamic>),

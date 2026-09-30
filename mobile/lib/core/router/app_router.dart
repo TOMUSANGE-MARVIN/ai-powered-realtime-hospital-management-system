@@ -171,6 +171,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             otherUserId: state.pathParameters['otherUserId']!,
             otherUserName: args?.name ?? 'Chat',
             otherUserImage: args?.image,
+            otherUserGender: args?.gender,
           );
         },
       ),

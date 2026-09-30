@@ -233,7 +233,11 @@ class _HeaderInfo extends StatelessWidget {
               child: SizedBox(
                 width: 118,
                 height: 150,
-                child: DoctorImage(url: doctor.image, name: doctor.name),
+                child: DoctorImage(
+                  url: doctor.image,
+                  name: doctor.name,
+                  gender: doctor.gender,
+                ),
               ),
             ),
             if (doctor.availableToday)
@@ -506,7 +510,11 @@ class _ActionButtons extends ConsumerWidget {
                 label: 'Send Message',
                 onPressed: () => context.push(
                   '/chat/${doctor.id}',
-                  extra: ChatArgs(name: doctor.name, image: doctor.image),
+                  extra: ChatArgs(
+                    name: doctor.name,
+                    image: doctor.image,
+                    gender: doctor.gender,
+                  ),
                 ),
               ),
             ),

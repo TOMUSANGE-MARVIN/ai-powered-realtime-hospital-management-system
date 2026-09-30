@@ -353,7 +353,7 @@ class _DoctorHeader extends StatelessWidget {
     return SoftCard(
       child: Row(
         children: [
-          UserAvatar(url: user.image, kind: AvatarKind.doctor, radius: 30),
+          UserAvatar(url: user.image, kind: AvatarKind.self, radius: 30),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

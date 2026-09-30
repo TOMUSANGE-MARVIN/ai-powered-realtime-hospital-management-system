@@ -259,7 +259,11 @@ class _DoctorSummary extends StatelessWidget {
             width: 52,
             height: 52,
             child: ClipOval(
-              child: DoctorImage(url: doctor.image, name: doctor.name),
+              child: DoctorImage(
+                url: doctor.image,
+                name: doctor.name,
+                gender: doctor.gender,
+              ),
             ),
           ),
           const SizedBox(width: 12),

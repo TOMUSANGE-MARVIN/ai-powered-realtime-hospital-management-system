@@ -30,7 +30,7 @@ export const getConversations = async (req: Request, res: Response) => {
     const [users, unreadGroups] = await Promise.all([
       prisma.user.findMany({
         where: { id: { in: counterpartIds } },
-        select: { id: true, name: true, image: true, role: true },
+        select: { id: true, name: true, image: true, role: true, gender: true },
       }),
       prisma.message.groupBy({
         by: ["senderId"],
@@ -51,6 +51,7 @@ export const getConversations = async (req: Request, res: Response) => {
           otherUserName: user?.name ?? "Unknown",
           otherUserImage: user?.image ?? null,
           otherUserRole: user?.role ?? null,
+          otherUserGender: user?.gender ?? null,
           otherUserOnline: isUserOnline(id),
           lastMessageText: last.text,
           lastMessageAttachmentType: last.attachmentType,

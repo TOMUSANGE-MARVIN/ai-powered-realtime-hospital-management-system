@@ -566,6 +566,7 @@ class _AppointmentCard extends ConsumerWidget {
                   child: DoctorImage(
                     url: doctor?.image,
                     name: appointment.doctorName,
+                    gender: doctor?.gender,
                   ),
                 ),
               ),

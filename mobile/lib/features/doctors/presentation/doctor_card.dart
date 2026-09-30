@@ -34,10 +34,16 @@ IconData iconForSpecialization(String? specialization, String? department) {
 /// Renders a doctor's uploaded profile photo, or the app's default doctor
 /// illustration when no image has been set (or it fails to load).
 class DoctorImage extends StatelessWidget {
-  const DoctorImage({super.key, required this.url, required this.name});
+  const DoctorImage({
+    super.key,
+    required this.url,
+    required this.name,
+    this.gender,
+  });
 
   final String? url;
   final String name;
+  final String? gender;
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +69,9 @@ class DoctorImage extends StatelessWidget {
   }
 
   Widget _fallback() {
-    return Image.asset(defaultDoctorAvatar, fit: BoxFit.cover);
+    return Image.asset(
+      defaultAvatarAsset(doctor: true, gender: gender),
+      fit: BoxFit.cover,
+    );
   }
 }

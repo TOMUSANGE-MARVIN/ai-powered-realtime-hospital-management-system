@@ -23,6 +23,7 @@ class CallOutgoingRinging extends CallState {
     required this.peerName,
     required this.isVideo,
     this.peerImage,
+    this.peerGender,
     this.calleeOnline,
   });
 
@@ -31,6 +32,7 @@ class CallOutgoingRinging extends CallState {
   final String peerName;
   final bool isVideo;
   final String? peerImage;
+  final String? peerGender;
 
   /// Null until the server's `call:status` reply arrives — used to show
   /// "Calling…" (offline/unknown) vs "Ringing…" (reaching a live device).
@@ -43,6 +45,7 @@ class CallOutgoingRinging extends CallState {
       peerName: peerName,
       isVideo: isVideo,
       peerImage: peerImage,
+      peerGender: peerGender,
       calleeOnline: calleeOnline ?? this.calleeOnline,
     );
   }
@@ -56,6 +59,7 @@ class CallIncomingRinging extends CallState {
     required this.isVideo,
     required this.offerSdp,
     this.peerImage,
+    this.peerGender,
   });
 
   final String callId;
@@ -64,6 +68,7 @@ class CallIncomingRinging extends CallState {
   final bool isVideo;
   final Map<String, dynamic> offerSdp;
   final String? peerImage;
+  final String? peerGender;
 }
 
 class CallConnecting extends CallState {
@@ -73,6 +78,7 @@ class CallConnecting extends CallState {
     required this.peerName,
     required this.isVideo,
     this.peerImage,
+    this.peerGender,
   });
 
   final String callId;
@@ -80,6 +86,7 @@ class CallConnecting extends CallState {
   final String peerName;
   final bool isVideo;
   final String? peerImage;
+  final String? peerGender;
 }
 
 class CallInProgress extends CallState {
@@ -90,6 +97,7 @@ class CallInProgress extends CallState {
     required this.isVideo,
     required this.connectedAt,
     this.peerImage,
+    this.peerGender,
     this.muted = false,
     this.speakerOn = false,
   });
@@ -100,6 +108,7 @@ class CallInProgress extends CallState {
   final bool isVideo;
   final DateTime connectedAt;
   final String? peerImage;
+  final String? peerGender;
   final bool muted;
   final bool speakerOn;
 
@@ -111,6 +120,7 @@ class CallInProgress extends CallState {
       isVideo: isVideo,
       connectedAt: connectedAt,
       peerImage: peerImage,
+      peerGender: peerGender,
       muted: muted ?? this.muted,
       speakerOn: speakerOn ?? this.speakerOn,
     );
@@ -122,4 +132,15 @@ class CallEnded extends CallState {
 
   final CallEndReason reason;
   final Duration? duration;
+}
+
+/// The other person's profile gender on any active call state.
+extension CallPeerGender on CallState {
+  String? get peerGender => switch (this) {
+    CallOutgoingRinging(:final peerGender) => peerGender,
+    CallIncomingRinging(:final peerGender) => peerGender,
+    CallConnecting(:final peerGender) => peerGender,
+    CallInProgress(:final peerGender) => peerGender,
+    _ => null,
+  };
 }

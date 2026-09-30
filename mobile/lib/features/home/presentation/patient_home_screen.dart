@@ -817,6 +817,7 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
                     child: DoctorImage(
                       url: doctor?.image,
                       name: appointment.doctorName,
+                      gender: doctor?.gender,
                     ),
                   ),
                 ),
@@ -1303,7 +1304,11 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    DoctorImage(url: doctor.image, name: doctor.name),
+                    DoctorImage(
+                      url: doctor.image,
+                      name: doctor.name,
+                      gender: doctor.gender,
+                    ),
                     Positioned(
                       top: 10,
                       right: 10,

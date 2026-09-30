@@ -253,7 +253,11 @@ class _DoctorResultTile extends ConsumerWidget {
           prefetchDoctorDetail(ref, doctor.id);
           context.push('/doctors/${doctor.id}');
         },
-        leading: UserAvatar(url: doctor.image, kind: AvatarKind.doctor),
+        leading: UserAvatar(
+          url: doctor.image,
+          kind: AvatarKind.doctor,
+          gender: doctor.gender,
+        ),
         title: Text(
           doctor.name,
           style: const TextStyle(fontWeight: FontWeight.w600),

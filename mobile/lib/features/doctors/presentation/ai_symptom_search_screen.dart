@@ -10,6 +10,7 @@ import '../../../core/widgets/soft_card.dart';
 import '../data/ai_search_result.dart';
 import '../data/doctor.dart';
 import '../state/doctor_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 /// Free-text "describe your symptoms" search — Gemini maps the description
 /// to relevant specialties, and we list real doctors in those specialties.
@@ -252,12 +253,7 @@ class _DoctorResultTile extends ConsumerWidget {
           prefetchDoctorDetail(ref, doctor.id);
           context.push('/doctors/${doctor.id}');
         },
-        leading: CircleAvatar(
-          backgroundImage: doctor.image != null
-              ? NetworkImage(doctor.image!)
-              : null,
-          child: doctor.image == null ? const Icon(Icons.person) : null,
-        ),
+        leading: UserAvatar(url: doctor.image, kind: AvatarKind.doctor),
         title: Text(
           doctor.name,
           style: const TextStyle(fontWeight: FontWeight.w600),

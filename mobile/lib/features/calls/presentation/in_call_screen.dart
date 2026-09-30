@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../state/call_controller.dart';
 import '../state/call_state.dart';
 import 'duration_ticker.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 /// Shown for [CallOutgoingRinging], [CallConnecting], and [CallInProgress]
 /// — an outgoing call in flight, being connected, or already live. Pushed
@@ -90,23 +91,10 @@ class InCallScreen extends ConsumerWidget {
                 children: [
                   if (!isVideo || remoteRenderer == null) ...[
                     const Spacer(),
-                    CircleAvatar(
+                    UserAvatar(
+                      url: peerImage,
+                      kind: AvatarKind.peer,
                       radius: 56,
-                      backgroundColor: Colors.white24,
-                      backgroundImage: peerImage != null
-                          ? NetworkImage(peerImage)
-                          : null,
-                      child: peerImage == null
-                          ? Text(
-                              peerName.isNotEmpty
-                                  ? peerName[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                fontSize: 40,
-                                color: Colors.white,
-                              ),
-                            )
-                          : null,
                     ),
                     const SizedBox(height: 20),
                   ] else

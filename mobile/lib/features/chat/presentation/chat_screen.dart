@@ -23,6 +23,7 @@ import '../../auth/state/auth_controller.dart';
 import '../../calls/state/call_controller.dart';
 import '../data/chat_message.dart';
 import '../state/chat_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({
@@ -435,15 +436,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         titleSpacing: 0,
         title: Row(
           children: [
-            CircleAvatar(
+            UserAvatar(
+              url: widget.otherUserImage,
+              kind: AvatarKind.peer,
               radius: 18,
-              backgroundColor: const Color(0xFFE3F2F1),
-              backgroundImage: widget.otherUserImage != null
-                  ? NetworkImage(widget.otherUserImage!)
-                  : null,
-              child: widget.otherUserImage == null
-                  ? const Icon(Icons.person, size: 18)
-                  : null,
             ),
             const SizedBox(width: 10),
             Expanded(

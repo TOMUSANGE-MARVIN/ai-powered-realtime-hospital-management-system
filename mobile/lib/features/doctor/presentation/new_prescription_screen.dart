@@ -17,6 +17,7 @@ import '../../../core/widgets/soft_card.dart';
 import '../../auth/state/auth_controller.dart';
 import '../data/prescription_item_input.dart';
 import '../state/doctor_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 final _dateFormat = DateFormat('MMM d, yyyy');
 
@@ -379,15 +380,7 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: seedTeal.withValues(alpha: 0.12),
-                  child: const Icon(
-                    Icons.person_outline,
-                    color: seedTeal,
-                    size: 20,
-                  ),
-                ),
+                const UserAvatar(url: null, radius: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(

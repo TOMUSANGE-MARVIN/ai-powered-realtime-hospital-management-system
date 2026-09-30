@@ -12,6 +12,7 @@ import '../../appointments/data/booking_draft.dart'
     show parseAvailableWeekdays, parseSlotMinutes;
 import '../../doctors/state/doctor_providers.dart';
 import '../state/profile_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 const _genderOptions = ['Male', 'Female', 'Other'];
 const _bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -310,16 +311,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           Center(
             child: Stack(
               children: [
-                CircleAvatar(
+                UserAvatar(
+                  url: _imageUrl,
+                  kind: AvatarKind.self,
                   radius: 48,
-                  backgroundImage: _imageUrl != null
-                      ? NetworkImage(_imageUrl!)
-                      : null,
                   child: _uploadingPhoto
                       ? const CircularProgressIndicator()
-                      : (_imageUrl == null
-                            ? const Icon(Icons.person, size: 44)
-                            : null),
+                      : null,
                 ),
                 Positioned(
                   bottom: 0,

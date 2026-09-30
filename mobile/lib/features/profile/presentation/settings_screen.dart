@@ -14,6 +14,7 @@ import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
 import 'profile_screen.dart' show pushNotificationsPrefKey;
+import '../../../core/widgets/user_avatar.dart';
 
 const _emailPrefKey = 'notif_email';
 const _smsPrefKey = 'notif_sms';
@@ -312,16 +313,7 @@ class _ProfileCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: seedTeal.withValues(alpha: 0.12),
-                backgroundImage: user.image != null
-                    ? NetworkImage(user.image!)
-                    : null,
-                child: user.image == null
-                    ? const Icon(Icons.person, color: seedTeal)
-                    : null,
-              ),
+              UserAvatar(url: user.image, kind: AvatarKind.self, radius: 30),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(

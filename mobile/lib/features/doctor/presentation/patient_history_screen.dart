@@ -12,6 +12,7 @@ import '../../labs/presentation/order_lab_test_sheet.dart';
 import '../../profile/data/medical_document.dart';
 import '../data/patient_history.dart';
 import '../state/doctor_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 final _dateFormat = DateFormat('d MMM yyyy');
 
@@ -191,16 +192,7 @@ class _PatientHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: seedTeal.withValues(alpha: 0.12),
-                backgroundImage: history.image != null
-                    ? NetworkImage(history.image!)
-                    : null,
-                child: history.image == null
-                    ? const Icon(Icons.person, color: seedTeal)
-                    : null,
-              ),
+              UserAvatar(url: history.image, radius: 28),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

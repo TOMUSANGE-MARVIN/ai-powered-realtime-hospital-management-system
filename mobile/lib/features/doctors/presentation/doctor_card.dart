@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 /// Maps a doctor's specialization/department text to a representative icon
 /// for the small badge on their card. Best-effort keyword match against real
@@ -30,25 +31,13 @@ IconData iconForSpecialization(String? specialization, String? department) {
   return Icons.local_hospital_rounded;
 }
 
-/// Renders a doctor's uploaded profile photo, or a neutral initials avatar
-/// when no image has been set (or it fails to load) — never a stock photo.
+/// Renders a doctor's uploaded profile photo, or the app's default doctor
+/// illustration when no image has been set (or it fails to load).
 class DoctorImage extends StatelessWidget {
   const DoctorImage({super.key, required this.url, required this.name});
 
   final String? url;
   final String name;
-
-  String get _initials {
-    final parts = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
-    if (parts.isEmpty) return '?';
-    final first = parts.first[0];
-    final last = parts.length > 1 ? parts.last[0] : '';
-    return (first + last).toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,17 +63,6 @@ class DoctorImage extends StatelessWidget {
   }
 
   Widget _fallback() {
-    return Container(
-      color: seedTeal.withValues(alpha: 0.12),
-      alignment: Alignment.center,
-      child: Text(
-        _initials,
-        style: const TextStyle(
-          fontSize: 30,
-          fontWeight: FontWeight.w800,
-          color: seedTeal,
-        ),
-      ),
-    );
+    return Image.asset(defaultDoctorAvatar, fit: BoxFit.cover);
   }
 }

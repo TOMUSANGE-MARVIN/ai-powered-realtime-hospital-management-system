@@ -18,6 +18,7 @@ import '../../doctors/presentation/doctor_card.dart';
 import '../../notifications/presentation/notifications_screen.dart'
     show NotificationBell;
 import '../../doctors/state/doctor_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 String _greetingFor(DateTime now) {
   if (now.hour < 12) return 'Good morning';
@@ -379,22 +380,10 @@ class _HeroHeader extends StatelessWidget {
                 label: 'Your profile',
                 child: GestureDetector(
                   onTap: () => context.go('/home/profile'),
-                  child: CircleAvatar(
+                  child: UserAvatar(
+                    url: image,
+                    kind: AvatarKind.patient,
                     radius: 26,
-                    backgroundColor: const Color(0xFFE0F2F2),
-                    backgroundImage: image != null
-                        ? NetworkImage(image!)
-                        : null,
-                    child: image == null
-                        ? Text(
-                            firstName.characters.first.toUpperCase(),
-                            style: const TextStyle(
-                              color: seedTeal,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          )
-                        : null,
                   ),
                 ),
               ),

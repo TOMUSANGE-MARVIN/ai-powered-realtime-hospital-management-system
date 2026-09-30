@@ -19,6 +19,7 @@ import '../../notifications/presentation/notifications_screen.dart'
 import 'appointment_dialogs.dart';
 import 'doctor_appointments_screen.dart' show DoctorAppointmentCard;
 import '../state/doctor_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 String _greetingName(String? fullName) {
   if (fullName == null || fullName.trim().isEmpty) return 'Doctor';
@@ -349,34 +350,10 @@ class _DoctorHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    final initials = user.name
-        .replaceFirst(RegExp(r'^dr\.?\s*', caseSensitive: false), '')
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .map((p) => p[0])
-        .take(2)
-        .join()
-        .toUpperCase();
     return SoftCard(
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: seedTeal.withValues(alpha: 0.12),
-            backgroundImage: user.image != null
-                ? NetworkImage(user.image!)
-                : null,
-            child: user.image == null
-                ? Text(
-                    initials,
-                    style: const TextStyle(
-                      color: seedTeal,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18,
-                    ),
-                  )
-                : null,
-          ),
+          UserAvatar(url: user.image, kind: AvatarKind.doctor, radius: 30),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

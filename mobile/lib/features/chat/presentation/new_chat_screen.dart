@@ -11,6 +11,7 @@ import '../../auth/state/auth_controller.dart';
 import '../../doctors/data/doctor.dart';
 import '../../doctors/state/doctor_providers.dart';
 import '../data/chat_args.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 /// Who you can start a new chat with:
 /// - Patients pick from the doctor directory (same search as booking).
@@ -85,13 +86,9 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
                 itemBuilder: (context, index) {
                   final doctor = doctors[index];
                   return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: doctor.image != null
-                          ? NetworkImage(doctor.image!)
-                          : null,
-                      child: doctor.image == null
-                          ? const Icon(Icons.person)
-                          : null,
+                    leading: UserAvatar(
+                      url: doctor.image,
+                      kind: AvatarKind.doctor,
                     ),
                     title: Text(doctor.name),
                     subtitle: Text(
@@ -143,7 +140,7 @@ class _PatientPicker extends ConsumerWidget {
           itemBuilder: (context, index) {
             final patient = patients[index];
             return ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.person)),
+              leading: const UserAvatar(url: null),
               title: Text(patient.name),
               onTap: () => context.pushReplacement(
                 '/chat/${patient.id}',

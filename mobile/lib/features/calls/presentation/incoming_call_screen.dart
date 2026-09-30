@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/call_controller.dart';
 import '../state/call_state.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 class IncomingCallScreen extends ConsumerWidget {
   const IncomingCallScreen({super.key, required this.call});
@@ -21,23 +22,10 @@ class IncomingCallScreen extends ConsumerWidget {
           child: Column(
             children: [
               const Spacer(),
-              CircleAvatar(
+              UserAvatar(
+                url: call.peerImage,
+                kind: AvatarKind.peer,
                 radius: 56,
-                backgroundColor: Colors.white24,
-                backgroundImage: call.peerImage != null
-                    ? NetworkImage(call.peerImage!)
-                    : null,
-                child: call.peerImage == null
-                    ? Text(
-                        call.peerName.isNotEmpty
-                            ? call.peerName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 40,
-                          color: Colors.white,
-                        ),
-                      )
-                    : null,
               ),
               const SizedBox(height: 20),
               Text(

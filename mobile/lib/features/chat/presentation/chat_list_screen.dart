@@ -9,6 +9,7 @@ import '../../../core/widgets/skeleton.dart';
 import '../data/chat_args.dart';
 import '../data/conversation.dart';
 import '../state/chat_providers.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 const _favoritesPrefKey = 'chat_favorite_ids';
 
@@ -375,15 +376,10 @@ class _RecentContactsRow extends StatelessWidget {
                   children: [
                     Stack(
                       children: [
-                        CircleAvatar(
+                        UserAvatar(
+                          url: c.otherUserImage,
+                          kind: AvatarKind.peer,
                           radius: 28,
-                          backgroundColor: const Color(0xFFE3F2F1),
-                          backgroundImage: c.otherUserImage != null
-                              ? NetworkImage(c.otherUserImage!)
-                              : null,
-                          child: c.otherUserImage == null
-                              ? const Icon(Icons.person)
-                              : null,
                         ),
                         Positioned(
                           right: 0,
@@ -484,15 +480,10 @@ class _ConversationTile extends StatelessWidget {
           children: [
             Stack(
               children: [
-                CircleAvatar(
+                UserAvatar(
+                  url: conversation.otherUserImage,
+                  kind: AvatarKind.peer,
                   radius: 26,
-                  backgroundColor: const Color(0xFFE3F2F1),
-                  backgroundImage: conversation.otherUserImage != null
-                      ? NetworkImage(conversation.otherUserImage!)
-                      : null,
-                  child: conversation.otherUserImage == null
-                      ? const Icon(Icons.person)
-                      : null,
                 ),
                 Positioned(
                   right: 0,

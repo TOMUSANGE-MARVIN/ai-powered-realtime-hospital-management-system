@@ -14,6 +14,7 @@ import '../data/review.dart';
 import '../state/doctor_providers.dart';
 import 'review_help_tags.dart';
 import 'doctor_card.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 const _pageBg = Color(0xFFF1F7F7);
 const _ink = Color(0xFF12263A);
@@ -1000,18 +1001,6 @@ class _ReviewsTab extends ConsumerWidget {
   }
 }
 
-String _initials(String name) {
-  final parts = name
-      .trim()
-      .split(RegExp(r'\s+'))
-      .where((p) => p.isNotEmpty)
-      .toList();
-  if (parts.isEmpty) return '?';
-  final first = parts.first[0];
-  final last = parts.length > 1 ? parts.last[0] : '';
-  return (first + last).toUpperCase();
-}
-
 class _ReviewRow extends StatelessWidget {
   const _ReviewRow({required this.review, required this.compact, this.onTap});
 
@@ -1036,18 +1025,7 @@ class _ReviewRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: _tealTint,
-              child: Text(
-                _initials(review.patientName),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: seedTeal,
-                ),
-              ),
-            ),
+            const UserAvatar(url: null, radius: 24),
             const SizedBox(width: 14),
             Expanded(
               child: Column(

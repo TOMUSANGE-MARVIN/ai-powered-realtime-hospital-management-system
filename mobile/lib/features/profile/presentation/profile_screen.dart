@@ -13,6 +13,7 @@ import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
 import 'upload_document_dialog.dart';
+import '../../../core/widgets/user_avatar.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -268,13 +269,7 @@ class _Header extends StatelessWidget {
     ].join('  •  ');
     return Column(
       children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundImage: user.image != null
-              ? NetworkImage(user.image!)
-              : null,
-          child: user.image == null ? const Icon(Icons.person, size: 36) : null,
-        ),
+        UserAvatar(url: user.image, kind: AvatarKind.self, radius: 40),
         const SizedBox(height: 12),
         Text(user.name, style: Theme.of(context).textTheme.titleLarge),
         if (idLine.isNotEmpty) ...[

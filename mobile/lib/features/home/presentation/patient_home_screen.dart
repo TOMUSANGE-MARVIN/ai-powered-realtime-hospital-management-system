@@ -1104,7 +1104,7 @@ class _QuickActions extends StatelessWidget {
         subtitle: 'Find and book a doctor',
         icon: Icons.calendar_month_rounded,
         artwork: 'calendar',
-        accent: accentForColorKey('teal'),
+        accent: brandAccent,
         onTap: () => context.push('/search'),
       ),
       _QuickActionTile(
@@ -1112,7 +1112,7 @@ class _QuickActions extends StatelessWidget {
         subtitle: 'Get health advice instantly',
         icon: Icons.auto_awesome_rounded,
         artwork: 'sparkles',
-        accent: accentForColorKey('pink'),
+        accent: brandAccent,
         onTap: () => context.push('/ai-search'),
       ),
       _QuickActionTile(
@@ -1120,7 +1120,7 @@ class _QuickActions extends StatelessWidget {
         subtitle: 'Chat with your doctor',
         icon: Icons.chat_bubble_rounded,
         artwork: 'chat',
-        accent: accentForColorKey('blue'),
+        accent: brandAccent,
         onTap: () => context.push('/home/chats'),
       ),
       _QuickActionTile(
@@ -1128,7 +1128,7 @@ class _QuickActions extends StatelessWidget {
         subtitle: 'View and manage your visits',
         icon: Icons.fact_check_rounded,
         artwork: 'calendar_check',
-        accent: accentForColorKey('purple'),
+        accent: brandAccent,
         onTap: () => context.push('/home/appointments'),
       ),
     ];

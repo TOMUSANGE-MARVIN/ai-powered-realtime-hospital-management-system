@@ -41,7 +41,8 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = accentForColorKey(category.colorKey);
-    if (tinted) return _buildTinted(context, accent);
+    // Home cards all use the brand teal for a consistent look.
+    if (tinted) return _buildTinted(context, brandAccent);
     return SoftCard(
       onTap: () => context.push('/search', extra: category.name),
       color: Colors.white,

@@ -30,11 +30,18 @@ const _specialtyAccents = <String, SpecialtyAccent>{
   'Pediatrics': SpecialtyAccent(Color(0xFFE0F7F4), Color(0xFF12B8A6)),
   'Orthopedic Surgery': SpecialtyAccent(Color(0xFFFFF3E0), Color(0xFFFF9800)),
   'Cardiology': SpecialtyAccent(Color(0xFFFDE3EC), Color(0xFFE91E63)),
-  'Obstetrics & Gynecology': SpecialtyAccent(Color(0xFFF3E5FF), Color(0xFF9C27B0)),
+  'Obstetrics & Gynecology': SpecialtyAccent(
+    Color(0xFFF3E5FF),
+    Color(0xFF9C27B0),
+  ),
   'Emergency Medicine': SpecialtyAccent(Color(0xFFFFE3E3), Color(0xFFF44336)),
 };
 
-const _defaultAccent = SpecialtyAccent(Color(0xFFE0F2F2), seedTeal);
+const _defaultAccent = brandAccent;
+
+/// The teal pastel/vivid pair used for home cards so they all share the
+/// brand colour instead of per-category accents.
+const brandAccent = SpecialtyAccent(Color(0xFFE0F2F2), seedTeal);
 
 /// Distinct pastel-background/vivid-icon color pair per specialty, matching
 /// the reference design's colorful category chips. Falls back to a neutral

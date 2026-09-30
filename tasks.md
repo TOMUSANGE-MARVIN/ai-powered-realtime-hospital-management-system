@@ -351,14 +351,21 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
 - [x] **Medium — Consultation notes.** Done: End consultation asks for a visit summary; completed visits have Add / Edit summary. Shown to the patient and in Full History.
 - [x] **Medium — Reasons for reject / cancel.** Done: doctors pick or type a reason when declining or cancelling (appointments list and dashboard); patients can add one when cancelling; the reason and who cancelled are stored (migration `20260930190000_appointment_cancellation`), shown on the card and included in the notification. Also fixed: patients could cancel completed or already-cancelled visits. 13/13 checks.
 - [x] **Medium — Time off.** Done: Profile → My practice → Time off. Doctors add or remove date ranges with a reason; the booking and reschedule date pickers skip those days, the server rejects bookings on them (emergencies excepted), and adding time off lists any visits already booked on those days.
-- [ ] **Medium — Lab requests.** Results are done (see Patient → Lab results and Full History). Still open: ordering a lab test from the app — tests are requested on the web today.
+- [x] **Medium — Lab requests.** Done: doctors order a test from a patient's Full History ("Order test": test type chips, plus body part or notes). It lands on the web Test Requests page, and the patient is notified. The patient's Lab Results now also lists ordered and in-progress tests ("Requested by Dr X · please visit the lab"), showing images and notes only once a result is reviewed. `POST /api/lab-results` now rejects a missing test type or a non-patient.
 - [x] **Medium — Issued prescriptions.** Done: Profile → My practice → Prescriptions issued, searchable by patient or medication, with dispensing status. (Drafts are still per device.)
 - [x] **Low — No-shows.** Done: confirmed visits have a No-show button; the patient sees "Missed" with Book again and is notified. (How no-shows affect payouts and refunds follows the refund policy you choose.)
 - [ ] **Low — Doctor onboarding.** Doctors can't sign up themselves; admins create their accounts on the web. Decide whether that stays, or add self-sign-up with admin verification.
 
 ### Both
 
-- [ ] **Medium — Appointment time convention.** Bookings store the chosen local wall-clock time as if it were UTC, and the app displays it back unconverted. This works while everyone is in Uganda, but server-side reminders, the admin pages and any user in another time zone would be 3 hours off. Store true UTC when booking, convert on display, and migrate existing rows in the same release.
+- [ ] **Medium — Appointment time convention.** Bookings store the chosen local wall-clock time as if it were UTC, and the app displays it back unconverted. This works while everyone is in Uganda, but server-side reminders, the admin pages and any user in another time zone would be 3 hours off. Store true UTC when booking, convert on display, and migrate existing rows in the same release. **Plan written 2026-09-30, awaiting approval:**
+    - [ ] Confirm the VPS container's time zone (if it is already EAT, stored rows are true UTC and no data migration is needed)
+    - [ ] Backend: `lib/clinicTime.ts` with `CLINIC_TZ` (default `Africa/Kampala`); a date string without an offset is read as Kampala time, whatever the server's own time zone
+    - [ ] Backend: `formatVisit`, time-off day matching, earnings buckets, admin "today" and period ranges, and report buckets all use Kampala calendar days
+    - [ ] Mobile: send `date.toUtc().toIso8601String()`; parse `date` and `proposedDate` with `.toLocal()`
+    - [ ] Migration: back up, then shift `date` and `proposedDate` back 3 h on non-emergency rows (emergencies are already true UTC); doctor time off stays as calendar dates
+    - [ ] Compatibility for app builds already installed (only if the app is live): the new app sends a header, and the server returns the old format to clients without it
+    - [ ] Tests: update smoke suites, add a Dart round-trip unit test, then check join-call window, reschedule-in-past and emergency display
 
 ## E22. Push notifications and background calls (FCM first, then APNs) — do last
 

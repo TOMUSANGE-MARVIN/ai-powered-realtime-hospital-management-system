@@ -9,6 +9,18 @@ export const createLabResult = async (req: Request, res: Response) => {
   try {
     const { patientId, testType, bodyPart, imageUrl } = req.body;
     const currentUserId = (req as any).user?.id;
+    if (!patientId || !testType) {
+      return res
+        .status(400)
+        .json({ message: "patientId and testType are required" });
+    }
+    const patient = await prisma.user.findFirst({
+      where: { id: patientId, role: "patient" },
+      select: { id: true },
+    });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
 
     const newLabResult = await prisma.labResult.create({
       data: {
@@ -27,6 +39,20 @@ export const createLabResult = async (req: Request, res: Response) => {
     const io = req.app.get("io");
     if (io) {
       io.emit("lab_result_added");
+    }
+    // No image yet means a doctor is ordering the test: tell the patient.
+    if (!imageUrl) {
+      await notifyUser(patientId, {
+        type: "lab_result",
+        title: "Lab test requested",
+        message: `Your doctor has requested a ${testType}${bodyPart ? ` (${bodyPart})` : ""}. Please visit the lab.`,
+        link: "/lab-results",
+      });
+      await logActivity(
+        currentUserId,
+        "Requested Lab Test",
+        `Requested ${testType}${bodyPart ? ` for ${bodyPart}` : ""}`,
+      );
     }
     if (testType === "X-Ray" && imageUrl && newLabResult) {
       // trigger an event in Inngest(analyze-xray) to analyze the x-ray image
@@ -170,13 +196,14 @@ export const updateLabResult = async (req: Request, res: Response) => {
   }
 };
 
-// Patient's own lab results — reviewed ones only, with the doctor's notes.
-// The raw AI analysis stays with clinicians.
+// Patient's own lab results: reviewed ones with the doctor's notes, plus
+// tests that are requested or in progress (status only). The raw AI analysis
+// stays with clinicians.
 export const getMyLabResults = async (req: Request, res: Response) => {
   try {
     const patient = (req as any).user;
     const results = await prisma.labResult.findMany({
-      where: { patient: patient.id, status: "reviewed" },
+      where: { patient: patient.id },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -184,11 +211,30 @@ export const getMyLabResults = async (req: Request, res: Response) => {
         bodyPart: true,
         imageUrl: true,
         doctorNotes: true,
+        status: true,
+        uploadedBy: true,
         createdAt: true,
         updatedAt: true,
       },
     });
-    res.json(results);
+    const staffIds = [...new Set(results.map((r) => r.uploadedBy))];
+    const staff = await prisma.user.findMany({
+      where: { id: { in: staffIds } },
+      select: { id: true, name: true, role: true },
+    });
+    const staffMap = new Map(staff.map((s) => [s.id, s]));
+    res.json(
+      results.map(({ uploadedBy, ...r }) => {
+        const reviewed = r.status === "reviewed";
+        const by = staffMap.get(uploadedBy);
+        return {
+          ...r,
+          imageUrl: reviewed ? r.imageUrl || null : null,
+          doctorNotes: reviewed ? r.doctorNotes : null,
+          requestedBy: by?.role === "doctor" ? by.name : null,
+        };
+      }),
+    );
   } catch (error) {
     console.error("Error fetching my lab results:", error);
     res.status(500).json({ message: "Internal server error" });

@@ -7,7 +7,8 @@ import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../data/lab_result.dart';
 
-/// A patient's lab results that a doctor has reviewed.
+/// A patient's lab tests: ones a doctor has ordered, ones in progress, and
+/// results a doctor has reviewed.
 class LabResultsScreen extends ConsumerWidget {
   const LabResultsScreen({super.key});
 
@@ -38,8 +39,8 @@ class LabResultsScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Text(
-                    'No lab results yet. Results appear here once a doctor '
-                    'has reviewed them.',
+                    'No lab tests yet. Tests your doctor orders appear here, '
+                    'and results once a doctor has reviewed them.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: muted),
                   ),
@@ -66,6 +67,21 @@ class LabResultCard extends StatelessWidget {
 
   final LabResult result;
   final bool showAi;
+
+  /// Where a test that isn't reviewed yet stands. Patients are told to visit
+  /// the lab; doctors see the pipeline stage.
+  String? get _statusLabel {
+    if (result.status == null || result.status == 'reviewed') return null;
+    if (result.isRequested) {
+      if (showAi) return 'Requested · awaiting the lab';
+      final by = result.requestedBy;
+      return by == null
+          ? 'Requested · please visit the lab'
+          : 'Requested by $by · please visit the lab';
+    }
+    if (result.status == 'analyzed') return 'Awaiting doctor review';
+    return showAi ? 'Pending analysis' : 'At the lab · awaiting results';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,14 +147,10 @@ class LabResultCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (showAi &&
-                    result.status != null &&
-                    result.status != 'reviewed') ...[
+                if (_statusLabel case final label?) ...[
                   const SizedBox(height: 6),
                   Text(
-                    result.status == 'analyzed'
-                        ? 'Awaiting doctor review'
-                        : 'Pending analysis',
+                    label,
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFFFFA000),
@@ -158,7 +170,9 @@ class LabResultCard extends StatelessWidget {
                     style: const TextStyle(height: 1.4),
                   ),
                 ],
-                if (showAi && result.aiAnalysis?.isNotEmpty == true) ...[
+                if (showAi &&
+                    !result.isRequested &&
+                    result.aiAnalysis?.isNotEmpty == true) ...[
                   const SizedBox(height: 10),
                   Text(
                     'AI analysis (clinicians only)',

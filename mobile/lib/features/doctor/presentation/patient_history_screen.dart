@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../labs/presentation/lab_results_screen.dart' show LabResultCard;
+import '../../labs/presentation/order_lab_test_sheet.dart';
 import '../../profile/data/medical_document.dart';
 import '../data/patient_history.dart';
 import '../state/doctor_providers.dart';
@@ -57,6 +58,25 @@ class PatientHistoryScreen extends ConsumerWidget {
     SharePlus.instance.share(
       ShareParams(text: lines.join('\n'), subject: '${history.name} — history'),
     );
+  }
+
+  Future<void> _orderLabTest(
+    BuildContext context,
+    WidgetRef ref,
+    PatientHistory history,
+  ) async {
+    final ordered = await showOrderLabTestSheet(
+      context,
+      patientId: history.patientId,
+      patientName: history.name,
+    );
+    if (!ordered) return;
+    ref.invalidate(patientHistoryProvider(patientId));
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Lab test ordered')));
+    }
   }
 
   @override
@@ -112,15 +132,29 @@ class PatientHistoryScreen extends ConsumerWidget {
                   _DocumentCard(document: document),
                   const SizedBox(height: 12),
                 ],
-              if (history.labResults.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                _SectionTitle('Lab results', count: history.labResults.length),
-                const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _SectionTitle(
+                      'Lab results',
+                      count: history.labResults.length,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _orderLabTest(context, ref, history),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Order test'),
+                  ),
+                ],
+              ),
+              if (history.labResults.isEmpty)
+                const _Empty('No lab tests yet.')
+              else
                 for (final r in history.labResults) ...[
                   LabResultCard(result: r, showAi: true),
                   const SizedBox(height: 12),
                 ],
-              ],
               const SizedBox(height: 12),
               _SectionTitle('Visits with you', count: history.visits.length),
               const SizedBox(height: 8),

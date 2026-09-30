@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { upcomingTimeOff } from "./timeOff";
+import { APPROVED_DOCTOR } from "../lib/doctorVerification";
 
 const DOCTOR_SELECT = {
   id: true,
@@ -57,7 +58,7 @@ export const listDoctors = async (req: Request, res: Response) => {
     const specialization = req.query.specialization as string;
     const featured = req.query.featured === "true";
 
-    const where: any = { role: "doctor" };
+    const where: any = { ...APPROVED_DOCTOR };
     if (specialization && specialization !== "all") {
       where.specialization = specialization;
     }
@@ -139,7 +140,7 @@ export const getDoctorSpecialties = async (req: Request, res: Response) => {
   try {
     const groups = await prisma.user.groupBy({
       by: ["specialization"],
-      where: { role: "doctor", specialization: { not: null } },
+      where: { ...APPROVED_DOCTOR, specialization: { not: null } },
       _count: { specialization: true },
       orderBy: { specialization: "asc" },
     });
@@ -159,7 +160,7 @@ export const getDoctorById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
     const doctor = await prisma.user.findFirst({
-      where: { id, role: "doctor" },
+      where: { id, ...APPROVED_DOCTOR },
       select: DOCTOR_SELECT,
     });
 

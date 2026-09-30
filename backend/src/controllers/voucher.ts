@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { priceConsultation } from "../lib/pricing";
+import { APPROVED_DOCTOR } from "../lib/doctorVerification";
 
 // Pesapal can't take a zero-amount order, so a voucher never takes the
 // charge below this.
@@ -41,7 +42,7 @@ export const validateVoucher = async (req: Request, res: Response) => {
   try {
     const { code, doctorId } = req.body;
     const doctor = await prisma.user.findFirst({
-      where: { id: doctorId, role: "doctor" },
+      where: { id: doctorId, ...APPROVED_DOCTOR },
       select: { consultationFee: true },
     });
     if (!doctor?.consultationFee) {

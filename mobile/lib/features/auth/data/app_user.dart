@@ -31,6 +31,8 @@ class AppUser {
     this.availabilityHours,
     this.availableToday = false,
     this.twoFactorEnabled = false,
+    this.doctorVerificationStatus,
+    this.verificationNote,
   });
 
   final String id;
@@ -64,6 +66,20 @@ class AppUser {
   final String? availabilityDays;
   final String? availabilityHours;
   final bool availableToday;
+
+  /// Licence verification for doctors: `pending`, `approved`, `rejected`, or
+  /// null when nothing has been submitted yet (always null for patients).
+  final String? doctorVerificationStatus;
+
+  /// The admin's reason when a licence submission was rejected.
+  final String? verificationNote;
+
+  bool get isDoctor => role == 'doctor';
+
+  /// A doctor patients can find and book. Everything doctor-only in the
+  /// app waits for this.
+  bool get isVerifiedDoctor =>
+      isDoctor && doctorVerificationStatus == 'approved';
 
   bool get hasInsurance => insuranceProvider?.isNotEmpty == true;
 
@@ -99,6 +115,8 @@ class AppUser {
       availabilityDays: json['availabilityDays'] as String?,
       availabilityHours: json['availabilityHours'] as String?,
       availableToday: json['availableToday'] as bool? ?? false,
+      doctorVerificationStatus: json['doctorVerificationStatus'] as String?,
+      verificationNote: json['verificationNote'] as String?,
       createdAt: DateTime.tryParse(
         json['createdAt'] as String? ?? '',
       )?.toLocal(),

@@ -354,7 +354,7 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
 - [x] **Medium — Lab requests.** Done: doctors order a test from a patient's Full History ("Order test": test type chips, plus body part or notes). It lands on the web Test Requests page, and the patient is notified. The patient's Lab Results now also lists ordered and in-progress tests ("Requested by Dr X · please visit the lab"), showing images and notes only once a result is reviewed. `POST /api/lab-results` now rejects a missing test type or a non-patient.
 - [x] **Medium — Issued prescriptions.** Done: Profile → My practice → Prescriptions issued, searchable by patient or medication, with dispensing status. (Drafts are still per device.)
 - [x] **Low — No-shows.** Done: confirmed visits have a No-show button; the patient sees "Missed" with Book again and is notified. (How no-shows affect payouts and refunds follows the refund policy you choose.)
-- [ ] **Low — Doctor onboarding.** Doctors can't sign up themselves; admins create their accounts on the web. Decide whether that stays, or add self-sign-up with admin verification.
+- [ ] **Low — Doctor onboarding.** Decided 2026-09-30: self-sign-up with admin verification — built in E23.1.
 
 ### Both
 
@@ -374,6 +374,61 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
     - [x] Photos and avatars cached on disk (`AppNetworkImage`).
     - [x] Chat outbox: text messages show immediately with a clock, survive restarts and send on reconnect.
     - [ ] Check on the Samsung: cold start in airplane mode shows saved data
+
+## E23. Compliance and plan gaps (benchmark against the ChatGPT flow plan)
+
+Why: the flow plan's screens are mostly built, but its legal section (Uganda Medical and Dental Practitioners Council, Data Protection and Privacy Act 2019, Ministry of Health data guidelines, Computer Misuse Act 2011) is where we're weakest. Benchmarked 2026-09-30. Work in this order; E22 still comes last.
+
+### 1. Doctor verification (licence upload and admin approval)
+
+- [x] Decided 2026-09-30: existing doctors are marked approved; new doctors must be verified
+- [x] Decided 2026-09-30: doctors can sign up in the app and stay hidden until an admin approves (closes the E21 "Doctor onboarding" item)
+- [x] Backend: verification fields on the doctor (licence number, licence document, facility, status, reviewed by/at, rejection reason) — migration `20261001090000_doctor_verification`, which marks existing doctors approved
+- [x] Backend: `POST /api/doctors/apply`, `GET/PUT /api/doctors/me/verification`, admin `GET /api/admin/doctor-verifications?status=` and `POST /api/admin/doctor-verifications/:id` (approve / reject with reason); doctor and admins notified
+- [x] Backend: only approved doctors in search, featured, specialties, detail, AI search, quote, payment, booking and vouchers (`lib/doctorVerification.ts`); `checkRole(["doctor"])` refuses unapproved doctors with `code: doctor_unverified`
+- [x] Mobile: Register "I'm a patient / I'm a doctor"; Verify your licence screen (specialty, UMDPC licence number, facility, address, years, licence photo or PDF, status and rejection reason); the router keeps unapproved doctors there and opens the dashboard when approval arrives; Settings → "Are you a doctor? Apply"
+- [x] Web: Doctors → Licence verification queue (pending / rejected / approved / not submitted / all; view document; approve; reject or revoke with reason)
+- [x] Verify: smoke suite `smoke_verification.py` 31/31; all other suites pass (258 checks); browser run register → submit → admin approves → dashboard opens by itself
+- [ ] Verify on the Samsung (camera photo of a licence)
+- [ ] Deploy: run the migration on production (existing doctors become approved), then release the app
+
+### 2. Consent and legal screens
+
+- [ ] Content: Privacy Policy and Terms of Service text (owner to review; admin-editable via Content or Settings)
+- [ ] Backend: record acceptance (document version and timestamp per user); consent record per consultation
+- [ ] Mobile: "I agree to the Terms and Privacy Policy" checkbox on Register; existing users accept once on next sign-in when the version changes
+- [ ] Mobile: telemedicine consent step before the first consultation (explains remote care limits and how health data is used)
+- [ ] Mobile: Privacy Policy and Terms links in Settings → Privacy
+- [ ] Web: the same pages on the public site
+- [ ] Verify: can't register or book without accepting; the acceptance is stored with its version
+
+### 3. Record-access audit log
+
+- [ ] Backend: log every read of a patient's Full History, medical documents, lab results and prescriptions by someone other than the patient (who, whose record, what, when)
+- [ ] Web: Activities Log filter for record access; admins can see who opened a given patient's records
+- [ ] Mobile (patient): "Who viewed my records" list in Settings → Privacy
+- [ ] Verify: a doctor opening a patient's history creates exactly one entry, visible to admin and patient
+
+### 4. Prescription detail screen
+
+- [ ] Mobile (patient): tap a prescription → detail screen with doctor, date, diagnosis / notes, all medicines with dosage, frequency and duration, doctor signature and licence number
+- [ ] Mobile: download / share as PDF
+- [ ] Decide: "Order medicine" (pharmacy partner) now or later
+- [ ] Verify: the PDF matches what the doctor issued
+
+### 5. Infrastructure and security checks
+
+- [ ] Confirm where the VPS is hosted (207.180.249.87); if outside Uganda, note the cross-border transfer requirements or plan a move
+- [ ] Confirm or enable encryption at rest for the MySQL volume and backups
+- [ ] Backend: rate limiting on auth and write endpoints
+- [ ] Decide: chat encryption level (end-to-end, or encrypted at rest on the server)
+- [ ] **Owner:** register with the Personal Data Protection Office (PDPO); partner with or register a licensed facility
+
+### 6. Search filters
+
+- [ ] Mobile: consultation fee on doctor cards
+- [ ] Mobile: filter by price range and minimum rating, and sort by rating or price (backend query params)
+- [ ] Verify: filters combine with specialty and search text
 
 ## E22. Push notifications and background calls (FCM first, then APNs) — do last
 

@@ -11,6 +11,7 @@ import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
+import '../../doctor/data/verification_repository.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
@@ -127,6 +128,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: Icons.monitor_heart_outlined,
                   label: 'Health Profile',
                   onTap: () => context.push('/settings/health-profile'),
+                ),
+              if (!isDoctor)
+                _NavRow(
+                  icon: Icons.medical_services_outlined,
+                  label: 'Are you a doctor? Apply',
+                  onTap: () =>
+                      ref.read(doctorSignupIntentProvider.notifier).set(true),
                 ),
             ],
           ),

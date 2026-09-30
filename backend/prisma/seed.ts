@@ -151,6 +151,8 @@ async function main() {
       data: {
         role: "doctor",
         status: "active",
+        // Seed doctors count as licence-verified so patients can book them.
+        doctorVerificationStatus: "approved",
         specialization: doctor.specialization,
         department: doctor.department,
         consultationFee: doctor.consultationFee,

@@ -76,7 +76,10 @@ export const navConfig: {
       url: "/doctors",
       icon: Stethoscope,
       allowedRoles: ["admin", "doctor"], // 👈 Doctor specific
-      items: [{ title: "Doctors", url: "/doctors" }],
+      items: [
+        { title: "Doctors", url: "/doctors" },
+        { title: "Licence verification", url: "/doctors?tab=verification" },
+      ],
     },
     {
       title: "Pharmacy",

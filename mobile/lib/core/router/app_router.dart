@@ -44,6 +44,8 @@ import '../../features/doctor/presentation/patient_history_screen.dart';
 import '../../features/appointments/presentation/rate_doctor_screen.dart';
 import '../../features/appointments/presentation/booking_confirmation_screen.dart';
 import '../../features/appointments/data/appointment.dart';
+import '../../features/doctor/data/verification_repository.dart';
+import '../../features/doctor/presentation/doctor_verification_screen.dart';
 
 /// Bridges Riverpod's [authControllerProvider] to go_router's
 /// [Listenable]-based `refreshListenable`, so navigation reacts immediately
@@ -52,6 +54,7 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   _AuthRefreshNotifier(Ref ref) {
     ref.listen(authControllerProvider, (_, _) => notifyListeners());
     ref.listen(onboardingControllerProvider, (_, _) => notifyListeners());
+    ref.listen(doctorSignupIntentProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -95,8 +98,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         return publicRoutes.contains(location) ? null : '/login';
       }
 
+      // Doctors wait on the verification screen until an admin approves
+      // their licence, and so does a new account that signed up as a
+      // doctor (still a patient until it submits).
+      const verification = '/doctor-verification';
+      final applying = !user.isDoctor && ref.read(doctorSignupIntentProvider);
+      if ((user.isDoctor && !user.isVerifiedDoctor) || applying) {
+        return location == verification ? null : verification;
+      }
+
       final isDoctor = user.role == 'doctor';
       final homeRoot = isDoctor ? '/doctor-home' : '/home';
+
+      if (location == verification && isDoctor) return homeRoot;
 
       if (location == '/splash' || publicRoutes.contains(location)) {
         return homeRoot;
@@ -213,6 +227,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/payments/history',
         builder: (context, state) => const PaymentHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/doctor-verification',
+        builder: (context, state) => const DoctorVerificationScreen(),
       ),
       GoRoute(
         path: '/notifications',

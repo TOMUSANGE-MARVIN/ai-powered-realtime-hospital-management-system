@@ -9,6 +9,7 @@ import {
 import { VoucherError } from "./voucher";
 import { priceConsultation } from "../lib/pricing";
 import { bookPaidPayment, type BookingDetails } from "../lib/booking";
+import { APPROVED_DOCTOR } from "../lib/doctorVerification";
 
 // Pay-before-book via Pesapal. The patient pays on Pesapal's hosted checkout
 // (cards + mobile money), so this server never sees card details. Payment
@@ -108,7 +109,7 @@ export const initiatePayment = async (req: Request, res: Response) => {
     }
 
     const doctor = await prisma.user.findFirst({
-      where: { id: doctorId, role: "doctor" },
+      where: { id: doctorId, ...APPROVED_DOCTOR },
       select: { name: true, consultationFee: true },
     });
     if (!doctor) {
@@ -178,7 +179,7 @@ export const initiatePayment = async (req: Request, res: Response) => {
 export const getQuote = async (req: Request, res: Response) => {
   try {
     const doctor = await prisma.user.findFirst({
-      where: { id: req.query.doctorId as string, role: "doctor" },
+      where: { id: req.query.doctorId as string, ...APPROVED_DOCTOR },
       select: { consultationFee: true },
     });
     if (!doctor?.consultationFee) {

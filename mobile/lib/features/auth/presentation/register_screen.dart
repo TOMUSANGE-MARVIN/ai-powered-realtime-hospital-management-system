@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/loading_dots.dart';
+import '../../doctor/data/verification_repository.dart';
 import '../state/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -20,6 +21,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  /// Doctors sign up the same way, then submit their licence on the
+  /// verification screen before patients can see them.
+  bool _asDoctor = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -30,6 +35,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    ref.read(doctorSignupIntentProvider.notifier).set(_asDoctor);
     await ref
         .read(authControllerProvider.notifier)
         .signUp(
@@ -43,6 +49,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     final state = ref.read(authControllerProvider);
     if (state.hasError) {
+      ref.read(doctorSignupIntentProvider.notifier).set(false);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(state.error.toString())));
@@ -80,6 +87,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment(
+                        value: false,
+                        label: Text("I'm a patient"),
+                        icon: Icon(Icons.person_outline),
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        label: Text("I'm a doctor"),
+                        icon: Icon(Icons.medical_services_outlined),
+                      ),
+                    ],
+                    selected: {_asDoctor},
+                    showSelectedIcon: false,
+                    onSelectionChanged: isLoading
+                        ? null
+                        : (value) => setState(() => _asDoctor = value.first),
+                  ),
+                  if (_asDoctor) ...[
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Next you'll add your UMDPC licence. Patients can book "
+                      'you once an admin has verified it.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF6B7A7A),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
                   TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(labelText: 'Full name'),

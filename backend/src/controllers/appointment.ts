@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { bookPaidPayment, insertAppointment } from "../lib/booking";
 import { formatVisit, notifyUser } from "../lib/notify";
 import { logActivity } from "../lib/activity";
+import { APPROVED_DOCTOR } from "../lib/doctorVerification";
 
 // Public endpoint — used by the marketing "Book Appointment" form (no auth)
 export const requestAppointment = async (req: Request, res: Response) => {
@@ -290,7 +291,7 @@ export const bookAppointment = async (req: Request, res: Response) => {
     }
 
     const doctor = await prisma.user.findFirst({
-      where: { id: doctorId, role: "doctor" },
+      where: { id: doctorId, ...APPROVED_DOCTOR },
       select: { name: true, department: true, consultationFee: true },
     });
 

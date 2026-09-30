@@ -1,6 +1,7 @@
 import { auth } from "../lib/auth";
 import { fromNodeHeaders } from "better-auth/node";
 import type { Request, Response, NextFunction } from "express";
+import { isApprovedDoctor } from "../lib/doctorVerification";
 
 export type Role =
   | "all"
@@ -30,6 +31,16 @@ export const checkRole = (allowedRoles: Role[]) => {
         return res
           .status(403)
           .json({ message: "Forbidden: Insufficient Permissions" });
+      }
+
+      // Doctors can't consult, prescribe or earn until an admin has approved
+      // their licence (E23.1). Admins, nurses etc. are unaffected.
+      if (userRole === "doctor" && !(await isApprovedDoctor(session.user.id))) {
+        return res.status(403).json({
+          code: "doctor_unverified",
+          message:
+            "Your licence hasn't been approved yet. You can use this once an admin verifies your account.",
+        });
       }
 
       (req as any).user = session.user;

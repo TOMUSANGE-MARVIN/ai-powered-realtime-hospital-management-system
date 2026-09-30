@@ -204,6 +204,24 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      // Doctor licence verification (E23.1). `input: false` — only the
+      // verification endpoints and admins can change these, never the
+      // user's own update-user call.
+      doctorVerificationStatus: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      licenseNumber: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      verificationNote: {
+        type: "string",
+        required: false,
+        input: false,
+      },
       insuranceProvider: {
         type: "string",
         required: false,

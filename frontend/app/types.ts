@@ -492,3 +492,25 @@ export interface AdminPaymentsResponse {
   payments: AdminPayment[];
   pagination: { page: number; total: number; totalPages: number };
 }
+
+export type DoctorVerificationStatus = "pending" | "approved" | "rejected";
+
+/** A doctor's licence submission, as the admin verification queue sees it. */
+export interface DoctorVerification {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  phoneNumber: string | null;
+  specialization: string | null;
+  hospitalName: string | null;
+  hospitalAddress: string | null;
+  yearsOfExperience: number | null;
+  doctorVerificationStatus: DoctorVerificationStatus | null;
+  licenseNumber: string | null;
+  licenseDocumentUrl: string | null;
+  verificationSubmittedAt: string | null;
+  verificationReviewedAt: string | null;
+  verificationNote: string | null;
+  createdAt: string;
+}

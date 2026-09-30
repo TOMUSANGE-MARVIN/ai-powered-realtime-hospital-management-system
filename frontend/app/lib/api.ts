@@ -25,6 +25,7 @@ import type {
   BlogPost,
   AdminPayment,
   AdminPaymentsResponse,
+  DoctorVerification,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -833,3 +834,34 @@ export const refundAdminPayment = ({
   reason: string;
   cancelAppointment: boolean;
 }) => request<AdminPayment>(`/admin/payments/${id}/refund`, { method: "POST", body: JSON.stringify(body) });
+
+// Doctor licence verification (E23.1)
+export const getDoctorVerifications = async (
+  status = "pending",
+): Promise<DoctorVerification[]> => {
+  const res = await fetch(`${API_URL}/admin/doctor-verifications?status=${status}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch doctor verifications");
+  return res.json();
+};
+
+export const reviewDoctorVerification = async ({
+  id,
+  decision,
+  reason,
+}: {
+  id: string;
+  decision: "approve" | "reject";
+  reason?: string;
+}): Promise<DoctorVerification> => {
+  const res = await fetch(`${API_URL}/admin/doctor-verifications/${id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ decision, reason }),
+    credentials: "include",
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.message || "Failed to update verification");
+  return body;
+};

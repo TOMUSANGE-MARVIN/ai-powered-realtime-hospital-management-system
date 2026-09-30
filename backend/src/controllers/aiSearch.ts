@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "../lib/prisma";
+import { APPROVED_DOCTOR } from "../lib/doctorVerification";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY!);
 
@@ -52,7 +53,7 @@ Format exactly like this: [{"specialty": "Cardiology", "reason": "..."}]`;
     }
 
     const doctors = await prisma.user.findMany({
-      where: { role: "doctor", specialization: { in: validMatches.map((m) => m.specialty) } },
+      where: { ...APPROVED_DOCTOR, specialization: { in: validMatches.map((m) => m.specialty) } },
       select: {
         id: true,
         name: true,

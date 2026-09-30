@@ -15,6 +15,7 @@ import {
   sendAnnouncement,
 } from "../controllers/adminContent";
 import { listPayments, refundPayment, syncPayment } from "../controllers/adminPayments";
+import { listVerifications, reviewVerification } from "../controllers/doctorVerification";
 
 const adminRouter = Router();
 
@@ -29,6 +30,8 @@ adminRouter.patch("/reviews/:id", requireAuth, checkRole(["admin"]), moderateRev
 adminRouter.get("/payments", requireAuth, checkRole(["admin"]), listPayments);
 adminRouter.post("/payments/:id/sync", requireAuth, checkRole(["admin"]), syncPayment);
 adminRouter.post("/payments/:id/refund", requireAuth, checkRole(["admin"]), refundPayment);
+adminRouter.get("/doctor-verifications", requireAuth, checkRole(["admin"]), listVerifications);
+adminRouter.post("/doctor-verifications/:id", requireAuth, checkRole(["admin"]), reviewVerification);
 adminRouter.get("/reports", requireAuth, checkRole(["admin"]), getReports);
 
 export default adminRouter;

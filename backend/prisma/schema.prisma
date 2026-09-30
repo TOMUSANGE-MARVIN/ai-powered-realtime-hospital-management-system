@@ -59,6 +59,16 @@ model User {
   address                  String?   @db.Text
   insuranceProvider        String?   @db.Text
   insuranceMemberNo        String?   @db.Text
+  // Doctor licence verification (E23.1). Patients only see and book doctors
+  // whose status is "approved"; null for non-doctors.
+  doctorVerificationStatus String?   @db.VarChar(20)
+  licenseNumber            String?   @db.Text
+  licenseDocumentUrl       String?   @db.Text
+  verificationSubmittedAt  DateTime?
+  verificationReviewedAt   DateTime?
+  verificationReviewedBy   String?   @db.Text
+  // Admin's reason when a submission is rejected.
+  verificationNote         String?   @db.Text
   sessions                 Session[]
   accounts                 Account[]
   twoFactors               TwoFactor[]

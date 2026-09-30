@@ -20,11 +20,70 @@ import '../state/appointment_providers.dart';
 /// "Reviewed ✓" immediately without another backend lookup.
 final _reviewedAppointmentsProvider = StateProvider<Set<String>>((ref) => {});
 
-class MyAppointmentsScreen extends ConsumerWidget {
+enum _Tab { upcoming, completed, cancelled }
+
+const _upcomingStatuses = {
+  'requested',
+  'scheduled',
+  'confirmed',
+  'in_progress',
+};
+
+_Tab _tabOf(Appointment a) => _upcomingStatuses.contains(a.status)
+    ? _Tab.upcoming
+    : a.status == 'cancelled'
+    ? _Tab.cancelled
+    : _Tab.completed;
+
+/// Section heading for an upcoming appointment, in display order.
+(int, String) _groupOf(Appointment a) {
+  if (a.status == 'in_progress') return (0, 'In progress');
+  if (a.proposedDate != null) return (1, 'New time proposed');
+  if (a.status == 'requested') return (5, 'Waiting for the doctor to confirm');
+  final today = DateUtils.dateOnly(DateTime.now());
+  final day = DateUtils.dateOnly(a.date);
+  if (day == today) return (2, 'Today');
+  if (day == today.add(const Duration(days: 1))) return (3, 'Tomorrow');
+  return (4, 'Coming up');
+}
+
+class MyAppointmentsScreen extends ConsumerStatefulWidget {
   const MyAppointmentsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyAppointmentsScreen> createState() =>
+      _MyAppointmentsScreenState();
+}
+
+class _MyAppointmentsScreenState extends ConsumerState<MyAppointmentsScreen> {
+  _Tab _tab = _Tab.upcoming;
+
+  /// The visible tab's rows: section headings (String) and appointments.
+  List<Object> _rows(List<Appointment> all) {
+    final list = all.where((a) => _tabOf(a) == _tab).toList();
+    if (_tab != _Tab.upcoming) {
+      list.sort((a, b) => b.date.compareTo(a.date));
+      return list;
+    }
+    list.sort((a, b) {
+      final g = _groupOf(a).$1.compareTo(_groupOf(b).$1);
+      return g != 0 ? g : a.date.compareTo(b.date);
+    });
+    final rows = <Object>[];
+    String? current;
+    for (final a in list) {
+      final heading = _groupOf(a).$2;
+      if (heading != current) {
+        rows.add(heading);
+        current = heading;
+      }
+      rows.add(a);
+    }
+    return rows;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appointmentsAsync = ref.watch(myAppointmentsProvider);
 
     return Scaffold(
@@ -60,17 +119,108 @@ class MyAppointmentsScreen extends ConsumerWidget {
               child: appointmentsAsync.when(
                 data: (appointments) {
                   if (appointments.isEmpty) return const _EmptyState();
-                  return RefreshIndicator(
-                    color: seedTeal,
-                    onRefresh: () => ref.refresh(myAppointmentsProvider.future),
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                      itemCount: appointments.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 14),
-                      itemBuilder: (context, index) =>
-                          _AppointmentCard(appointment: appointments[index]),
-                    ),
+                  final counts = {
+                    for (final t in _Tab.values)
+                      t: appointments.where((a) => _tabOf(a) == t).length,
+                  };
+                  final rows = _rows(appointments);
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: 44,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          children: [
+                            for (final t in _Tab.values)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: _TabChip(
+                                  label: switch (t) {
+                                    _Tab.upcoming => 'Upcoming',
+                                    _Tab.completed => 'Completed',
+                                    _Tab.cancelled => 'Cancelled',
+                                  },
+                                  count: counts[t]!,
+                                  selected: _tab == t,
+                                  onTap: () => setState(() => _tab = t),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: RefreshIndicator(
+                          color: seedTeal,
+                          onRefresh: () =>
+                              ref.refresh(myAppointmentsProvider.future),
+                          child: rows.isEmpty
+                              ? ListView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(40),
+                                      child: Text(
+                                        switch (_tab) {
+                                          _Tab.upcoming =>
+                                            'No upcoming appointments.',
+                                          _Tab.completed =>
+                                            'No past visits yet.',
+                                          _Tab.cancelled =>
+                                            'No cancelled appointments.',
+                                        },
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Color(0xFF6B7A7A),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : ListView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    4,
+                                    16,
+                                    24,
+                                  ),
+                                  itemCount: rows.length,
+                                  itemBuilder: (context, index) {
+                                    final row = rows[index];
+                                    if (row is String) {
+                                      return Padding(
+                                        padding: EdgeInsets.fromLTRB(
+                                          4,
+                                          index == 0 ? 4 : 10,
+                                          4,
+                                          10,
+                                        ),
+                                        child: Text(
+                                          row,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: darkTealBackground,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 14,
+                                      ),
+                                      child: _AppointmentCard(
+                                        appointment: row as Appointment,
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ),
+                    ],
                   );
                 },
                 loading: () => const Padding(
@@ -974,6 +1124,48 @@ class _VisitSummaryState extends State<_VisitSummary> {
               style: const TextStyle(fontSize: 13.5, height: 1.4),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TabChip extends StatelessWidget {
+  const _TabChip({
+    required this.label,
+    required this.count,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final int count;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? seedTeal : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kCardRadius),
+        side: selected
+            ? BorderSide.none
+            : BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Center(
+            child: Text(
+              count > 0 ? '$label ($count)' : label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: selected ? Colors.white : darkTealBackground,
+              ),
+            ),
+          ),
         ),
       ),
     );

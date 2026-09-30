@@ -79,6 +79,7 @@ class Earnings {
     required this.revenueInPerson,
     required this.recentTransactions,
     this.withdrawals = const [],
+    this.series = const {},
   });
 
   final int totalEarnings;
@@ -95,6 +96,9 @@ class Earnings {
   final int revenueInPerson;
   final List<RecentTransaction> recentTransactions;
   final List<WithdrawalEntry> withdrawals;
+
+  /// week | month | year → points of (label, amount) for the chart.
+  final Map<String, List<({String label, int amount})>> series;
 
   factory Earnings.fromJson(Map<String, dynamic> json) {
     final stats = json['consultationStats'] as Map<String, dynamic>? ?? {};
@@ -117,6 +121,17 @@ class Earnings {
       revenueVirtual: breakdown['virtual'] as int? ?? 0,
       revenueInPerson: breakdown['inPerson'] as int? ?? 0,
       recentTransactions: transactions,
+      series: {
+        for (final entry
+            in (json['series'] as Map<String, dynamic>? ?? const {}).entries)
+          entry.key: [
+            for (final p in entry.value as List)
+              (
+                label: p['label'] as String? ?? '',
+                amount: (p['amount'] as num?)?.toInt() ?? 0,
+              ),
+          ],
+      },
       withdrawals: [
         for (final w in json['withdrawals'] as List? ?? const [])
           WithdrawalEntry.fromJson(w as Map<String, dynamic>),

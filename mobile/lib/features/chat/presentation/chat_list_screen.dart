@@ -450,7 +450,7 @@ class _ConversationTile extends StatelessWidget {
         now.year == dateTime.year &&
         now.month == dateTime.month &&
         now.day == dateTime.day;
-    if (isToday) return DateFormat('HH:mm').format(dateTime);
+    if (isToday) return DateFormat('h:mm a').format(dateTime);
     final yesterday = now.subtract(const Duration(days: 1));
     final isYesterday =
         yesterday.year == dateTime.year &&

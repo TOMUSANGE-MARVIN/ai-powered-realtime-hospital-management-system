@@ -13,6 +13,47 @@ const sumFees = async (doctorId: string, from?: Date) => {
   return { total: result._sum.fee ?? 0, count: result._count };
 };
 
+/**
+ * Completed-visit earnings per day for the last 7 days and this month, and
+ * per month for this year. Appointment dates hold the booked wall-clock time
+ * (see Appointment.date), so they're bucketed by their UTC date parts.
+ */
+async function earningsSeries(doctorId: string, now: Date) {
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const today = Date.UTC(y, m, now.getDate());
+  const weekFrom = today - 6 * 86400_000;
+  const from = new Date(Math.min(weekFrom, Date.UTC(y, 0, 1)));
+  const rows = await prisma.appointment.findMany({
+    where: { doctorId, status: "completed", date: { gte: from } },
+    select: { date: true, fee: true },
+  });
+  const dayKey = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  const byDay = new Map<number, number>();
+  const byMonth = new Map<number, number>();
+  for (const r of rows) {
+    byDay.set(dayKey(r.date), (byDay.get(dayKey(r.date)) ?? 0) + (r.fee ?? 0));
+    if (r.date.getUTCFullYear() === y) {
+      byMonth.set(r.date.getUTCMonth(), (byMonth.get(r.date.getUTCMonth()) ?? 0) + (r.fee ?? 0));
+    }
+  }
+  const dayName = (t: number) => new Date(t).toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" });
+  return {
+    week: Array.from({ length: 7 }, (_, i) => {
+      const t = weekFrom + i * 86400_000;
+      return { label: dayName(t), amount: byDay.get(t) ?? 0 };
+    }),
+    month: Array.from({ length: now.getDate() }, (_, i) => {
+      const t = Date.UTC(y, m, i + 1);
+      return { label: String(i + 1), amount: byDay.get(t) ?? 0 };
+    }),
+    year: Array.from({ length: m + 1 }, (_, i) => ({
+      label: new Date(Date.UTC(y, i, 1)).toLocaleDateString("en-GB", { month: "short", timeZone: "UTC" }),
+      amount: byMonth.get(i) ?? 0,
+    })),
+  };
+}
+
 // Doctor's own earnings summary (mobile doctor app Earnings screen)
 export const getMyEarnings = async (req: Request, res: Response) => {
   try {
@@ -96,6 +137,7 @@ export const getMyEarnings = async (req: Request, res: Response) => {
         date: a.date,
         isVirtual: a.isVirtual,
       })),
+      series: await earningsSeries(doctor.id, now),
       withdrawals: withdrawals.map((w) => ({
         id: w.id,
         amount: w.amount,

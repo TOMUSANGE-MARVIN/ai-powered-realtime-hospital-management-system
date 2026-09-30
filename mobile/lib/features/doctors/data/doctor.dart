@@ -55,10 +55,14 @@ class Doctor {
     this.availabilityHours,
     this.availableToday = false,
     this.timeOff = const [],
+    this.patientCount,
   });
 
   /// Upcoming time off (only included on the doctor detail endpoint).
   final List<TimeOffRange> timeOff;
+
+  /// Distinct patients seen (doctor detail endpoint only).
+  final int? patientCount;
 
   bool isAwayOn(DateTime day) => timeOff.any((t) => t.covers(day));
 
@@ -107,6 +111,7 @@ class Doctor {
       availabilityDays: json['availabilityDays'] as String?,
       availabilityHours: json['availabilityHours'] as String?,
       availableToday: json['availableToday'] as bool? ?? false,
+      patientCount: (json['patientCount'] as num?)?.toInt(),
       timeOff: [
         for (final t in json['timeOff'] as List? ?? const [])
           TimeOffRange.fromJson(t as Map<String, dynamic>),

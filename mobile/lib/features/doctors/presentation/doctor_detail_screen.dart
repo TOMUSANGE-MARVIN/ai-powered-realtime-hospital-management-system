@@ -335,6 +335,13 @@ class _RatingLine extends StatelessWidget {
             style: const TextStyle(fontSize: 13, color: _muted),
           ),
         ],
+        if ((doctor.patientCount ?? 0) > 0) ...[
+          const Text('•', style: TextStyle(fontSize: 13, color: _muted)),
+          Text(
+            '${doctor.patientCount} patient${doctor.patientCount == 1 ? '' : 's'} seen',
+            style: const TextStyle(fontSize: 13, color: _muted),
+          ),
+        ],
       ],
     );
   }

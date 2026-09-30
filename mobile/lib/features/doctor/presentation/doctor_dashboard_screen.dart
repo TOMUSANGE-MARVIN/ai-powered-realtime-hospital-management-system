@@ -7,12 +7,17 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/dashboard_gate.dart';
 import '../../../core/widgets/skeleton.dart';
+import '../../../core/widgets/soft_card.dart';
+import '../../appointments/data/booking_draft.dart'
+    show parseAvailableWeekdays, parseSlotMinutes;
+import '../../auth/data/app_user.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../notifications/presentation/notifications_screen.dart'
     show NotificationBell;
 import 'appointment_dialogs.dart';
+import 'doctor_appointments_screen.dart' show DoctorAppointmentCard;
 import '../state/doctor_providers.dart';
 
 String _greetingName(String? fullName) {
@@ -56,6 +61,12 @@ class DoctorDashboardScreen extends ConsumerWidget {
           builder: (context) => ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (userAsync.value != null)
+                _DoctorHeader(
+                  user: userAsync.value!,
+                  todays: todaysAsync.value ?? const [],
+                ),
+              const SizedBox(height: 16),
               Card(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: Padding(
@@ -112,10 +123,16 @@ class DoctorDashboardScreen extends ConsumerWidget {
                       child: Text('No appointments scheduled for today.'),
                     );
                   }
+                  final sorted = [...appointments]
+                    ..sort((a, b) => a.date.compareTo(b.date));
                   return Column(
-                    children: appointments
-                        .map((a) => _AppointmentTile(appointment: a))
-                        .toList(),
+                    children: [
+                      for (final a in sorted)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: DoctorAppointmentCard(appointment: a),
+                        ),
+                    ],
                   );
                 },
                 loading: () => const SizedBox.shrink(),
@@ -189,26 +206,6 @@ class _DoctorDashboardSkeleton extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _AppointmentTile extends StatelessWidget {
-  const _AppointmentTile({required this.appointment});
-
-  final Appointment appointment;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        title: Text(appointment.patientName ?? 'Patient'),
-        subtitle: Text(
-          appointment.time ?? DateFormat('MMM d').format(appointment.date),
-        ),
-        trailing: Chip(label: Text(appointment.status)),
-      ),
     );
   }
 }
@@ -313,6 +310,108 @@ class _RequestTile extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Photo, name and specialty, plus the next free slot today worked out from
+/// the doctor's working hours and today's bookings.
+class _DoctorHeader extends StatelessWidget {
+  const _DoctorHeader({required this.user, required this.todays});
+
+  final AppUser user;
+  final List<Appointment> todays;
+
+  String _nextFree() {
+    final now = DateTime.now();
+    final days = parseAvailableWeekdays(user.availabilityDays);
+    if (days != null && !days.contains(now.weekday)) {
+      return 'Not a working day';
+    }
+    final taken = {
+      for (final a in todays)
+        if (a.status != 'cancelled') a.time,
+    };
+    final slot = parseSlotMinutes(user.availabilityHours).where((m) {
+      final start = DateTime(now.year, now.month, now.day, m ~/ 60, m % 60);
+      final label = DateFormat.jm().format(start);
+      return start.isAfter(now) &&
+          !taken.contains(label) &&
+          !taken.contains(label.padLeft(8, '0'));
+    });
+    if (slot.isEmpty) return 'No free slots left today';
+    final m = slot.first;
+    return 'Next free slot today: '
+        '${DateFormat.jm().format(DateTime(2000, 1, 1, m ~/ 60, m % 60))}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final initials = user.name
+        .replaceFirst(RegExp(r'^dr\.?\s*', caseSensitive: false), '')
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .map((p) => p[0])
+        .take(2)
+        .join()
+        .toUpperCase();
+    return SoftCard(
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: seedTeal.withValues(alpha: 0.12),
+            backgroundImage: user.image != null
+                ? NetworkImage(user.image!)
+                : null,
+            child: user.image == null
+                ? Text(
+                    initials,
+                    style: const TextStyle(
+                      color: seedTeal,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.name,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (user.specialization != null)
+                  Text(user.specialization!, style: TextStyle(color: muted)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.event_available,
+                      size: 16,
+                      color: seedTeal,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        _nextFree(),
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

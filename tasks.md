@@ -310,12 +310,12 @@ Pesapal refund rules ([RefundRequest docs](https://developer.pesapal.com/how-to-
 Layout and content match the design (in the app's own teal styling) for: Settings, 2FA, Edit Profile, User Profile, Full History, Upload Prescription, Doctor Profile, Categories, Chat. The differences below are structural. None block use, but each is a place the app doesn't do what the design shows.
 
 - [x] Full History showed image documents as file tiles when the URL had no extension (UploadThing and Unsplash links) — fixed: anything that isn't a known document type is tried as an image, with the file tile as fallback
-- [ ] **Book appointment** — design: horizontal date strip + time-slot chips with a 3-step indicator; app: date and time pickers. Rebuild the date and slot selection as chips (keep the doctor's working days and hours rules)
-- [ ] **My Appointments** — design: Upcoming / Completed / Canceled filter tabs and grouping under "Tomorrow" / "Pending for confirmation"; app: one list. Add the tabs and grouping
-- [ ] **Doctor dashboard** — design: doctor photo and name header, patient avatars, date and time on each card, Reschedule / Join call / Cancel actions, "Next available today"; app: Accept / Reject only and no avatars. Add the missing actions and header
-- [ ] **Doctor earnings** — design: Total earnings and This month tiles and a line chart for Today / Week / Month / Year; app: available and pending only, one number per period. Add the tiles and chart (needs a per-day earnings series from `/api/earnings/mine`)
-- [ ] **Doctor profile (patient view)** — design: rating and patients-count tiles, reviews carousel and 3-step indicator; app: richer tabs but no patients count. Add the patients-count tile
-- [ ] **Time format** — chat timestamps show 24-hour (21:23) while the design uses 12-hour (09:41 AM); use 12-hour with AM/PM
+- [x] **Book appointment** — done: a horizontal date strip (next 14 days; the doctor's closed days and time off are dimmed) and time-slot chips within the doctor's hours. The 3-step indicator was left out (the flow is two screens)
+- [x] **My Appointments** — done: Upcoming / Completed / Cancelled tabs with counts; Upcoming is grouped into "In progress", "New time proposed", "Today", "Tomorrow", "Coming up" and "Waiting for the doctor to confirm"
+- [x] **Doctor dashboard** — done: header with photo, name, specialty and the next free slot today; today's visits use the full appointment card (date and time, Start / Call / Reschedule / Cancel / No-show); requests keep Accept / Reject with a reason
+- [x] **Doctor earnings** — done: Total earnings and This month tiles, and a line chart for Week and Month (daily) and Year (monthly; Today shows the day's total) from a new `series` field on `/api/earnings/mine` (checked against seeded payments)
+- [x] **Doctor profile (patient view)** — done: "N patients seen" (distinct patients with a completed visit) next to the rating
+- [x] **Time format** — done: chat, chat list and call history use 12-hour time with AM/PM
 - [ ] Decide whether the design's bottom navigation labels (Home, Appointments, Inbox, Profile) should replace the app's icon-only pill navigation
 
 ## E21. User-flow gaps (patient and doctor)
@@ -340,7 +340,7 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
 
 **Needs from you before these can be built:**
 - Password reset: an email provider (for example Resend, Mailgun or an SMTP account) and the address to send from.
-- Push notifications and background calls: a Firebase project with Android and iOS apps registered (`google-services.json`, `GoogleService-Info.plist`) and a service-account key for the server; for iOS calls, an Apple Push (VoIP) certificate.
+- Push notifications and background calls: see **E22** (FCM first, APNs later; scheduled last).
 - Cancellation refunds: the refund policy (for example full refund if cancelled more than X hours before the visit).
 
 ### Doctor
@@ -359,6 +359,29 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
 ### Both
 
 - [ ] **Medium — Appointment time convention.** Bookings store the chosen local wall-clock time as if it were UTC, and the app displays it back unconverted. This works while everyone is in Uganda, but server-side reminders, the admin pages and any user in another time zone would be 3 hours off. Store true UTC when booking, convert on display, and migrate existing rows in the same release.
+
+## E22. Push notifications and background calls (FCM first, then APNs) — do last
+
+Why: the live socket only works while the app is open. To reach a closed or sleeping phone, the VPS has to go through the OS push service: FCM on Android, APNs on iOS. Only FCM's free messaging is used; the database, API and hosting stay on the VPS. The in-app notification pipeline (`backend/src/lib/notify.ts`) is already the single place every event goes through, so push plugs in there.
+
+### Phase 1 — FCM (Android)
+
+- [ ] **Owner:** create a Firebase project and add an Android app with package name `ug.co.askmusawo.ask_musawo`; download `google-services.json`
+- [ ] **Owner:** Firebase console → Project settings → Service accounts → generate a private key (JSON) for the server
+- [ ] Backend: `DeviceToken` model (userId, token, platform, lastSeenAt) + migration; `POST /api/devices` (register / refresh) and `DELETE /api/devices/:token` (sign-out)
+- [ ] Backend: `firebase-admin` with the service-account key from an environment variable; send push inside `notifyUser`, drop tokens FCM reports as invalid
+- [ ] Mobile: `firebase_core` + `firebase_messaging`, `google-services.json` in `android/app/`, request notification permission (Android 13+), register the token after sign-in and on refresh, remove it on sign-out
+- [ ] Mobile: tapping a push opens the same screen as the inbox item (`link`); foreground pushes refresh the inbox instead of showing a duplicate banner
+- [ ] Incoming calls: a high-priority data message → full-screen incoming-call notification (`flutter_callkit_incoming` or a full-screen intent) that opens the call screen, with Accept / Decline working while the app is closed
+- [ ] Appointment reminders: a scheduled job on the VPS (24 h and 15 min before) that calls `notifyUser` — needs the time-zone fix in E21 first
+- [ ] Verify on real phones (including Tecno / Infinix / Samsung battery savers): app in background, app swiped away, phone locked; notification taps; a call ringing on a locked phone
+
+### Phase 2 — APNs (iOS), when an iOS app is added
+
+- [ ] **Owner:** Apple Developer account; create the iOS app and an APNs auth key (.p8), plus VoIP push for calls
+- [ ] Add the iOS app to the same Firebase project (or send to APNs directly from the VPS) and upload the APNs key
+- [ ] Mobile: iOS notification permission, CallKit / PushKit for incoming calls
+- [ ] Verify on a real iPhone
 
 ## Final pass
 

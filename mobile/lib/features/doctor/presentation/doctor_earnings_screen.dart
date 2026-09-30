@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -70,6 +71,24 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                 children: [
                   Expanded(
                     child: _StatCard(
+                      label: 'Total Earnings',
+                      value: 'UGX ${currency.format(earnings.totalEarnings)}',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'This Month',
+                      value: 'UGX ${currency.format(earnings.thisMonth)}',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
                       label: 'Available Balance',
                       value:
                           'UGX ${currency.format(earnings.availableBalance)}',
@@ -125,15 +144,31 @@ class _DoctorEarningsScreenState extends ConsumerState<DoctorEarningsScreen> {
                   ButtonSegment(value: 'year', label: Text('Year')),
                 ],
                 selected: {_period},
+                showSelectedIcon: false,
                 onSelectionChanged: (v) => setState(() => _period = v.first),
               ),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text(
-                    'UGX ${currency.format(_amountFor(earnings))}',
-                    style: Theme.of(context).textTheme.headlineMedium,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'UGX ${currency.format(_amountFor(earnings))}',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      if ((earnings.series[_period] ?? const []).length >
+                          1) ...[
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 180,
+                          child: _EarningsChart(
+                            points: earnings.series[_period]!,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
@@ -361,6 +396,105 @@ class _StatCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Earnings over the selected period as a teal line.
+class _EarningsChart extends StatelessWidget {
+  const _EarningsChart({required this.points});
+
+  final List<({String label, int amount})> points;
+
+  String _compact(double v) => v >= 1000000
+      ? '${(v / 1000000).toStringAsFixed(1)}M'
+      : v >= 1000
+      ? '${(v / 1000).round()}K'
+      : v.round().toString();
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final maxY = points.fold<int>(0, (m, p) => p.amount > m ? p.amount : m);
+    // Show at most ~7 x labels so month views stay readable.
+    final step = (points.length / 7).ceil().clamp(1, 31);
+    return LineChart(
+      LineChartData(
+        minY: 0,
+        maxY: maxY == 0 ? 1 : maxY * 1.15,
+        gridData: FlGridData(
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (_) => FlLine(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            strokeWidth: 1,
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(),
+          rightTitles: const AxisTitles(),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (v, meta) => v == meta.max
+                  ? const SizedBox.shrink()
+                  : Text(
+                      _compact(v),
+                      style: TextStyle(fontSize: 10, color: muted),
+                    ),
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: 1,
+              getTitlesWidget: (v, meta) {
+                final i = v.round();
+                if (i < 0 || i >= points.length || i % step != 0) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    points[i].label,
+                    style: TextStyle(fontSize: 10, color: muted),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (_) => darkTealBackground,
+            getTooltipItems: (spots) => [
+              for (final s in spots)
+                LineTooltipItem(
+                  '${points[s.x.round()].label}\nUGX ${NumberFormat.decimalPattern().format(s.y.round())}',
+                  const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+            ],
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: [
+              for (var i = 0; i < points.length; i++)
+                FlSpot(i.toDouble(), points[i].amount.toDouble()),
+            ],
+            isCurved: true,
+            preventCurveOverShooting: true,
+            color: seedTeal,
+            barWidth: 2.5,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: seedTeal.withValues(alpha: 0.08),
+            ),
+          ),
+        ],
       ),
     );
   }

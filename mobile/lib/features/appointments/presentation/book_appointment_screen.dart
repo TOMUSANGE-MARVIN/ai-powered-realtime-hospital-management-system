@@ -77,45 +77,6 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     return null;
   }
 
-  Future<void> _pickDate(Set<int>? weekdays, List<int> slots) async {
-    final today = _dayOnly(DateTime.now());
-    final lastDay = today.add(const Duration(days: _bookingWindowDays - 1));
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _date ?? _nextBookableDay(today, weekdays, slots) ?? today,
-      firstDate: today,
-      lastDate: lastDay,
-      selectableDayPredicate: (day) => _isDayBookable(day, weekdays, slots),
-      helpText: 'Choose appointment date',
-    );
-    if (picked != null) {
-      setState(() {
-        _date = picked;
-        _slotMinutes = null;
-      });
-    }
-  }
-
-  Future<void> _pickTime(List<int> slots) async {
-    final openSlots = _date == null ? slots : _openSlots(_date!, slots);
-    if (openSlots.isEmpty) return;
-    final initial = _slotMinutes ?? openSlots.first;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: initial ~/ 60, minute: initial % 60),
-      helpText: 'Choose appointment time',
-    );
-    if (picked == null) return;
-    final minutes = picked.hour * 60 + picked.minute;
-    // The clock face lets the patient drop the hand on any minute, but the
-    // doctor's slots are 30-minute steps — snap to the closest open one
-    // instead of rejecting anything not exactly on the mark.
-    final closest = openSlots.reduce(
-      (a, b) => (a - minutes).abs() <= (b - minutes).abs() ? a : b,
-    );
-    setState(() => _slotMinutes = closest);
-  }
-
   BookingDraft? _draft(Doctor doctor) {
     final reason = _reasonController.text.trim();
     if (_isEmergency) {
@@ -204,33 +165,27 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                             style: TextStyle(color: _muted),
                           ),
                         )
-                      else
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _PickerField(
-                                icon: Icons.calendar_month_outlined,
-                                label: 'Date',
-                                value: DateFormat(
-                                  'EEE, MMM d, yyyy',
-                                ).format(_date!),
-                                onTap: () => _pickDate(weekdays, slots),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _PickerField(
-                                icon: Icons.access_time_outlined,
-                                label: 'Time',
-                                value: _slotMinutes == null
-                                    ? 'Choose time'
-                                    : _formatSlot(_slotMinutes!),
-                                placeholder: _slotMinutes == null,
-                                onTap: () => _pickTime(slots),
-                              ),
-                            ),
+                      else ...[
+                        _DateStrip(
+                          days: [
+                            for (var i = 0; i < _bookingWindowDays; i++)
+                              _dayOnly(DateTime.now()).add(Duration(days: i)),
                           ],
+                          selected: _date!,
+                          isBookable: (d) => _isDayBookable(d, weekdays, slots),
+                          onSelect: (d) => setState(() {
+                            _date = d;
+                            _slotMinutes = null;
+                          }),
                         ),
+                        const SizedBox(height: 14),
+                        _SlotChips(
+                          slots: _openSlots(_date!, slots),
+                          selected: _slotMinutes,
+                          format: _formatSlot,
+                          onSelect: (m) => setState(() => _slotMinutes = m),
+                        ),
+                      ],
                       if (doctor.availabilityHours != null) ...[
                         const SizedBox(height: 10),
                         Text(
@@ -465,69 +420,6 @@ class _EmergencyToggle extends StatelessWidget {
 
 /// A tappable field styled like the other form controls that opens a native
 /// Material picker (showDatePicker / showTimePicker) instead of inline chips.
-class _PickerField extends StatelessWidget {
-  const _PickerField({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.placeholder = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool placeholder;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(kCardRadius),
-        side: BorderSide(color: scheme.outlineVariant),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              Icon(icon, size: 20, color: seedTeal),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(fontSize: 11.5, color: _muted),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: placeholder ? _muted : _ink,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _CheckoutBar extends StatelessWidget {
   const _CheckoutBar({
     required this.fee,
@@ -588,6 +480,141 @@ class _CheckoutBar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Horizontal strip of the next days; closed days are dimmed.
+class _DateStrip extends StatelessWidget {
+  const _DateStrip({
+    required this.days,
+    required this.selected,
+    required this.isBookable,
+    required this.onSelect,
+  });
+
+  final List<DateTime> days;
+  final DateTime selected;
+  final bool Function(DateTime) isBookable;
+  final ValueChanged<DateTime> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final outline = Theme.of(context).colorScheme.outlineVariant;
+    return SizedBox(
+      height: 76,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: days.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, i) {
+          final day = days[i];
+          final open = isBookable(day);
+          final isSelected = DateUtils.isSameDay(day, selected);
+          return Opacity(
+            opacity: open ? 1 : 0.4,
+            child: Material(
+              color: isSelected ? seedTeal : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(kCardRadius),
+                side: isSelected ? BorderSide.none : BorderSide(color: outline),
+              ),
+              child: InkWell(
+                onTap: open ? () => onSelect(day) : null,
+                child: SizedBox(
+                  width: 58,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        DateFormat('EEE').format(day),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isSelected ? Colors.white : _muted,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${day.day}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: isSelected ? Colors.white : _ink,
+                        ),
+                      ),
+                      Text(
+                        open ? DateFormat('MMM').format(day) : 'Closed',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isSelected ? Colors.white : _muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// The open half-hour slots for the chosen day.
+class _SlotChips extends StatelessWidget {
+  const _SlotChips({
+    required this.slots,
+    required this.selected,
+    required this.format,
+    required this.onSelect,
+  });
+
+  final List<int> slots;
+  final int? selected;
+  final String Function(int) format;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    if (slots.isEmpty) {
+      return const Text(
+        'No times left on this day — pick another date.',
+        style: TextStyle(color: _muted),
+      );
+    }
+    final outline = Theme.of(context).colorScheme.outlineVariant;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final m in slots)
+          Material(
+            color: m == selected ? seedTeal : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(kCardRadius),
+              side: m == selected
+                  ? BorderSide.none
+                  : BorderSide(color: outline),
+            ),
+            child: InkWell(
+              onTap: () => onSelect(m),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                child: Text(
+                  format(m),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: m == selected ? Colors.white : _ink,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

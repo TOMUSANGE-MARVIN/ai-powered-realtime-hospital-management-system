@@ -93,7 +93,7 @@ class _DoctorAppointmentsScreenState
                     itemCount: filtered.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) =>
-                        _DoctorAppointmentCard(appointment: filtered[index]),
+                        DoctorAppointmentCard(appointment: filtered[index]),
                   ),
                 );
               },
@@ -136,8 +136,9 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _DoctorAppointmentCard extends ConsumerWidget {
-  const _DoctorAppointmentCard({required this.appointment});
+/// One appointment with every doctor action; also used on the dashboard.
+class DoctorAppointmentCard extends ConsumerWidget {
+  const DoctorAppointmentCard({super.key, required this.appointment});
 
   final Appointment appointment;
 
@@ -158,6 +159,8 @@ class _DoctorAppointmentCard extends ConsumerWidget {
             cancellationReason: cancellationReason,
           );
       ref.invalidate(allAssignedAppointmentsProvider);
+      ref.invalidate(todaysAssignedAppointmentsProvider);
+      ref.invalidate(assignedRequestsProvider);
     } on ApiException catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
@@ -290,6 +293,8 @@ class _DoctorAppointmentCard extends ConsumerWidget {
             ),
           );
       ref.invalidate(allAssignedAppointmentsProvider);
+      ref.invalidate(todaysAssignedAppointmentsProvider);
+      ref.invalidate(assignedRequestsProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

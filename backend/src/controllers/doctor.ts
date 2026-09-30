@@ -166,11 +166,16 @@ export const getDoctorById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    const [withRating, timeOff] = await Promise.all([
+    const [withRating, timeOff, patients] = await Promise.all([
       withRatings([doctor]).then((rows) => rows[0]),
       upcomingTimeOff(doctor.id),
+      // Distinct patients this doctor has actually seen.
+      prisma.appointment.groupBy({
+        by: ["patientId"],
+        where: { doctorId: doctor.id, status: "completed", patientId: { not: null } },
+      }),
     ]);
-    res.json({ ...withRating, timeOff });
+    res.json({ ...withRating, timeOff, patientCount: patients.length });
   } catch (error) {
     console.error("Error fetching doctor:", error);
     res.status(500).json({ message: "Server error" });

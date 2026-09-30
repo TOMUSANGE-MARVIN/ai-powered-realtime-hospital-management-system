@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/loading_dots.dart';
 import '../../doctor/data/verification_repository.dart';
 import '../../legal/data/legal_repository.dart';
@@ -136,12 +137,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   if (_asDoctor) ...[
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       "Next you'll add your UMDPC licence. Patients can book "
                       'you once an admin has verified it.',
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: Color(0xFF6B7A7A),
+                        color: context.palette.muted,
                       ),
                     ),
                   ],

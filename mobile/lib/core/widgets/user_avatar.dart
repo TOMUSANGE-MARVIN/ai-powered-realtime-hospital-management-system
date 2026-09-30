@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../theme/app_colors.dart';
 import '../../features/auth/state/auth_controller.dart';
 import 'app_network_image.dart';
 
@@ -85,7 +86,7 @@ class UserAvatar extends ConsumerWidget {
     final photo = url?.isNotEmpty == true ? url : null;
     return CircleAvatar(
       radius: radius,
-      backgroundColor: const Color(0xFFE0F2F2),
+      backgroundColor: context.palette.tint,
       backgroundImage: AssetImage(
         defaultAvatarAsset(doctor: isDoctorKind, gender: gender ?? me?.gender),
       ),

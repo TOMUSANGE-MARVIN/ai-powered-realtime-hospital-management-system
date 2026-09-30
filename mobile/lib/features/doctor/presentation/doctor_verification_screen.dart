@@ -20,8 +20,6 @@ import '../../auth/state/auth_controller.dart';
 import '../../doctors/state/doctor_providers.dart';
 import '../data/verification_repository.dart';
 
-const _muted = Color(0xFF6B7A7A);
-
 /// Where a doctor proves they're licensed before patients can find them:
 /// Uganda Medical and Dental Practitioners Council licence number, the
 /// licensed facility they practise at, and a photo or PDF of the licence.
@@ -212,7 +210,6 @@ class _DoctorVerificationScreenState
     final verificationAsync = ref.watch(myVerificationProvider);
 
     return Scaffold(
-      backgroundColor: tealBackground,
       appBar: AppBar(
         title: const Text('Verify your licence'),
         automaticallyImplyLeading: false,
@@ -418,14 +415,17 @@ class _StatusCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: darkTealBackground,
+                    color: context.palette.ink,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(body, style: const TextStyle(color: _muted, height: 1.4)),
+                Text(
+                  body,
+                  style: TextStyle(color: context.palette.muted, height: 1.4),
+                ),
               ],
             ),
           ),
@@ -473,7 +473,7 @@ class _DocumentTile extends StatelessWidget {
         ),
       );
     } else if (isPdf) {
-      content = const SizedBox(
+      content = SizedBox(
         height: 72,
         child: Row(
           children: [
@@ -481,7 +481,7 @@ class _DocumentTile extends StatelessWidget {
             Icon(Icons.picture_as_pdf_outlined, color: seedTeal, size: 28),
             SizedBox(width: 12),
             Expanded(child: Text('Licence PDF attached')),
-            Icon(Icons.swap_horiz, color: _muted),
+            Icon(Icons.swap_horiz, color: context.palette.muted),
             SizedBox(width: 16),
           ],
         ),

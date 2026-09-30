@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../appointments/data/appointment.dart';
@@ -360,7 +361,7 @@ class DoctorAppointmentCard extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 appointment.reason!,
-                style: TextStyle(color: Colors.grey.shade600),
+                style: TextStyle(color: context.palette.muted),
               ),
             ],
             const SizedBox(height: 12),

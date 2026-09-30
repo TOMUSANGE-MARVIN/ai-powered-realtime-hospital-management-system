@@ -451,10 +451,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final isDoctor = me?.role == 'doctor';
 
     return Scaffold(
-      backgroundColor: tealBackground,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: context.palette.card,
+        surfaceTintColor: context.palette.card,
         elevation: 0,
         titleSpacing: 0,
         title: Row(
@@ -488,7 +487,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             fontSize: 12,
                             color: isOnline
                                 ? const Color(0xFF3BB273)
-                                : Colors.grey.shade500,
+                                : context.palette.muted,
                           ),
                         ),
                         orElse: () => const SizedBox.shrink(),
@@ -553,15 +552,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildInputRow() {
     final hasText = _textController.text.trim().isNotEmpty;
     final isDoctor = ref.watch(authControllerProvider).value?.role == 'doctor';
-    const iconColor = Color(0xFF3B4254);
+    final iconColor = context.palette.muted;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Container(
           width: 44,
           height: 44,
-          decoration: const BoxDecoration(
-            color: Color(0xFFE0F2F2),
+          decoration: BoxDecoration(
+            color: context.palette.tint,
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -575,9 +574,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.only(left: 16, right: 2),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.palette.card,
               borderRadius: BorderRadius.circular(kCardRadius),
-              border: Border.all(color: const Color(0xFFE3E7EC)),
+              border: Border.all(color: context.palette.border),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -596,7 +595,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           : 'Message',
                       hintMaxLines: 1,
                       hintStyle: TextStyle(
-                        color: Colors.grey.shade500,
+                        color: context.palette.muted,
                         fontSize: 15,
                       ),
                       filled: false,
@@ -650,7 +649,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.palette.card,
               borderRadius: BorderRadius.circular(kCardRadius),
               border: Border.all(
                 color: Theme.of(context).colorScheme.outlineVariant,
@@ -839,8 +838,8 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bubbleColor = isMine ? seedTeal : Colors.white;
-    final textColor = isMine ? Colors.white : const Color(0xFF12172B);
+    final bubbleColor = isMine ? seedTeal : context.palette.card;
+    final textColor = isMine ? Colors.white : context.palette.ink;
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,

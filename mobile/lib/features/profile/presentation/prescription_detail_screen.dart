@@ -15,7 +15,6 @@ import '../data/patient_prescription.dart';
 import '../data/prescription_pdf.dart';
 import '../state/profile_providers.dart';
 
-const _muted = Color(0xFF6B7A7A);
 final _date = DateFormat('d MMM yyyy');
 
 /// Status fill colours from the app's palette (see mobile-ui-style rules).
@@ -33,7 +32,6 @@ class PrescriptionsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prescriptions = ref.watch(myPrescriptionsProvider);
     return Scaffold(
-      backgroundColor: tealBackground,
       appBar: AppBar(title: const Text('Prescriptions')),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(myPrescriptionsProvider.future),
@@ -95,14 +93,14 @@ class PrescriptionTile extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 '${rx.doctorName} · ${_date.format(rx.issuedOn)}',
-                style: const TextStyle(color: _muted, fontSize: 13),
+                style: TextStyle(color: context.palette.muted, fontSize: 13),
               ),
             ],
           ),
         ),
         _StatusBadge(status: rx.status, label: rx.statusLabel),
         const SizedBox(width: 4),
-        const Icon(Icons.chevron_right, color: _muted),
+        Icon(Icons.chevron_right, color: context.palette.muted),
       ],
     );
     void open() => context.push('/prescriptions/${rx.id}');
@@ -195,7 +193,6 @@ class _PrescriptionDetailScreenState
   Widget build(BuildContext context) {
     final prescriptions = ref.watch(myPrescriptionsProvider);
     return Scaffold(
-      backgroundColor: tealBackground,
       appBar: AppBar(title: const Text('Prescription')),
       body: prescriptions.when(
         loading: () => const SkeletonForm(fieldCount: 4),
@@ -310,10 +307,10 @@ class _Header extends StatelessWidget {
               Expanded(
                 child: Text(
                   rx.doctorName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
-                    color: darkTealBackground,
+                    color: context.palette.ink,
                   ),
                 ),
               ),
@@ -323,7 +320,7 @@ class _Header extends StatelessWidget {
           if (rx.doctorSpecialization != null)
             Text(
               rx.doctorSpecialization!,
-              style: const TextStyle(color: _muted),
+              style: TextStyle(color: context.palette.muted),
             ),
           const SizedBox(height: 12),
           _Fact(
@@ -382,9 +379,9 @@ class _Section extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: darkTealBackground,
+            color: context.palette.ink,
           ),
         ),
         const SizedBox(height: 10),
@@ -406,8 +403,8 @@ class _MedicineRow extends StatelessWidget {
       Container(
         width: 36,
         height: 36,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE0F2F2),
+        decoration: BoxDecoration(
+          color: context.palette.tint,
           shape: BoxShape.circle,
         ),
         child: const Icon(Icons.medication_outlined, color: seedTeal, size: 20),
@@ -424,7 +421,7 @@ class _MedicineRow extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               '${item.dosage} · Qty ${item.quantity}',
-              style: const TextStyle(color: _muted, fontSize: 13),
+              style: TextStyle(color: context.palette.muted, fontSize: 13),
             ),
             if (item.instructions != null && item.instructions!.isNotEmpty) ...[
               const SizedBox(height: 4),

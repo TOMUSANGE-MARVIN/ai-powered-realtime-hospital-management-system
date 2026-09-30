@@ -45,7 +45,7 @@ class CategoryCard extends StatelessWidget {
     if (tinted) return _buildTinted(context, brandAccent);
     return SoftCard(
       onTap: () => context.push('/search', extra: category.name),
-      color: Colors.white,
+      color: context.palette.card,
       padding: const EdgeInsets.all(10),
       borderRadius: BorderRadius.circular(kCardRadius),
       borderSide: BorderSide(
@@ -60,7 +60,7 @@ class CategoryCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: accent.background,
+                color: accent.backgroundOf(context),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -75,16 +75,16 @@ class CategoryCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: context.palette.ink,
               ),
             ),
             if (showCount)
               Text(
                 '$count doctor${count == 1 ? '' : 's'}',
-                style: TextStyle(fontSize: 10, color: Colors.black54),
+                style: TextStyle(fontSize: 10, color: context.palette.muted),
               ),
           ],
         ),

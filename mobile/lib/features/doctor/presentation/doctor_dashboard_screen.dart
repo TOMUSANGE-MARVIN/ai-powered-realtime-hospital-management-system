@@ -295,7 +295,7 @@ class _RequestTile extends ConsumerWidget {
             const SizedBox(height: 4),
             Text(
               '${dateFormat.format(appointment.date)}${appointment.time != null ? ' · ${appointment.time}' : ''}',
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(color: context.palette.muted),
             ),
             const SizedBox(height: 12),
             Row(

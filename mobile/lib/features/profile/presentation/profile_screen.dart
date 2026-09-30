@@ -94,7 +94,7 @@ class ProfileScreen extends ConsumerWidget {
             if (user.hospitalAddress != null)
               Text(
                 user.hospitalAddress!,
-                style: TextStyle(color: Colors.grey.shade600),
+                style: TextStyle(color: context.palette.muted),
               ),
           ],
         ),
@@ -365,17 +365,24 @@ class _HealthSnapshotSection extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: _snapshotItem('Blood Group', user?.bloodgroup ?? '—'),
+                child: _snapshotItem(
+                  context,
+                  'Blood Group',
+                  user?.bloodgroup ?? '—',
+                ),
               ),
-              Expanded(child: _snapshotItem('Age', user?.age ?? '—')),
+              Expanded(child: _snapshotItem(context, 'Age', user?.age ?? '—')),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _snapshotItem('Gender', user?.gender ?? '—')),
+              Expanded(
+                child: _snapshotItem(context, 'Gender', user?.gender ?? '—'),
+              ),
               Expanded(
                 child: _snapshotItem(
+                  context,
                   'Insurance',
                   user?.hasInsurance == true
                       ? user!.insuranceProvider!
@@ -395,7 +402,11 @@ class _HealthSnapshotSection extends ConsumerWidget {
                   const Icon(Icons.medical_services_outlined, color: seedTeal),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _snapshotItem('Primary Doctor', primary.doctorName),
+                    child: _snapshotItem(
+                      context,
+                      'Primary Doctor',
+                      primary.doctorName,
+                    ),
                   ),
                   const Icon(Icons.chevron_right),
                 ],
@@ -407,13 +418,13 @@ class _HealthSnapshotSection extends ConsumerWidget {
     );
   }
 
-  Widget _snapshotItem(String label, String value) {
+  Widget _snapshotItem(BuildContext context, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          style: TextStyle(fontSize: 11, color: context.palette.muted),
         ),
         const SizedBox(height: 2),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -445,7 +456,7 @@ class _ConsultationHistorySection extends ConsumerWidget {
                         Text(a.doctorName),
                         Text(
                           dateFormat.format(a.date),
-                          style: TextStyle(color: Colors.grey.shade600),
+                          style: TextStyle(color: context.palette.muted),
                         ),
                       ],
                     ),
@@ -563,7 +574,7 @@ class _EmergencyContactSection extends ConsumerWidget {
         title: 'Emergency Contact',
         child: Text(
           'Not set. Add one from Edit Profile.',
-          style: TextStyle(color: Colors.grey.shade600),
+          style: TextStyle(color: context.palette.muted),
         ),
       );
     }
@@ -603,7 +614,10 @@ class _PersonalInfoSection extends ConsumerWidget {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.palette.muted,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -613,7 +627,7 @@ class _PersonalInfoSection extends ConsumerWidget {
                 ],
               ),
             ),
-            Icon(Icons.edit_outlined, size: 18, color: Colors.grey.shade600),
+            Icon(Icons.edit_outlined, size: 18, color: context.palette.muted),
           ],
         ),
       ),

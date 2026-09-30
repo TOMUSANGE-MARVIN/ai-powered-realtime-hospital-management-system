@@ -11,8 +11,6 @@ import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
 import '../../doctors/state/doctor_providers.dart';
 import '../data/booking_draft.dart';
 
-const _ink = darkTealBackground;
-const _muted = Color(0xFF6B7A7A);
 const _danger = Color(0xFFD32F2F);
 
 /// How many days ahead the date strip offers.
@@ -116,12 +114,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     final doctorAsync = ref.watch(doctorDetailProvider(widget.doctorId));
 
     return Scaffold(
-      backgroundColor: tealBackground,
-      appBar: AppBar(
-        backgroundColor: tealBackground,
-        title: const Text('Book appointment'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Book appointment'), centerTitle: true),
       body: doctorAsync.when(
         loading: () => const SkeletonForm(),
         error: (error, _) => Center(child: Text(error.toString())),
@@ -158,11 +151,11 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                       const SizedBox(height: 10),
                       if (_date == null)
                         SoftCard(
-                          color: Colors.white,
-                          child: const Text(
+                          color: context.palette.card,
+                          child: Text(
                             'No open days in the next two weeks. '
                             'Message the doctor or mark this as an emergency.',
-                            style: TextStyle(color: _muted),
+                            style: TextStyle(color: context.palette.muted),
                           ),
                         )
                       else ...[
@@ -190,7 +183,10 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                         const SizedBox(height: 10),
                         Text(
                           'Working hours: ${[doctor.availabilityDays, doctor.availabilityHours].whereType<String>().join(', ')}',
-                          style: const TextStyle(fontSize: 12.5, color: _muted),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: context.palette.muted,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 20),
@@ -202,10 +198,10 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                       maxLines: 3,
                       minLines: 2,
                       textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Briefly describe your symptoms (optional)',
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: context.palette.card,
                       ),
                     ),
                   ],
@@ -233,10 +229,10 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w700,
-        color: _ink,
+        color: context.palette.ink,
       ),
     );
   }
@@ -251,7 +247,7 @@ class _DoctorSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final specialty = doctor.specialization ?? doctor.department;
     return SoftCard(
-      color: Colors.white,
+      color: context.palette.card,
       padding: const EdgeInsets.all(14),
       child: Row(
         children: [
@@ -275,10 +271,10 @@ class _DoctorSummary extends StatelessWidget {
                   doctor.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: _ink,
+                    color: context.palette.ink,
                   ),
                 ),
                 if (specialty != null)
@@ -286,7 +282,10 @@ class _DoctorSummary extends StatelessWidget {
                     [specialty, ?doctor.hospitalName].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, color: _muted),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: context.palette.muted,
+                    ),
                   ),
               ],
             ),
@@ -333,7 +332,7 @@ class _ConsultationTypePicker extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: value == key ? Colors.white : _ink,
+                      color: value == key ? Colors.white : context.palette.ink,
                     ),
                   ),
                 ],
@@ -359,7 +358,7 @@ class _ChoiceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: selected ? seedTeal : Colors.white,
+      color: selected ? seedTeal : context.palette.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kCardRadius),
         side: selected
@@ -387,13 +386,18 @@ class _EmergencyToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SoftCard(
-      color: value ? const Color(0xFFFFE9E9) : Colors.white,
-      borderSide: value ? const BorderSide(color: Color(0xFFF6C4C4)) : null,
+      color: value ? context.palette.dangerTint : context.palette.card,
+      borderSide: value
+          ? BorderSide(color: context.palette.dangerBorder)
+          : null,
       padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
       onTap: () => onChanged(!value),
       child: Row(
         children: [
-          Icon(Icons.emergency_outlined, color: value ? _danger : _muted),
+          Icon(
+            Icons.emergency_outlined,
+            color: value ? _danger : context.palette.muted,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -403,14 +407,17 @@ class _EmergencyToggle extends StatelessWidget {
                   'This is an emergency',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: value ? _danger : _ink,
+                    color: value ? _danger : context.palette.ink,
                   ),
                 ),
                 Text(
                   value
                       ? 'Booked for today — the doctor’s team attends to you as soon as possible'
                       : 'Need to be seen today?',
-                  style: const TextStyle(fontSize: 12.5, color: _muted),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: context.palette.muted,
+                  ),
                 ),
               ],
             ),
@@ -440,7 +447,7 @@ class _CheckoutBar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.card,
         border: Border(top: BorderSide(color: scheme.outlineVariant)),
       ),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -453,16 +460,19 @@ class _CheckoutBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Consultation fee',
-                    style: TextStyle(fontSize: 12.5, color: _muted),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: context.palette.muted,
+                    ),
                   ),
                   Text(
                     'UGX ${NumberFormat.decimalPattern().format(fee)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: _ink,
+                      color: context.palette.ink,
                     ),
                   ),
                 ],
@@ -518,7 +528,7 @@ class _DateStrip extends StatelessWidget {
           return Opacity(
             opacity: open ? 1 : 0.4,
             child: Material(
-              color: isSelected ? seedTeal : Colors.white,
+              color: isSelected ? seedTeal : context.palette.card,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(kCardRadius),
                 side: isSelected ? BorderSide.none : BorderSide(color: outline),
@@ -534,7 +544,9 @@ class _DateStrip extends StatelessWidget {
                         DateFormat('EEE').format(day),
                         style: TextStyle(
                           fontSize: 12,
-                          color: isSelected ? Colors.white : _muted,
+                          color: isSelected
+                              ? Colors.white
+                              : context.palette.muted,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -543,14 +555,18 @@ class _DateStrip extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: isSelected ? Colors.white : _ink,
+                          color: isSelected
+                              ? Colors.white
+                              : context.palette.ink,
                         ),
                       ),
                       Text(
                         open ? DateFormat('MMM').format(day) : 'Closed',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isSelected ? Colors.white : _muted,
+                          color: isSelected
+                              ? Colors.white
+                              : context.palette.muted,
                         ),
                       ),
                     ],
@@ -582,9 +598,9 @@ class _SlotChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (slots.isEmpty) {
-      return const Text(
+      return Text(
         'No times left on this day — pick another date.',
-        style: TextStyle(color: _muted),
+        style: TextStyle(color: context.palette.muted),
       );
     }
     final outline = Theme.of(context).colorScheme.outlineVariant;
@@ -594,7 +610,7 @@ class _SlotChips extends StatelessWidget {
       children: [
         for (final m in slots)
           Material(
-            color: m == selected ? seedTeal : Colors.white,
+            color: m == selected ? seedTeal : context.palette.card,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(kCardRadius),
               side: m == selected
@@ -612,7 +628,7 @@ class _SlotChips extends StatelessWidget {
                   format(m),
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: m == selected ? Colors.white : _ink,
+                    color: m == selected ? Colors.white : context.palette.ink,
                   ),
                 ),
               ),

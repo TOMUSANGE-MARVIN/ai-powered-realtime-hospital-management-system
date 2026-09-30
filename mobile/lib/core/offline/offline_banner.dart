@@ -26,7 +26,9 @@ class OfflineBanner extends ConsumerWidget {
           alignment: Alignment.topCenter,
           child: offline
               ? Material(
-                  color: darkTealBackground,
+                  color: context.isDark
+                      ? context.palette.tint
+                      : darkTealBackground,
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(16, topInset + 6, 16, 8),
                     child: const Row(

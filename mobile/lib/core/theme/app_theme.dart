@@ -4,19 +4,32 @@ import 'app_colors.dart';
 
 ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   final isDark = brightness == Brightness.dark;
-  final colorScheme = ColorScheme.fromSeed(
-    seedColor: seedTeal,
-    brightness: brightness,
-  ).copyWith(
-    // Surfaces are flat (no shadows), so this is the hairline border that
-    // separates cards and bars — kept light enough to read as a line, not a frame.
-    outlineVariant: isDark ? const Color(0xFF2A4242) : const Color(0xFFDDE9E9),
-  );
-  final backgroundColor = isDark ? darkTealBackground : tealBackground;
+  final palette = isDark ? AppPalette.dark : AppPalette.light;
+  final colorScheme =
+      ColorScheme.fromSeed(
+        seedColor: seedTeal,
+        brightness: brightness,
+      ).copyWith(
+        // Surfaces are flat (no shadows), so this is the hairline border that
+        // separates cards and bars — kept light enough to read as a line, not a frame.
+        outlineVariant: palette.border,
+        surface: palette.card,
+        onSurface: palette.ink,
+        onSurfaceVariant: palette.muted,
+        surfaceContainerHighest: palette.skeleton,
+        // Keep the brand teal as the primary in both modes (the seed's dark
+        // variant is a washed-out pastel).
+        primary: seedTeal,
+        onPrimary: Colors.white,
+      );
+  final backgroundColor = palette.page;
 
   return ThemeData(
     useMaterial3: true,
+    brightness: brightness,
     colorScheme: colorScheme,
+    extensions: [palette],
+    dividerTheme: DividerThemeData(color: palette.border),
     scaffoldBackgroundColor: backgroundColor,
     appBarTheme: AppBarTheme(
       backgroundColor: backgroundColor,
@@ -41,24 +54,32 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kCardRadius),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kCardRadius),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kCardRadius),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       ),
     ),
     chipTheme: ChipThemeData(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kCardRadius),
+      ),
       side: BorderSide.none,
       backgroundColor: colorScheme.surfaceContainerHighest,
       selectedColor: colorScheme.primary,

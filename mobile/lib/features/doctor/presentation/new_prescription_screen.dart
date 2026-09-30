@@ -840,10 +840,10 @@ class _PreviewAction extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 8),
       child: Material(
-        color: danger ? const Color(0xFFD32F2F) : Colors.white,
+        color: danger ? const Color(0xFFD32F2F) : context.palette.card,
         shape: const CircleBorder(),
         child: IconButton(
-          icon: Icon(icon, color: danger ? Colors.white : darkTealBackground),
+          icon: Icon(icon, color: danger ? Colors.white : context.palette.ink),
           tooltip: tooltip,
           onPressed: onPressed,
         ),

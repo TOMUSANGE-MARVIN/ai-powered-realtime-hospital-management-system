@@ -16,14 +16,8 @@ import 'review_help_tags.dart';
 import 'doctor_card.dart';
 import '../../../core/widgets/user_avatar.dart';
 
-const _pageBg = Color(0xFFF1F7F7);
-const _ink = Color(0xFF12263A);
-const _muted = Color(0xFF5E7185);
-const _body = Color(0xFF3B5670);
-const _tealTint = Color(0xFFE3F2F1);
 const _green = Color(0xFF1F9D55);
 const _greenText = Color(0xFF16733F);
-const _greenTint = Color(0xFFE4F6EA);
 const _star = Color(0xFFF5A623);
 
 class DoctorDetailScreen extends ConsumerStatefulWidget {
@@ -46,22 +40,22 @@ class _DoctorDetailScreenState extends ConsumerState<DoctorDetailScreen> {
     final doctorAsync = ref.watch(doctorDetailProvider(widget.doctorId));
 
     return Scaffold(
-      backgroundColor: _pageBg,
+      backgroundColor: context.palette.page,
       appBar: AppBar(
-        backgroundColor: _pageBg,
+        backgroundColor: context.palette.page,
         title: const Text('Doctor Profile'),
-        titleTextStyle: const TextStyle(
-          color: _ink,
+        titleTextStyle: TextStyle(
+          color: context.palette.ink,
           fontSize: 22,
           fontWeight: FontWeight.w800,
         ),
-        iconTheme: const IconThemeData(color: _ink),
+        iconTheme: IconThemeData(color: context.palette.ink),
         actions: [
           IconButton(
             icon: Icon(
               _saved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
             ),
-            color: _saved ? Colors.redAccent : _ink,
+            color: _saved ? Colors.redAccent : context.palette.ink,
             onPressed: _toggleSaved,
           ),
           const SizedBox(width: 4),
@@ -102,7 +96,7 @@ class _DoctorDetailBody extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: SoftCard(
-                color: Colors.white,
+                color: context.palette.card,
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
@@ -157,16 +151,16 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return Container(
-      color: _pageBg,
+      color: context.palette.page,
       alignment: Alignment.bottomCenter,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: const TabBar(
+      child: TabBar(
         labelColor: seedTeal,
-        unselectedLabelColor: _muted,
+        unselectedLabelColor: context.palette.muted,
         indicatorColor: seedTeal,
         indicatorWeight: 2.5,
         indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: Color(0xFFDCE6E6),
+        dividerColor: context.palette.border,
         labelPadding: EdgeInsets.zero,
         labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
         unselectedLabelStyle: TextStyle(
@@ -255,10 +249,10 @@ class _HeaderInfo extends StatelessWidget {
             children: [
               Text(
                 doctor.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: _ink,
+                  color: context.palette.ink,
                   height: 1.15,
                 ),
               ),
@@ -266,9 +260,9 @@ class _HeaderInfo extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   specialty,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
-                    color: _muted,
+                    color: context.palette.muted,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -277,7 +271,7 @@ class _HeaderInfo extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   doctor.qualifications!,
-                  style: const TextStyle(fontSize: 13, color: _muted),
+                  style: TextStyle(fontSize: 13, color: context.palette.muted),
                 ),
               ],
               const SizedBox(height: 8),
@@ -323,28 +317,34 @@ class _RatingLine extends StatelessWidget {
         const Icon(Icons.star_rounded, size: 20, color: _star),
         Text(
           doctor.rating != null ? doctor.rating!.toStringAsFixed(1) : 'New',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: _ink,
+            color: context.palette.ink,
           ),
         ),
         Text(
           '($count review${count == 1 ? '' : 's'})',
-          style: const TextStyle(fontSize: 13, color: _muted),
+          style: TextStyle(fontSize: 13, color: context.palette.muted),
         ),
         if (doctor.yearsOfExperience != null) ...[
-          const Text('•', style: TextStyle(fontSize: 13, color: _muted)),
+          Text(
+            '•',
+            style: TextStyle(fontSize: 13, color: context.palette.muted),
+          ),
           Text(
             '${doctor.yearsOfExperience}+ years experience',
-            style: const TextStyle(fontSize: 13, color: _muted),
+            style: TextStyle(fontSize: 13, color: context.palette.muted),
           ),
         ],
         if ((doctor.patientCount ?? 0) > 0) ...[
-          const Text('•', style: TextStyle(fontSize: 13, color: _muted)),
+          Text(
+            '•',
+            style: TextStyle(fontSize: 13, color: context.palette.muted),
+          ),
           Text(
             '${doctor.patientCount} patient${doctor.patientCount == 1 ? '' : 's'} seen',
-            style: const TextStyle(fontSize: 13, color: _muted),
+            style: TextStyle(fontSize: 13, color: context.palette.muted),
           ),
         ],
       ],
@@ -367,8 +367,8 @@ class _MiniInfo extends StatelessWidget {
         Container(
           width: 30,
           height: 30,
-          decoration: const BoxDecoration(
-            color: _tealTint,
+          decoration: BoxDecoration(
+            color: context.palette.tint,
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 16, color: seedTeal),
@@ -382,10 +382,10 @@ class _MiniInfo extends StatelessWidget {
                 title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
-                  color: _ink,
+                  color: context.palette.ink,
                   height: 1.25,
                 ),
               ),
@@ -395,9 +395,9 @@ class _MiniInfo extends StatelessWidget {
                   subtitle!,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11.5,
-                    color: _muted,
+                    color: context.palette.muted,
                     height: 1.3,
                   ),
                 ),
@@ -424,7 +424,7 @@ class _AvailableBadge extends StatelessWidget {
         vertical: dense ? 4 : 5,
       ),
       decoration: BoxDecoration(
-        color: _greenTint,
+        color: context.palette.tint,
         borderRadius: BorderRadius.circular(kPillRadius),
       ),
       child: Row(
@@ -552,8 +552,8 @@ class _OutlineAction extends StatelessWidget {
       height: 48,
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
-          foregroundColor: _ink,
-          side: const BorderSide(color: Color(0xFFCBD6DC)),
+          foregroundColor: context.palette.ink,
+          side: BorderSide(color: context.palette.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(kCardRadius),
           ),
@@ -579,10 +579,10 @@ class _CardTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w800,
-        color: _ink,
+        color: context.palette.ink,
       ),
     );
   }
@@ -596,7 +596,7 @@ class _WhiteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SoftCard(
-      color: Colors.white,
+      color: context.palette.card,
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
       child: child,
     );
@@ -643,10 +643,10 @@ class _AboutTab extends StatelessWidget {
                 doctor.bio != null && doctor.bio!.isNotEmpty
                     ? doctor.bio!
                     : 'No biography has been added for this doctor yet.',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   height: 1.55,
-                  color: _body,
+                  color: context.palette.ink,
                 ),
               ),
               const SizedBox(height: 16),
@@ -697,8 +697,8 @@ class _Fact extends StatelessWidget {
         Container(
           width: 38,
           height: 38,
-          decoration: const BoxDecoration(
-            color: _tealTint,
+          decoration: BoxDecoration(
+            color: context.palette.tint,
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 20, color: seedTeal),
@@ -707,7 +707,11 @@ class _Fact extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 12, color: _muted, height: 1.3),
+            style: TextStyle(
+              fontSize: 12,
+              color: context.palette.muted,
+              height: 1.3,
+            ),
           ),
         ),
       ],
@@ -780,7 +784,10 @@ class _QuickInfoCard extends StatelessWidget {
           const _CardTitle('Quick Info'),
           const SizedBox(height: 6),
           if (rows.isEmpty)
-            const Text('No details added yet.', style: TextStyle(color: _muted))
+            Text(
+              'No details added yet.',
+              style: TextStyle(color: context.palette.muted),
+            )
           else
             ...rows,
         ],
@@ -814,8 +821,8 @@ class _InfoRow extends StatelessWidget {
           Container(
             width: 44,
             height: 44,
-            decoration: const BoxDecoration(
-              color: _tealTint,
+            decoration: BoxDecoration(
+              color: context.palette.tint,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 22, color: seedTeal),
@@ -827,15 +834,15 @@ class _InfoRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 13, color: _muted),
+                  style: TextStyle(fontSize: 13, color: context.palette.muted),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15.5,
                     fontWeight: FontWeight.w500,
-                    color: _ink,
+                    color: context.palette.ink,
                   ),
                 ),
                 if (footer != null) ...[const SizedBox(height: 6), footer!],
@@ -921,11 +928,11 @@ class _ReviewsPreviewCard extends ConsumerWidget {
           reviewsAsync.when(
             data: (data) {
               if (data.reviews.isEmpty) {
-                return const Padding(
+                return Padding(
                   padding: EdgeInsets.symmetric(vertical: 6),
                   child: Text(
                     'No reviews yet.',
-                    style: TextStyle(color: _muted),
+                    style: TextStyle(color: context.palette.muted),
                   ),
                 );
               }
@@ -943,9 +950,9 @@ class _ReviewsPreviewCard extends ConsumerWidget {
             loading: () => const Column(
               children: [SkeletonListTile(), SkeletonListTile()],
             ),
-            error: (_, _) => const Text(
+            error: (_, _) => Text(
               'Could not load reviews',
-              style: TextStyle(color: _muted),
+              style: TextStyle(color: context.palette.muted),
             ),
           ),
         ],
@@ -974,16 +981,16 @@ class _ReviewsTab extends ConsumerWidget {
               reviewsAsync.when(
                 data: (data) {
                   if (data.reviews.isEmpty) {
-                    return const Text(
+                    return Text(
                       'No reviews yet.',
-                      style: TextStyle(color: _muted),
+                      style: TextStyle(color: context.palette.muted),
                     );
                   }
                   return Column(
                     children: [
                       for (var i = 0; i < data.reviews.length; i++) ...[
                         if (i > 0)
-                          const Divider(height: 1, color: Color(0xFFE6EEEE)),
+                          Divider(height: 1, color: context.palette.border),
                         _ReviewRow(review: data.reviews[i], compact: false),
                       ],
                     ],
@@ -996,9 +1003,9 @@ class _ReviewsTab extends ConsumerWidget {
                     SkeletonListTile(),
                   ],
                 ),
-                error: (_, _) => const Text(
+                error: (_, _) => Text(
                   'Could not load reviews',
-                  style: TextStyle(color: _muted),
+                  style: TextStyle(color: context.palette.muted),
                 ),
               ),
             ],
@@ -1041,10 +1048,10 @@ class _ReviewRow extends StatelessWidget {
                 children: [
                   Text(
                     review.patientName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: _ink,
+                      color: context.palette.ink,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -1063,7 +1070,10 @@ class _ReviewRow extends StatelessWidget {
                         DateFormat(
                           compact ? 'MMM d' : 'MMM d, yyyy',
                         ).format(review.createdAt),
-                        style: const TextStyle(fontSize: 13, color: _muted),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: context.palette.muted,
+                        ),
                       ),
                     ],
                   ),
@@ -1073,9 +1083,9 @@ class _ReviewRow extends StatelessWidget {
                       review.comment!,
                       maxLines: compact ? 2 : null,
                       overflow: compact ? TextOverflow.ellipsis : null,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: _body,
+                        color: context.palette.ink,
                         height: 1.35,
                       ),
                     ),
@@ -1090,7 +1100,7 @@ class _ReviewRow extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: _pageBg,
+                        color: context.palette.page,
                         borderRadius: BorderRadius.circular(kCardRadius),
                       ),
                       child: Column(
@@ -1117,9 +1127,9 @@ class _ReviewRow extends StatelessWidget {
                           const SizedBox(height: 3),
                           Text(
                             review.doctorReply!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13.5,
-                              color: _body,
+                              color: context.palette.ink,
                             ),
                           ),
                         ],
@@ -1130,9 +1140,12 @@ class _ReviewRow extends StatelessWidget {
               ),
             ),
             if (compact)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 14),
-                child: Icon(Icons.chevron_right_rounded, color: _muted),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: context.palette.muted,
+                ),
               ),
           ],
         ),
@@ -1161,14 +1174,14 @@ class _TreatmentsTab extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Consults in $specialty',
-                  style: const TextStyle(fontSize: 14, color: _muted),
+                  style: TextStyle(fontSize: 14, color: context.palette.muted),
                 ),
               ],
               const SizedBox(height: 12),
               if (doctor.treatments.isEmpty)
-                const Text(
+                Text(
                   'No treatments have been listed for this doctor yet.',
-                  style: TextStyle(color: _muted),
+                  style: TextStyle(color: context.palette.muted),
                 )
               else
                 Wrap(
@@ -1182,7 +1195,7 @@ class _TreatmentsTab extends StatelessWidget {
                           vertical: 9,
                         ),
                         decoration: BoxDecoration(
-                          color: _tealTint,
+                          color: context.palette.tint,
                           borderRadius: BorderRadius.circular(kPillRadius),
                         ),
                         child: Text(
@@ -1254,9 +1267,9 @@ class _ExperienceTab extends StatelessWidget {
               const _CardTitle('Experience'),
               const SizedBox(height: 6),
               if (rows.isEmpty)
-                const Text(
+                Text(
                   'No experience details have been added for this doctor yet.',
-                  style: TextStyle(color: _muted),
+                  style: TextStyle(color: context.palette.muted),
                 )
               else
                 ...rows,

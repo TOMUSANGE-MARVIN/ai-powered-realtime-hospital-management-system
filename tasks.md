@@ -367,6 +367,8 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
     - [ ] Compatibility for app builds already installed (only if the app is live): the new app sends a header, and the server returns the old format to clients without it
     - [ ] Tests: update smoke suites, add a Dart round-trip unit test, then check join-call window, reschedule-in-past and emergency display
 - [x] **Medium — Skeleton loaders everywhere.** Done: content that's loading always shows a skeleton shaped like it (lists, cards, carousels, section lines, AI results, checkout page, remote images). Actions in progress (buttons, uploads, voice notes) use one shared `LoadingDots` indicator. No spinners remain in `mobile/lib`.
+- [x] **Medium — Dark mode.** Done: named light / dark colours in `AppPalette` (`context.palette.page / card / ink / muted / border / tint / dangerTint / warningTint …`, `core/theme/app_colors.dart`), wired into the theme; about 300 hard-coded colours across 31 files moved onto it; specialty pastels use `accent.backgroundOf(context)`. Kept deliberately fixed: white hero button, signature pad, 2FA QR code, black image viewers, the call screens. Checked with dark and light screenshot tours of 26 patient and doctor screens.
+    - [ ] Check on the Samsung with the system dark theme and the in-app switch
 - [x] **Medium — Offline-first mobile app.** Done (`mobile/lib/core/offline/`):
     - [x] Every GET response saved to disk. Screens open instantly from the saved copy and refresh in the background. Offline, saved data is served at once. The store is cleared on sign in and sign out.
     - [x] Data providers wrapped in `offlineFirst()`. Pull-to-refresh and invalidation go to the network first.

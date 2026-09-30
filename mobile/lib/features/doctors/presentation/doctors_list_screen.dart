@@ -58,16 +58,16 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
     final selectedSpecialty = ref.watch(selectedSpecialtyProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.palette.card,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.palette.card,
         title: const Text('Search'),
-        titleTextStyle: const TextStyle(
-          color: Colors.black,
+        titleTextStyle: TextStyle(
+          color: context.palette.ink,
           fontSize: 22,
           fontWeight: FontWeight.bold,
         ),
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: context.palette.ink),
       ),
       body: Column(
         children: [
@@ -78,11 +78,14 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 hintText: 'Search doctors by name',
-                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
+                hintStyle: TextStyle(
+                  color: context.palette.muted,
+                  fontSize: 15,
+                ),
+                prefixIcon: Icon(Icons.search, color: context.palette.muted),
                 isDense: false,
                 filled: true,
-                fillColor: const Color(0xFFF5F6F8),
+                fillColor: context.palette.page,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(kCardRadius),
                   borderSide: BorderSide.none,
@@ -159,7 +162,7 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                       child: Divider(
                         height: 1,
                         thickness: 1,
-                        color: Colors.grey.shade200,
+                        color: context.palette.border,
                       ),
                     ),
                     itemBuilder: (context, index) =>
@@ -201,7 +204,7 @@ class _SpecialtyChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? seedTeal : const Color(0xFFEDEEF3),
+            color: selected ? seedTeal : context.palette.border,
             borderRadius: BorderRadius.circular(kPillRadius),
           ),
           child: Row(
@@ -211,14 +214,14 @@ class _SpecialtyChip extends StatelessWidget {
                 Icon(
                   icon,
                   size: 15,
-                  color: selected ? Colors.white : Colors.black87,
+                  color: selected ? Colors.white : context.palette.ink,
                 ),
                 const SizedBox(width: 6),
               ],
               Text(
                 label,
                 style: TextStyle(
-                  color: selected ? Colors.white : Colors.black87,
+                  color: selected ? Colors.white : context.palette.ink,
                   fontWeight: FontWeight.w600,
                   fontSize: 13.5,
                 ),
@@ -248,7 +251,7 @@ class _DoctorTile extends ConsumerWidget {
         doctor.specialization ?? doctor.department ?? 'General';
 
     return Material(
-      color: Colors.white,
+      color: context.palette.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kCardRadius),
         side: BorderSide(color: scheme.outlineVariant),
@@ -367,10 +370,12 @@ class _RatingChip extends StatelessWidget {
             rating != null
                 ? '${rating!.toStringAsFixed(1)} ($reviewCount)'
                 : 'New',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF8A5A00),
+              color: context.isDark
+                  ? const Color(0xFFFFCA6B)
+                  : const Color(0xFF8A5A00),
             ),
           ),
         ],

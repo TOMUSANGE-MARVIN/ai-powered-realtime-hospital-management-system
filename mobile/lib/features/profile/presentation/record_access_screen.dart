@@ -7,8 +7,6 @@ import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../data/record_access.dart';
 
-const _muted = Color(0xFF6B7A7A);
-
 /// Settings → Privacy → Who viewed my records: every time a doctor, nurse,
 /// pharmacist or staff member opened this patient's records (E23.3).
 class RecordAccessScreen extends ConsumerWidget {
@@ -18,7 +16,6 @@ class RecordAccessScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final entries = ref.watch(myRecordAccessProvider);
     return Scaffold(
-      backgroundColor: tealBackground,
       appBar: AppBar(title: const Text('Who viewed my records')),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(myRecordAccessProvider.future),
@@ -31,13 +28,13 @@ class RecordAccessScreen extends ConsumerWidget {
           data: (list) => ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(4, 0, 4, 12),
                 child: Text(
                   'Every time someone other than you opens your records, it '
                   'is logged here. Repeat views within 30 minutes show once. '
                   "If you don't recognise someone, contact care@askmusawo.co.ug.",
-                  style: TextStyle(color: _muted, height: 1.45),
+                  style: TextStyle(color: context.palette.muted, height: 1.45),
                 ),
               ),
               if (list.isEmpty)
@@ -76,8 +73,8 @@ class _Row extends StatelessWidget {
       leading: Container(
         width: 40,
         height: 40,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE0F2F2),
+        decoration: BoxDecoration(
+          color: context.palette.tint,
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -96,7 +93,7 @@ class _Row extends StatelessWidget {
       trailing: Text(
         DateFormat('d MMM\nh:mm a').format(entry.at),
         textAlign: TextAlign.right,
-        style: const TextStyle(fontSize: 12, color: _muted),
+        style: TextStyle(fontSize: 12, color: context.palette.muted),
       ),
     );
   }

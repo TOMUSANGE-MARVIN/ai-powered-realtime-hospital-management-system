@@ -205,7 +205,7 @@ class _MatchCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: SoftCard(
-        color: accent.background,
+        color: accent.backgroundOf(context),
         onTap: () => context.push('/search', extra: match.specialty),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -84,9 +84,9 @@ class _PesapalCheckoutScreenState extends State<PesapalCheckoutScreen> {
         if (!didPop) _finish(false);
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: context.palette.card,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: context.palette.card,
           leading: IconButton(
             icon: const Icon(Icons.close),
             tooltip: 'Close',
@@ -126,9 +126,9 @@ class _PesapalCheckoutScreenState extends State<PesapalCheckoutScreen> {
                 children: [
                   WebViewWidget(controller: _controller),
                   if (!_firstLoadDone)
-                    const Positioned.fill(
+                    Positioned.fill(
                       child: ColoredBox(
-                        color: Colors.white,
+                        color: context.palette.card,
                         child: SkeletonForm(fieldCount: 5),
                       ),
                     ),

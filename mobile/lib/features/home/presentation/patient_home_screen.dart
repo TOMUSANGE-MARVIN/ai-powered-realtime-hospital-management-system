@@ -39,7 +39,6 @@ class PatientHomeScreen extends ConsumerWidget {
     final firstName = (user?.name ?? '').trim().split(RegExp(r'\s+')).first;
 
     return Scaffold(
-      backgroundColor: tealBackground,
       body: SafeArea(
         child: RefreshIndicator(
           color: seedTeal,
@@ -314,8 +313,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-const _mutedInk = Color(0xFF6B7A7A);
-
 class _HeroHeader extends StatelessWidget {
   const _HeroHeader({
     required this.greeting,
@@ -343,8 +340,8 @@ class _HeroHeader extends StatelessWidget {
                   children: [
                     Text(
                       '$greeting,',
-                      style: const TextStyle(
-                        color: _mutedInk,
+                      style: TextStyle(
+                        color: context.palette.muted,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -354,8 +351,8 @@ class _HeroHeader extends StatelessWidget {
                       '$firstName',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: darkTealBackground,
+                      style: TextStyle(
+                        color: context.palette.ink,
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
@@ -364,8 +361,8 @@ class _HeroHeader extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       dateLabel,
-                      style: const TextStyle(
-                        color: _mutedInk,
+                      style: TextStyle(
+                        color: context.palette.muted,
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,
                       ),
@@ -374,7 +371,7 @@ class _HeroHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              const NotificationBell(color: darkTealBackground),
+              NotificationBell(color: context.palette.ink),
               const SizedBox(width: 4),
               Semantics(
                 button: true,
@@ -592,7 +589,7 @@ class _PromoSlide extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
+                          color: context.palette.card.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(kCardRadius),
                         ),
                         child: Row(
@@ -638,6 +635,7 @@ class _PromoSlide extends StatelessWidget {
                           onPressed: () => context.push(promo.route),
                           style: FilledButton.styleFrom(
                             backgroundColor: Colors.white,
+                            // Always a white button on the hero image.
                             foregroundColor: darkTealBackground,
                             padding: const EdgeInsets.symmetric(horizontal: 18),
                             shape: RoundedRectangleBorder(
@@ -681,7 +679,7 @@ class _HeroSearchBar extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.card,
         borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(color: seedTeal.withValues(alpha: 0.15)),
       ),
@@ -692,11 +690,11 @@ class _HeroSearchBar extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: () => context.push('/search'),
-              child: const Text(
+              child: Text(
                 'Search doctors, symptoms...',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.black45, fontSize: 14),
+                style: TextStyle(color: context.palette.muted, fontSize: 14),
               ),
             ),
           ),
@@ -866,10 +864,10 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
                         appointment.doctorName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: darkTealBackground,
+                          color: context.palette.ink,
                         ),
                       ),
                       if (specialty != null)
@@ -877,9 +875,9 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
                           specialty,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13.5,
-                            color: Color(0xFF6B7A7A),
+                            color: context.palette.muted,
                           ),
                         ),
                       const SizedBox(height: 8),
@@ -896,11 +894,11 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 44),
                   child: Icon(
                     Icons.chevron_right_rounded,
-                    color: darkTealBackground,
+                    color: context.palette.ink,
                   ),
                 ),
               ],
@@ -910,7 +908,7 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFE6F5F4),
+                color: context.palette.tint,
                 borderRadius: BorderRadius.circular(kCardRadius),
               ),
               child: Row(
@@ -936,9 +934,9 @@ class _UpcomingAppointmentCard extends ConsumerWidget {
                           isPending
                               ? "We'll notify you once it's approved."
                               : 'See you on $dateLabel.',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12.5,
-                            color: Color(0xFF4A5A5A),
+                            color: context.palette.muted,
                           ),
                         ),
                       ],
@@ -975,7 +973,7 @@ class _InfoLine extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-              color: bold ? darkTealBackground : const Color(0xFF55605F),
+              color: bold ? context.palette.ink : const Color(0xFF55605F),
             ),
           ),
         ),
@@ -1316,9 +1314,12 @@ class _FeaturedDoctorCard extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: accent.background,
+                          color: accent.backgroundOf(context),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(
+                            color: context.palette.card,
+                            width: 1.5,
+                          ),
                         ),
                         child: Icon(
                           iconForSpecialization(

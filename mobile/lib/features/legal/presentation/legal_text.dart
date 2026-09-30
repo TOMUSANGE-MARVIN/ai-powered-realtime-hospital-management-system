@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 
-const _muted = Color(0xFF6B7A7A);
-
 /// Renders the legal documents' plain format: "## " headings, "- " bullet
 /// points and blank-line-separated paragraphs (the same format admins edit
 /// on the web).
@@ -14,10 +12,10 @@ class LegalText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const body = TextStyle(
+    final body = TextStyle(
       fontSize: 14.5,
       height: 1.5,
-      color: Color(0xFF2A3A3A),
+      color: context.palette.ink,
     );
     final blocks = <Widget>[];
     for (final raw in text.split('\n')) {
@@ -29,10 +27,10 @@ class LegalText extends StatelessWidget {
             padding: const EdgeInsets.only(top: 18, bottom: 6),
             child: Text(
               line.substring(3),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: darkTealBackground,
+                color: context.palette.ink,
               ),
             ),
           ),
@@ -76,6 +74,8 @@ class LegalUpdatedLine extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: const TextStyle(color: _muted, fontSize: 12.5));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(color: context.palette.muted, fontSize: 12.5),
+  );
 }

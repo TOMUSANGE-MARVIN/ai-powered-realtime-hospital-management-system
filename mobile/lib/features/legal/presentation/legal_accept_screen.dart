@@ -11,8 +11,6 @@ import '../../../core/widgets/soft_card.dart';
 import '../../auth/state/auth_controller.dart';
 import '../data/legal_repository.dart';
 
-const _muted = Color(0xFF6B7A7A);
-
 /// Shown instead of the app when the signed-in user hasn't accepted the
 /// current Terms and Privacy Policy — accounts from before consent existed,
 /// and everyone after an admin publishes a new version (see app_router.dart).
@@ -52,7 +50,6 @@ class _LegalAcceptScreenState extends ConsumerState<LegalAcceptScreen> {
     final docs = ref.watch(legalDocumentsProvider);
 
     return Scaffold(
-      backgroundColor: tealBackground,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(
@@ -83,10 +80,10 @@ class _LegalAcceptScreenState extends ConsumerState<LegalAcceptScreen> {
                     firstTime
                         ? 'Your health information is sensitive'
                         : 'Please review the changes',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
-                      color: darkTealBackground,
+                      color: context.palette.ink,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -99,7 +96,10 @@ class _LegalAcceptScreenState extends ConsumerState<LegalAcceptScreen> {
                         : 'We’ve changed our Terms of Service or Privacy '
                               'Policy. Please read them and accept to keep '
                               'using Ask Musawo.',
-                    style: const TextStyle(color: _muted, height: 1.45),
+                    style: TextStyle(
+                      color: context.palette.muted,
+                      height: 1.45,
+                    ),
                   ),
                 ],
               ),

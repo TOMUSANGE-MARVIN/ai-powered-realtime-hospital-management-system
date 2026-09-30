@@ -14,11 +14,13 @@ class ChatBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFE6F4F3), Color(0xFFDDEFEE)],
+          colors: context.isDark
+              ? const [Color(0xFF0E2222), Color(0xFF0B1A1A)]
+              : const [Color(0xFFE6F4F3), Color(0xFFDDEFEE)],
         ),
       ),
       child: Stack(
@@ -79,7 +81,10 @@ class _DoodlePainter extends CustomPainter {
 
     for (var row = 0; row < rows; row++) {
       for (var col = 0; col < cols; col++) {
-        final cx = col * _cell + (row.isOdd ? _cell / 2 : 0) + (random.nextDouble() - 0.5) * 16;
+        final cx =
+            col * _cell +
+            (row.isOdd ? _cell / 2 : 0) +
+            (random.nextDouble() - 0.5) * 16;
         final cy = row * _cell + (random.nextDouble() - 0.5) * 16;
 
         final icon = _icons[random.nextInt(_icons.length)];
@@ -114,8 +119,16 @@ class _DoodlePainter extends CustomPainter {
             canvas.drawCircle(Offset(fx, fy), 2.2, fillerPaint);
           case 1:
             canvas
-              ..drawLine(Offset(fx - 3.5, fy), Offset(fx + 3.5, fy), fillerPaint)
-              ..drawLine(Offset(fx, fy - 3.5), Offset(fx, fy + 3.5), fillerPaint);
+              ..drawLine(
+                Offset(fx - 3.5, fy),
+                Offset(fx + 3.5, fy),
+                fillerPaint,
+              )
+              ..drawLine(
+                Offset(fx, fy - 3.5),
+                Offset(fx, fy + 3.5),
+                fillerPaint,
+              );
           default:
             break;
         }

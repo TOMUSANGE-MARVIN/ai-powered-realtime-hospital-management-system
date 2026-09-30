@@ -16,8 +16,6 @@ import '../data/payment_repository.dart';
 import '../state/payment_providers.dart';
 import 'pesapal_checkout_screen.dart';
 
-const _ink = darkTealBackground;
-const _muted = Color(0xFF6B7A7A);
 const _danger = Color(0xFFD32F2F);
 
 /// How long to keep asking the backend for a result after checkout — mobile
@@ -209,9 +207,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         if (!didPop && done) context.go('/home/appointments');
       },
       child: Scaffold(
-        backgroundColor: tealBackground,
         appBar: AppBar(
-          backgroundColor: tealBackground,
           automaticallyImplyLeading: !_busy && !done,
           title: const Text('Payment'),
           centerTitle: true,
@@ -322,7 +318,7 @@ class _Review extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
             children: [
               SoftCard(
-                color: Colors.white,
+                color: context.palette.card,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -351,12 +347,12 @@ class _Review extends StatelessWidget {
                     const Divider(height: 24),
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           'Total',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: _ink,
+                            color: context.palette.ink,
                           ),
                         ),
                         const Spacer(),
@@ -379,8 +375,8 @@ class _Review extends StatelessWidget {
               if (error != null) ...[
                 const SizedBox(height: 16),
                 SoftCard(
-                  color: const Color(0xFFFFE9E9),
-                  borderSide: const BorderSide(color: Color(0xFFF6C4C4)),
+                  color: context.palette.dangerTint,
+                  borderSide: BorderSide(color: context.palette.dangerBorder),
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
@@ -404,7 +400,7 @@ class _Review extends StatelessWidget {
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.palette.card,
             border: Border(
               top: BorderSide(
                 color: Theme.of(context).colorScheme.outlineVariant,
@@ -442,10 +438,14 @@ class _Review extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.lock_outline, size: 14, color: _muted),
+                    Icon(
+                      Icons.lock_outline,
+                      size: 14,
+                      color: context.palette.muted,
+                    ),
                     SizedBox(width: 6),
                     Flexible(
                       child: Text(
@@ -453,7 +453,10 @@ class _Review extends StatelessWidget {
                         'Payments are processed securely by Pesapal; Ask Musawo '
                         'never sees your card details.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: _muted),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.palette.muted,
+                        ),
                       ),
                     ),
                   ],
@@ -476,11 +479,11 @@ class _Caption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.6,
-        color: _muted,
+        color: context.palette.muted,
       ),
     );
   }
@@ -499,16 +502,19 @@ class _Line extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, color: _muted)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, color: context.palette.muted),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: _ink,
+                color: context.palette.ink,
               ),
             ),
           ),
@@ -537,17 +543,17 @@ class _Progress extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: _ink,
+                color: context.palette.ink,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted),
+              style: TextStyle(color: context.palette.muted),
             ),
           ],
         ),
@@ -600,20 +606,20 @@ class _Result extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 21,
                 fontWeight: FontWeight.w800,
-                color: _ink,
+                color: context.palette.ink,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14.5,
                 height: 1.4,
-                color: _muted,
+                color: context.palette.muted,
               ),
             ),
             const Spacer(),
@@ -699,24 +705,24 @@ class _MethodPicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           'Payment method',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: _ink,
+            color: context.palette.ink,
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Choose how you want to pay for your appointment.',
-          style: TextStyle(fontSize: 13.5, color: _muted),
+          style: TextStyle(fontSize: 13.5, color: context.palette.muted),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFFE6F5F4),
+            color: context.palette.tint,
             borderRadius: BorderRadius.circular(kCardRadius),
           ),
           child: Row(
@@ -735,7 +741,7 @@ class _MethodPicker extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -744,7 +750,7 @@ class _MethodPicker extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: _ink,
+                        color: context.palette.ink,
                       ),
                     ),
                     SizedBox(height: 2),
@@ -752,7 +758,7 @@ class _MethodPicker extends StatelessWidget {
                       'Your payment details are secure and encrypted with Pesapal.',
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: Color(0xFF4A5A5A),
+                        color: context.palette.muted,
                       ),
                     ),
                   ],
@@ -778,7 +784,7 @@ class _MethodPicker extends StatelessWidget {
             Expanded(
               child: Text(
                 selected.hint,
-                style: const TextStyle(fontSize: 12.5, color: _muted),
+                style: TextStyle(fontSize: 12.5, color: context.palette.muted),
               ),
             ),
           ],
@@ -807,7 +813,7 @@ class _MethodRow extends StatelessWidget {
       inMutuallyExclusiveGroup: true,
       label: method.title,
       child: Material(
-        color: selected ? tealBackground : Colors.white,
+        color: selected ? context.palette.page : context.palette.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(kCardRadius),
           side: BorderSide(
@@ -829,7 +835,7 @@ class _MethodRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: method.tile,
                     borderRadius: BorderRadius.circular(kCardRadius),
-                    border: method.tile == Colors.white
+                    border: method.tile == context.palette.card
                         ? Border.all(color: outline)
                         : null,
                   ),
@@ -842,16 +848,19 @@ class _MethodRow extends StatelessWidget {
                     children: [
                       Text(
                         method.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: _ink,
+                          color: context.palette.ink,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         method.subtitle,
-                        style: const TextStyle(fontSize: 12.5, color: _muted),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: context.palette.muted,
+                        ),
                       ),
                     ],
                   ),
@@ -880,7 +889,7 @@ class _RadioDot extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: selected ? seedTeal : const Color(0xFFB6C2C2),
+          color: selected ? seedTeal : context.palette.muted,
           width: 2,
         ),
       ),

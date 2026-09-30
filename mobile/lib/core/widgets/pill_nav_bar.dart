@@ -40,14 +40,14 @@ class PillNavBar extends StatelessWidget {
     // would sit under the system navigation buttons. Lift it above them and
     // fill the gap with the bar's colour.
     return ColoredBox(
-      color: Colors.white,
+      color: context.palette.card,
       child: SafeArea(
         top: false,
         child: CurvedNavigationBar(
           index: selected,
           height: 60,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          color: Colors.white,
+          color: context.palette.card,
           buttonBackgroundColor: seedTeal,
           animationDuration: const Duration(milliseconds: 300),
           onTap: onTap,

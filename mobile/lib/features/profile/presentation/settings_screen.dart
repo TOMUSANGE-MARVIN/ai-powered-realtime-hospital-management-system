@@ -242,7 +242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
           FilledButton.icon(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFFFE3E3),
+              backgroundColor: context.palette.dangerTint,
               foregroundColor: const Color(0xFFD32F2F),
               side: const BorderSide(color: Color(0xFFD32F2F)),
             ),

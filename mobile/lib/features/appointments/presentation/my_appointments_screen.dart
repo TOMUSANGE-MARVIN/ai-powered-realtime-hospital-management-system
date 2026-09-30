@@ -87,13 +87,12 @@ class _MyAppointmentsScreenState extends ConsumerState<MyAppointmentsScreen> {
     final appointmentsAsync = ref.watch(myAppointmentsProvider);
 
     return Scaffold(
-      backgroundColor: tealBackground,
       body: SafeArea(
         bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,14 +102,17 @@ class _MyAppointmentsScreenState extends ConsumerState<MyAppointmentsScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
-                      color: darkTealBackground,
+                      color: context.palette.ink,
                       height: 1.15,
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'View and manage your appointments',
-                    style: TextStyle(fontSize: 15, color: Color(0xFF6B7A7A)),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: context.palette.muted,
+                    ),
                   ),
                 ],
               ),
@@ -171,8 +173,8 @@ class _MyAppointmentsScreenState extends ConsumerState<MyAppointmentsScreen> {
                                             'No cancelled appointments.',
                                         },
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          color: Color(0xFF6B7A7A),
+                                        style: TextStyle(
+                                          color: context.palette.muted,
                                         ),
                                       ),
                                     ),
@@ -200,10 +202,10 @@ class _MyAppointmentsScreenState extends ConsumerState<MyAppointmentsScreen> {
                                         ),
                                         child: Text(
                                           row,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w700,
-                                            color: darkTealBackground,
+                                            color: context.palette.ink,
                                           ),
                                         ),
                                       );
@@ -284,19 +286,19 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No appointments yet',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: darkTealBackground,
+                color: context.palette.ink,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Book a visit with a doctor and it will show up here.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF6B7A7A)),
+              style: TextStyle(color: context.palette.muted),
             ),
             const SizedBox(height: 20),
             FilledButton(
@@ -549,7 +551,7 @@ class _AppointmentCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.card,
         borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
@@ -579,10 +581,10 @@ class _AppointmentCard extends ConsumerWidget {
                       appointment.doctorName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
-                        color: darkTealBackground,
+                        color: context.palette.ink,
                       ),
                     ),
                     if (specialty != null) ...[
@@ -591,9 +593,9 @@ class _AppointmentCard extends ConsumerWidget {
                         specialty,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF6B7A7A),
+                          color: context.palette.muted,
                         ),
                       ),
                     ],
@@ -628,17 +630,17 @@ class _AppointmentCard extends ConsumerWidget {
               ),
             ],
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 14),
-            child: Divider(height: 1, color: Color(0xFFE6EFEF)),
+            child: Divider(height: 1, color: context.palette.border),
           ),
           Row(
             children: [
               Container(
                 width: 44,
                 height: 44,
-                decoration: const BoxDecoration(
-                  color: tealBackground,
+                decoration: BoxDecoration(
+                  color: context.palette.page,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -652,21 +654,21 @@ class _AppointmentCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Appointment date',
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: Color(0xFF6B7A7A),
+                        color: context.palette.muted,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '${dateFormat.format(appointment.date)}'
                       '${appointment.time != null ? ' · ${appointment.time}' : ''}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w700,
-                        color: darkTealBackground,
+                        color: context.palette.ink,
                       ),
                     ),
                   ],
@@ -705,7 +707,7 @@ class _AppointmentCard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF8E1),
+                color: context.palette.warningTint,
                 borderRadius: BorderRadius.circular(kCardRadius),
                 border: Border.all(color: const Color(0xFFFFA000)),
               ),
@@ -813,9 +815,9 @@ class _AppointmentCard extends ConsumerWidget {
                     child: _ActionButton(
                       icon: Icons.delete_outline_rounded,
                       label: 'Cancel',
-                      background: const Color(0xFFFFE9E9),
+                      background: context.palette.dangerTint,
                       foreground: const Color(0xFFC62828),
-                      borderColor: const Color(0xFFF6C4C4),
+                      borderColor: context.palette.dangerBorder,
                       onPressed: () => _cancel(context, ref),
                     ),
                   ),
@@ -823,10 +825,10 @@ class _AppointmentCard extends ConsumerWidget {
                   Expanded(
                     flex: 2,
                     child: reviewed
-                        ? const _ActionButton(
+                        ? _ActionButton(
                             icon: Icons.check_rounded,
                             label: 'Reviewed',
-                            background: Color(0xFFE0F2F2),
+                            background: context.palette.tint,
                             foreground: seedTeal,
                           )
                         : _ActionButton(
@@ -852,7 +854,7 @@ class _AppointmentCard extends ConsumerWidget {
                     child: _ActionButton(
                       icon: Icons.event_repeat_rounded,
                       label: 'Reschedule',
-                      background: Colors.white,
+                      background: context.palette.card,
                       foreground: seedTeal,
                       borderColor: seedTeal,
                       onPressed: () => _reschedule(context, ref, doctor),
@@ -1088,7 +1090,7 @@ class _VisitSummaryState extends State<_VisitSummary> {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: tealBackground,
+          color: context.palette.page,
           borderRadius: BorderRadius.circular(kCardRadius),
           border: Border.all(
             color: Theme.of(context).colorScheme.outlineVariant,
@@ -1147,7 +1149,7 @@ class _TabChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? seedTeal : Colors.white,
+      color: selected ? seedTeal : context.palette.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kCardRadius),
         side: selected
@@ -1163,7 +1165,7 @@ class _TabChip extends StatelessWidget {
               count > 0 ? '$label ($count)' : label,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : darkTealBackground,
+                color: selected ? Colors.white : context.palette.ink,
               ),
             ),
           ),

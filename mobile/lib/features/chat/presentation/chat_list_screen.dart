@@ -14,8 +14,6 @@ import '../../../core/widgets/user_avatar.dart';
 const _favoritesPrefKey = 'chat_favorite_ids';
 
 const _accent = seedTeal;
-const _fieldBg = Color(0xFFF1F3F8);
-const _chipBg = Color(0xFFEDEFF5);
 const _onlineGreen = Color(0xFF3BB273);
 const _offlineGrey = Color(0xFFB6BAC6);
 
@@ -69,27 +67,27 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final conversationsAsync = ref.watch(conversationsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.palette.card,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: context.palette.card,
+        surfaceTintColor: context.palette.card,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Chats',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 22,
-            color: Color(0xFF12172B),
+            color: context.palette.ink,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.call_outlined, color: Color(0xFF12172B)),
+            icon: Icon(Icons.call_outlined, color: context.palette.ink),
             tooltip: 'Calls',
             onPressed: () => context.push('/calls'),
           ),
           IconButton(
-            icon: const Icon(Icons.more_vert, color: Color(0xFF12172B)),
+            icon: Icon(Icons.more_vert, color: context.palette.ink),
             onPressed: () {},
           ),
         ],
@@ -104,11 +102,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   setState(() => _query = value.trim().toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search chats',
-                hintStyle: TextStyle(color: Colors.grey.shade500),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
-                suffixIcon: Icon(Icons.tune, color: Colors.grey.shade600),
+                hintStyle: TextStyle(color: context.palette.muted),
+                prefixIcon: Icon(Icons.search, color: context.palette.muted),
+                suffixIcon: Icon(Icons.tune, color: context.palette.muted),
                 filled: true,
-                fillColor: _fieldBg,
+                fillColor: context.palette.page,
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 border: OutlineInputBorder(
@@ -192,7 +190,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           ? 'No favorites yet.\nTap the star on a chat to add one.'
                           : 'No chats match your search',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: TextStyle(color: context.palette.muted),
                     ),
                   );
                 }
@@ -254,7 +252,9 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? _accent.withValues(alpha: 0.12) : _chipBg,
+          color: selected
+              ? _accent.withValues(alpha: 0.12)
+              : context.palette.tint,
           borderRadius: BorderRadius.circular(kCardRadius),
         ),
         child: Row(
@@ -263,7 +263,7 @@ class _FilterChip extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: selected ? _accent : const Color(0xFF3B4254),
+              color: selected ? _accent : context.palette.muted,
             ),
             const SizedBox(width: 6),
             Text(
@@ -271,7 +271,7 @@ class _FilterChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: selected ? _accent : const Color(0xFF3B4254),
+                color: selected ? _accent : context.palette.muted,
               ),
             ),
             if (showDot) ...[
@@ -309,21 +309,28 @@ class _RecentContactsRow extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Recent contacts',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
-                  color: Color(0xFF12172B),
+                  color: context.palette.ink,
                 ),
               ),
               Row(
                 children: [
                   Text(
                     'See all',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    style: TextStyle(
+                      color: context.palette.muted,
+                      fontSize: 13,
+                    ),
                   ),
-                  const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 16,
+                    color: context.palette.muted,
+                  ),
                 ],
               ),
             ],
@@ -356,7 +363,7 @@ class _RecentContactsRow extends StatelessWidget {
                         'Add',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade700,
+                          color: context.palette.muted,
                         ),
                       ),
                     ],
@@ -394,7 +401,10 @@ class _RecentContactsRow extends StatelessWidget {
                                   ? _onlineGreen
                                   : _offlineGrey,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                              border: Border.all(
+                                color: context.palette.card,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ),
@@ -414,9 +424,9 @@ class _RecentContactsRow extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF3B4254),
+                          color: context.palette.muted,
                         ),
                       ),
                     ),
@@ -475,9 +485,11 @@ class _ConversationTile extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: hasUnread ? _accent.withValues(alpha: 0.06) : Colors.white,
+          color: hasUnread
+              ? _accent.withValues(alpha: 0.06)
+              : context.palette.card,
           borderRadius: BorderRadius.circular(kCardRadius),
-          border: hasUnread ? null : Border.all(color: const Color(0xFFF0F1F5)),
+          border: hasUnread ? null : Border.all(color: context.palette.page),
         ),
         child: Row(
           children: [
@@ -500,7 +512,7 @@ class _ConversationTile extends StatelessWidget {
                           ? _onlineGreen
                           : _offlineGrey,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: context.palette.card, width: 2),
                     ),
                   ),
                 ),
@@ -515,10 +527,10 @@ class _ConversationTile extends StatelessWidget {
                     conversation.otherUserName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15.5,
-                      color: Color(0xFF12172B),
+                      color: context.palette.ink,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -534,8 +546,8 @@ class _ConversationTile extends StatelessWidget {
                           ? FontWeight.w600
                           : FontWeight.normal,
                       color: hasUnread
-                          ? const Color(0xFF2F3648)
-                          : Colors.grey.shade600,
+                          ? context.palette.ink
+                          : context.palette.muted,
                     ),
                   ),
                 ],
@@ -550,7 +562,7 @@ class _ConversationTile extends StatelessWidget {
                   _formatTime(conversation.lastMessageAt),
                   style: TextStyle(
                     fontSize: 12,
-                    color: hasUnread ? _accent : Colors.grey.shade600,
+                    color: hasUnread ? _accent : context.palette.muted,
                     fontWeight: hasUnread ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),

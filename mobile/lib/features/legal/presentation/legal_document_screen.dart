@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../data/legal_repository.dart';
 import 'legal_text.dart';
@@ -17,7 +18,7 @@ class LegalDocumentScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final docs = ref.watch(legalDocumentsProvider);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.palette.card,
       appBar: AppBar(
         title: Text(privacy ? 'Privacy Policy' : 'Terms of Service'),
       ),

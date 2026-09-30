@@ -1079,55 +1079,68 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tiles = [
+      _QuickActionTile(
+        label: 'Book visit',
+        subtitle: 'Find and book a doctor',
+        icon: Icons.calendar_month_rounded,
+        artwork: 'calendar',
+        accent: accentForColorKey('teal'),
+        onTap: () => context.push('/search'),
+      ),
+      _QuickActionTile(
+        label: 'AI assistant',
+        subtitle: 'Get health advice instantly',
+        icon: Icons.auto_awesome_rounded,
+        artwork: 'sparkles',
+        accent: accentForColorKey('pink'),
+        onTap: () => context.push('/ai-search'),
+      ),
+      _QuickActionTile(
+        label: 'Messages',
+        subtitle: 'Chat with your doctor',
+        icon: Icons.chat_bubble_rounded,
+        artwork: 'chat',
+        accent: accentForColorKey('blue'),
+        onTap: () => context.push('/home/chats'),
+      ),
+      _QuickActionTile(
+        label: 'Appointments',
+        subtitle: 'View and manage your visits',
+        icon: Icons.fact_check_rounded,
+        artwork: 'calendar_check',
+        accent: accentForColorKey('purple'),
+        onTap: () => context.push('/home/appointments'),
+      ),
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _QuickActionTile(
-              label: 'Book visit',
-              subtitle: 'Find and book a doctor',
-              icon: Icons.calendar_month_rounded,
-              accent: accentForColorKey('teal'),
-              onTap: () => context.push('/search'),
-            ),
-            const SizedBox(width: 10),
-            _QuickActionTile(
-              label: 'AI assistant',
-              subtitle: 'Get health advice',
-              icon: Icons.auto_awesome_rounded,
-              accent: accentForColorKey('pink'),
-              onTap: () => context.push('/ai-search'),
-            ),
-            const SizedBox(width: 10),
-            _QuickActionTile(
-              label: 'Messages',
-              subtitle: 'Chat with your doctor',
-              icon: Icons.chat_bubble_rounded,
-              accent: accentForColorKey('blue'),
-              onTap: () => context.push('/home/chats'),
-            ),
-            const SizedBox(width: 10),
-            _QuickActionTile(
-              label: 'Appointments',
-              subtitle: 'View and manage your visits',
-              icon: Icons.fact_check_rounded,
-              accent: accentForColorKey('purple'),
-              onTap: () => context.push('/home/appointments'),
+      child: Column(
+        children: [
+          for (var row = 0; row < tiles.length; row += 2) ...[
+            if (row > 0) const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: tiles[row]),
+                const SizedBox(width: 12),
+                Expanded(child: tiles[row + 1]),
+              ],
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
+/// A 2×2 quick-action card: pastel accent surface, a solid icon badge, and a
+/// faint tinted illustration (assets/images/quick_actions/) in the corner.
 class _QuickActionTile extends StatelessWidget {
   const _QuickActionTile({
     required this.label,
     required this.subtitle,
     required this.icon,
+    required this.artwork,
     required this.accent,
     required this.onTap,
   });
@@ -1135,44 +1148,102 @@ class _QuickActionTile extends StatelessWidget {
   final String label;
   final String subtitle;
   final IconData icon;
+  final String artwork;
   final SpecialtyAccent accent;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final surface = dark
+        ? accent.foreground.withValues(alpha: 0.14)
+        : accent.background;
+    return Semantics(
+      button: true,
+      label: '$label. $subtitle',
+      excludeSemantics: true,
       child: Material(
-        color: accent.foreground,
+        color: surface,
         borderRadius: BorderRadius.circular(kCardRadius),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 16, 4, 14),
-            child: Column(
+          child: SizedBox(
+            height: 148,
+            child: Stack(
               children: [
-                Icon(icon, color: Colors.white, size: 30),
-                const SizedBox(height: 12),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  width: 104,
+                  child: Opacity(
+                    opacity: dark ? 0.22 : 0.3,
+                    child: Image.asset(
+                      'assets/images/quick_actions/$artwork.webp',
+                      fit: BoxFit.contain,
+                      alignment: Alignment.bottomRight,
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    height: 1.25,
-                    color: Color(0xE6FFFFFF),
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: accent.foreground,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(icon, color: Colors.white, size: 24),
+                          ),
+                          const Spacer(),
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: accent.foreground.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              size: 20,
+                              color: dark
+                                  ? accent.foreground
+                                  : scheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.3,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

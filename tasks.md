@@ -417,10 +417,12 @@ Why: the flow plan's screens are mostly built, but its legal section (Uganda Med
 
 ### 4. Prescription detail screen
 
-- [ ] Mobile (patient): tap a prescription → detail screen with doctor, date, diagnosis / notes, all medicines with dosage, frequency and duration, doctor signature and licence number
-- [ ] Mobile: download / share as PDF
+- [x] Backend: `GET /api/prescriptions/mine` adds the doctor's specialty, facility and licence number; the "New prescription" notification opens that prescription
+- [x] Mobile (patient): Profile → Prescriptions (latest three, View all) → detail screen with doctor, specialty, UMDPC licence, facility, issue / dispensed dates, status, diagnosis / notes, every medicine (dosage, quantity, instructions), prescription image and signature
+- [x] Mobile: "Download or share PDF" — one-page A4 prescription for a pharmacy (`prescription_pdf.dart`, `pdf` package), shared through the phone's share sheet (save to Files, WhatsApp, email)
 - [ ] Decide: "Order medicine" (pharmacy partner) now or later
-- [ ] Verify: the PDF matches what the doctor issued
+- [x] Verify: browser run; doctor issues → patient opens list and detail → PDF downloads and matches what was issued; affected suites pass
+- [ ] Verify on the Samsung: share sheet saves the PDF / sends it on WhatsApp
 
 ### 5. Infrastructure and security checks
 

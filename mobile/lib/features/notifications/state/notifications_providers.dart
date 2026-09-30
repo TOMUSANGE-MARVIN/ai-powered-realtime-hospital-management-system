@@ -4,6 +4,7 @@ import '../../../core/api/providers.dart';
 import '../../../core/offline/offline_first.dart';
 import '../../../core/realtime/socket_providers.dart';
 import '../../appointments/state/appointment_providers.dart';
+import '../../profile/state/profile_providers.dart';
 import '../data/notifications_repository.dart';
 
 final notificationsRepositoryProvider = Provider<NotificationsRepository>((
@@ -20,6 +21,7 @@ final notificationsProvider =
         ref.invalidateSelf();
         ref.invalidate(myAppointmentsProvider);
         ref.invalidate(allAssignedAppointmentsProvider);
+        ref.invalidate(myPrescriptionsProvider);
       });
       ref.onDispose(sub.cancel);
       return offlineFirst(

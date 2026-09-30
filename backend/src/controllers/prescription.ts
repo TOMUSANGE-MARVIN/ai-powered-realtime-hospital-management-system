@@ -93,7 +93,7 @@ export const createPrescription = async (req: Request, res: Response) => {
       type: "prescription",
       title: "New prescription",
       message: `${currentUser.name} sent you a prescription with ${prescription.items.length} item${prescription.items.length === 1 ? "" : "s"}.`,
-      link: "/home/profile",
+      link: `/prescriptions/${prescription.id}`,
     });
     const io = req.app.get("io");
     if (io) io.emit("prescription_updated");
@@ -185,8 +185,23 @@ export const getMyPrescriptions = async (req: Request, res: Response) => {
       }),
     ]);
 
+    // The doctor's practice details, for the prescription detail screen
+    // and the PDF the patient can share with a pharmacy.
+    const doctors = await prisma.user.findMany({
+      where: { id: { in: [...new Set(results.map((r) => r.doctor))] } },
+      select: {
+        id: true,
+        specialization: true,
+        hospitalName: true,
+        hospitalAddress: true,
+        licenseNumber: true,
+        phoneNumber: true,
+      },
+    });
+    const byId = new Map(doctors.map((d) => [d.id, d]));
+
     res.json({
-      res: results,
+      res: results.map((r) => ({ ...r, doctorDetails: byId.get(r.doctor) ?? null })),
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit),

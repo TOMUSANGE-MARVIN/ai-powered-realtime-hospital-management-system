@@ -12,6 +12,7 @@ import '../../../core/widgets/skeleton.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/profile_providers.dart';
+import 'prescription_detail_screen.dart' show PrescriptionTile;
 import 'upload_document_dialog.dart';
 import '../../../core/widgets/user_avatar.dart';
 
@@ -467,54 +468,18 @@ class _PrescriptionsSection extends ConsumerWidget {
 
     return _SectionCard(
       title: 'Prescriptions',
+      trailing: TextButton(
+        onPressed: () => context.push('/prescriptions'),
+        child: const Text('View all'),
+      ),
       child: prescriptionsAsync.when(
         data: (prescriptions) {
           if (prescriptions.isEmpty) return const Text('No prescriptions yet.');
           return Column(
-            children: prescriptions
-                .take(5)
-                .map(
-                  (p) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              p.items.isNotEmpty
-                                  ? p.items.first.medicationName
-                                  : 'Prescription',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Chip(
-                              label: Text(
-                                p.status,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              backgroundColor: p.isActive
-                                  ? Colors.green.shade100
-                                  : null,
-                            ),
-                          ],
-                        ),
-                        if (p.items.isNotEmpty)
-                          Text(
-                            p.items.first.dosage,
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
+            children: [
+              for (final p in prescriptions.take(3))
+                PrescriptionTile(rx: p, card: false),
+            ],
           );
         },
         loading: () => const SkeletonLines(),

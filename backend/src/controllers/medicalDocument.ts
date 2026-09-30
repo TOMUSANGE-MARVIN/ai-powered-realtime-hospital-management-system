@@ -80,7 +80,7 @@ export const getPatientHistory = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    const [documents, appointments] = await Promise.all([
+    const [documents, appointments, labResults] = await Promise.all([
       prisma.medicalDocument.findMany({
         where: { patientId },
         orderBy: { createdAt: "desc" },
@@ -99,9 +99,23 @@ export const getPatientHistory = async (req: Request, res: Response) => {
           notes: true,
         },
       }),
+      prisma.labResult.findMany({
+        where: { patient: patientId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          testType: true,
+          bodyPart: true,
+          imageUrl: true,
+          aiAnalysis: true,
+          doctorNotes: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
     ]);
 
-    res.json({ patient, documents, appointments });
+    res.json({ patient, documents, appointments, labResults });
   } catch (error) {
     console.error("Error fetching patient history:", error);
     res.status(500).json({ message: "Server error" });

@@ -1,3 +1,39 @@
+/// Whole days a doctor isn't taking bookings (inclusive).
+class TimeOffRange {
+  const TimeOffRange({
+    required this.id,
+    required this.start,
+    required this.end,
+    this.reason,
+  });
+
+  final String id;
+
+  /// Calendar days (UTC midnight from the server; compare by date only).
+  final DateTime start;
+  final DateTime end;
+  final String? reason;
+
+  bool covers(DateTime day) {
+    final d = DateTime.utc(day.year, day.month, day.day);
+    return !d.isBefore(start) && !d.isAfter(end);
+  }
+
+  factory TimeOffRange.fromJson(Map<String, dynamic> json) {
+    DateTime day(String v) {
+      final d = DateTime.parse(v).toUtc();
+      return DateTime.utc(d.year, d.month, d.day);
+    }
+
+    return TimeOffRange(
+      id: json['id'] as String,
+      start: day(json['startDate'] as String),
+      end: day(json['endDate'] as String),
+      reason: json['reason'] as String?,
+    );
+  }
+}
+
 class Doctor {
   Doctor({
     required this.id,
@@ -18,7 +54,13 @@ class Doctor {
     this.availabilityDays,
     this.availabilityHours,
     this.availableToday = false,
+    this.timeOff = const [],
   });
+
+  /// Upcoming time off (only included on the doctor detail endpoint).
+  final List<TimeOffRange> timeOff;
+
+  bool isAwayOn(DateTime day) => timeOff.any((t) => t.covers(day));
 
   final String id;
   final String name;
@@ -65,6 +107,10 @@ class Doctor {
       availabilityDays: json['availabilityDays'] as String?,
       availabilityHours: json['availabilityHours'] as String?,
       availableToday: json['availableToday'] as bool? ?? false,
+      timeOff: [
+        for (final t in json['timeOff'] as List? ?? const [])
+          TimeOffRange.fromJson(t as Map<String, dynamic>),
+      ],
     );
   }
 }

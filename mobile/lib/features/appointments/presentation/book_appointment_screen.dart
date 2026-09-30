@@ -51,8 +51,12 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     return slots.where((m) => m > nowMinutes).toList();
   }
 
+  /// Set once the doctor loads; its time off removes whole days.
+  Doctor? _doctor;
+
   bool _isDayBookable(DateTime day, Set<int>? weekdays, List<int> slots) {
     if (weekdays != null && !weekdays.contains(day.weekday)) return false;
+    if (_doctor?.isAwayOn(day) ?? false) return false;
     return _openSlots(day, slots).isNotEmpty;
   }
 
@@ -161,6 +165,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
         loading: () => const SkeletonForm(),
         error: (error, _) => Center(child: Text(error.toString())),
         data: (doctor) {
+          _doctor = doctor;
           final weekdays = parseAvailableWeekdays(doctor.availabilityDays);
           final slots = parseSlotMinutes(doctor.availabilityHours);
           final today = _dayOnly(DateTime.now());

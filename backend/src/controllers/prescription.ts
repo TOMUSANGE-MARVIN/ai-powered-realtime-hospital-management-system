@@ -287,3 +287,20 @@ Use null for anything you cannot read with confidence. Never guess.`;
     res.status(502).json({ message: "Couldn't read the prescription. Fill in the details by hand." });
   }
 };
+
+// A doctor's own issued prescriptions, newest first.
+export const getIssuedPrescriptions = async (req: Request, res: Response) => {
+  try {
+    const doctor = (req as any).user;
+    const prescriptions = await prisma.prescription.findMany({
+      where: { doctor: doctor.id },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: { items: true },
+    });
+    res.json(prescriptions);
+  } catch (error) {
+    console.error("Error fetching issued prescriptions:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

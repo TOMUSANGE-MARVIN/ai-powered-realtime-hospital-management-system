@@ -204,6 +204,32 @@ class _DoctorAppointmentCard extends ConsumerWidget {
     );
   }
 
+  Future<void> _markNoShow(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Mark as no-show?'),
+        content: Text(
+          '${appointment.patientName ?? 'The patient'} will be told the visit '
+          'was missed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Mark no-show'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await _updateStatus(context, ref, 'no_show');
+    }
+  }
+
   Future<void> _editSummary(BuildContext context, WidgetRef ref) async {
     final summary = await askVisitSummary(
       context,
@@ -246,16 +272,33 @@ class _DoctorAppointmentCard extends ConsumerWidget {
       context: context,
       initialTime: TimeOfDay.now(),
     );
-    if (!context.mounted) return;
+    if (time == null || !context.mounted) return;
     try {
       await ref
           .read(appointmentRepositoryProvider)
           .updateAssigned(
             appointment.id,
-            date: date,
-            time: time?.format(context),
+            date: DateTime(
+              date.year,
+              date.month,
+              date.day,
+              time.hour,
+              time.minute,
+            ),
+            time: DateFormat.jm().format(
+              DateTime(2000, 1, 1, time.hour, time.minute),
+            ),
           );
       ref.invalidate(allAssignedAppointmentsProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'New time sent to ${appointment.patientName ?? 'the patient'} to accept',
+            ),
+          ),
+        );
+      }
     } on ApiException catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
@@ -295,6 +338,19 @@ class _DoctorAppointmentCard extends ConsumerWidget {
             Text(
               '${dateFormat.format(appointment.date)}${appointment.time != null ? ' · ${appointment.time}' : ''}',
             ),
+            if (appointment.proposedDate != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Proposed ${DateFormat('EEE, MMM d').format(appointment.proposedDate!)}'
+                '${appointment.proposedTime != null ? ' · ${appointment.proposedTime}' : ''}'
+                ' — waiting for the patient',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFB26A00),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
             if (appointment.reason != null) ...[
               const SizedBox(height: 4),
               Text(
@@ -327,6 +383,10 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                     onPressed: () =>
                         _cancelWithReason(context, ref, isReject: false),
                     child: const Text('Cancel'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => _markNoShow(context, ref),
+                    child: const Text('No-show'),
                   ),
                   FilledButton.icon(
                     icon: Icon(

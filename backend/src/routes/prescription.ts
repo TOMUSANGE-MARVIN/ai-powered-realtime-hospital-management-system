@@ -8,6 +8,7 @@ import {
   cancelPrescription,
   getMyPrescriptions,
   extractPrescription,
+  getIssuedPrescriptions,
 } from "../controllers/prescription";
 
 const prescriptionRouter = Router();
@@ -18,6 +19,13 @@ prescriptionRouter.get(
   requireAuth,
   checkRole(["patient"]),
   getMyPrescriptions,
+);
+
+prescriptionRouter.get(
+  "/issued",
+  requireAuth,
+  checkRole(["doctor"]),
+  getIssuedPrescriptions,
 );
 
 prescriptionRouter.get(

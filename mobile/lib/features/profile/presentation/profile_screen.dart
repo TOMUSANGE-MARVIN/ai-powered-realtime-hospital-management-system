@@ -108,6 +108,29 @@ class ProfileScreen extends ConsumerWidget {
       ),
       const SizedBox(height: 16),
       _SectionCard(
+        title: 'My practice',
+        child: Column(
+          children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.event_busy_outlined),
+              title: const Text('Time off'),
+              subtitle: const Text('Block days you are away'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/doctor-home/time-off'),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: const Text('Prescriptions issued'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/doctor-home/prescriptions'),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+      _SectionCard(
         title: 'Reviews & Ratings',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -140,6 +163,17 @@ class ProfileScreen extends ConsumerWidget {
       _BillingSection(),
       const SizedBox(height: 16),
       _MedicalDocumentsSection(),
+      const SizedBox(height: 16),
+      _SectionCard(
+        title: 'Lab Results',
+        trailing: TextButton(
+          onPressed: () => context.push('/lab-results'),
+          child: const Text('View all'),
+        ),
+        child: const Text(
+          'X-rays and tests reviewed by your doctor, with their notes.',
+        ),
+      ),
       const SizedBox(height: 16),
       _EmergencyContactSection(),
       const SizedBox(height: 16),

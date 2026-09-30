@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../labs/data/lab_result.dart';
 import '../../profile/data/medical_document.dart';
 
 /// A doctor's view of one patient: profile facts, the documents the patient
@@ -12,6 +13,7 @@ class PatientHistory {
     required this.name,
     required this.documents,
     required this.visits,
+    this.labResults = const [],
     this.image,
     this.age,
     this.gender,
@@ -28,6 +30,7 @@ class PatientHistory {
   final String? medicalHistory;
   final List<MedicalDocument> documents;
   final List<PatientVisit> visits;
+  final List<LabResult> labResults;
 
   factory PatientHistory.fromJson(Map<String, dynamic> json) {
     final patient = json['patient'] as Map<String, dynamic>;
@@ -46,6 +49,10 @@ class PatientHistory {
       visits: [
         for (final v in json['appointments'] as List? ?? const [])
           PatientVisit.fromJson(v as Map<String, dynamic>),
+      ],
+      labResults: [
+        for (final r in json['labResults'] as List? ?? const [])
+          LabResult.fromJson(r as Map<String, dynamic>),
       ],
     );
   }

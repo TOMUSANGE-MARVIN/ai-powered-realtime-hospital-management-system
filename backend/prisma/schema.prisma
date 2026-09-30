@@ -138,6 +138,7 @@ enum AppointmentStatus {
   completed
   cancelled
   in_progress
+  no_show
 }
 
 model Appointment {
@@ -166,6 +167,9 @@ model Appointment {
   cancellationReason String?         @db.Text
   // "patient" | "doctor" | "admin"
   cancelledBy      String?
+  // A new time the doctor proposed; the patient accepts or declines it.
+  proposedDate     DateTime?
+  proposedTime     String?
   fee              Int?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
@@ -583,4 +587,18 @@ model BlogPost {
 
   @@index([published, publishedAt])
   @@map("blog_post")
+}
+
+// Dates a doctor isn't taking bookings (leave, conferences). Inclusive range
+// of calendar days, stored as midnight UTC like appointment dates.
+model DoctorTimeOff {
+  id        String   @id @default(cuid())
+  doctorId  String
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([doctorId, endDate])
+  @@map("doctor_time_off")
 }

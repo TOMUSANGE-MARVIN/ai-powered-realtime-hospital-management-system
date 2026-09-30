@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { notifyUser } from "../lib/notify";
 import { inngest } from "../inngest/client";
 import { logActivity } from "../lib/activity";
 
@@ -129,6 +130,7 @@ export const updateLabResult = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const { aiAnalysis, doctorNotes, status } = req.body;
 
+    const before = await prisma.labResult.findUnique({ where: { id } });
     const updatedResult = await prisma.labResult
       .update({
         where: { id },
@@ -147,7 +149,15 @@ export const updateLabResult = async (req: Request, res: Response) => {
     if (io) {
       io.emit("lab_result_updated", updatedResult);
     }
-    // TODO: notify users
+    // Patients only see results once a doctor has reviewed them.
+    if (updatedResult.status === "reviewed" && before?.status !== "reviewed") {
+      await notifyUser(updatedResult.patient, {
+        type: "lab_result",
+        title: "Lab result ready",
+        message: `Your ${updatedResult.testType}${updatedResult.bodyPart ? ` (${updatedResult.bodyPart})` : ""} result has been reviewed by a doctor.`,
+        link: "/lab-results",
+      });
+    }
     await logActivity(
       (req as any).user.id,
       "Updated Lab Result",
@@ -156,6 +166,31 @@ export const updateLabResult = async (req: Request, res: Response) => {
     res.status(200).json(updatedResult);
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Patient's own lab results — reviewed ones only, with the doctor's notes.
+// The raw AI analysis stays with clinicians.
+export const getMyLabResults = async (req: Request, res: Response) => {
+  try {
+    const patient = (req as any).user;
+    const results = await prisma.labResult.findMany({
+      where: { patient: patient.id, status: "reviewed" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        testType: true,
+        bodyPart: true,
+        imageUrl: true,
+        doctorNotes: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching my lab results:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

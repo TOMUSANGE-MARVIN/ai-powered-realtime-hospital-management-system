@@ -107,6 +107,14 @@ export const createAppointment = async (req: Request, res: Response) => {
   }
 };
 
+/** The doctor's time-off range covering [date], if any. */
+async function timeOffOn(doctorId: string, date: Date) {
+  const day = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  return prisma.doctorTimeOff.findFirst({
+    where: { doctorId, startDate: { lte: day }, endDate: { gte: day } },
+  });
+}
+
 type AppointmentRow = NonNullable<Awaited<ReturnType<typeof prisma.appointment.findUnique>>>;
 
 /** Tells the patient what changed about their appointment. */
@@ -122,6 +130,10 @@ async function notifyPatientOfChange(before: AppointmentRow, after: AppointmentR
         message: `${doctor} ${before.status === "requested" ? "declined" : "cancelled"} your visit on ${visit}.${after.cancellationReason ? ` Reason: ${after.cancellationReason}` : ""}${after.paymentId ? " Contact support about your payment." : ""}`,
       },
       in_progress: { title: "Your consultation has started", message: `${doctor} is ready for your visit now.` },
+      no_show: {
+        title: "Missed appointment",
+        message: `${doctor} marked your visit on ${visit} as missed. Book again when you're ready.`,
+      },
       completed: {
         title: "How was your visit?",
         message: after.notes
@@ -147,7 +159,7 @@ async function notifyPatientOfChange(before: AppointmentRow, after: AppointmentR
 const DOCTOR_TRANSITIONS: Record<string, string[]> = {
   requested: ["confirmed", "cancelled"],
   scheduled: ["confirmed", "cancelled"],
-  confirmed: ["in_progress", "completed", "cancelled"],
+  confirmed: ["in_progress", "completed", "cancelled", "no_show"],
   in_progress: ["completed"],
 };
 
@@ -202,6 +214,20 @@ export const updateAppointment = async (req: Request, res: Response) => {
     if (nurseId !== undefined) update.nurseId = nurseId;
     if (isVirtual !== undefined) update.isVirtual = isVirtual;
 
+    // A doctor's new time is a proposal the patient accepts or declines.
+    let proposed = false;
+    if (user.role === "doctor" && before && (update.date !== undefined || update.time !== undefined)) {
+      update.proposedDate = update.date ?? before.date;
+      update.proposedTime = update.time ?? before.time;
+      delete update.date;
+      delete update.time;
+      proposed = true;
+    }
+    if (status && ["cancelled", "completed", "no_show"].includes(status)) {
+      update.proposedDate = null;
+      update.proposedTime = null;
+    }
+
     // Generate a meeting id the first time a virtual appointment is confirmed
     if (isVirtual && (status === "confirmed" || status === "in_progress")) {
       const existing = await prisma.appointment.findUnique({ where: { id } });
@@ -217,7 +243,16 @@ export const updateAppointment = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    if (before) await notifyPatientOfChange(before, appointment);
+    if (proposed && appointment.proposedDate) {
+      await notifyUser(appointment.patientId, {
+        type: "appointment",
+        title: "New time proposed",
+        message: `${appointment.doctorName || "Your doctor"} suggests moving your visit to ${formatVisit(appointment.proposedDate, appointment.proposedTime)}. Open your appointments to accept or decline.`,
+        link: "/home/appointments",
+      });
+    } else if (before) {
+      await notifyPatientOfChange(before, appointment);
+    }
 
     const io = req.app.get("io");
     if (io) io.emit("appointment_updated");
@@ -261,6 +296,10 @@ export const bookAppointment = async (req: Request, res: Response) => {
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    if (!isEmergency && (await timeOffOn(doctorId, new Date(date)))) {
+      return res.status(400).json({ message: `${doctor.name} is away on that day. Please choose another date.` });
     }
 
     // Pay-before-book: if the doctor charges a fee, the booking must carry a
@@ -420,10 +459,19 @@ export const rescheduleMyAppointment = async (req: Request, res: Response) => {
         .status(400)
         .json({ message: "Only upcoming appointments can be rescheduled" });
     }
+    if (appointment.doctorId && (await timeOffOn(appointment.doctorId, newDate))) {
+      return res.status(400).json({ message: "Your doctor is away on that day. Please choose another date." });
+    }
 
     const updated = await prisma.appointment.update({
       where: { id },
-      data: { date: newDate, time: time || null, status: "requested" },
+      data: {
+        date: newDate,
+        time: time || null,
+        status: "requested",
+        proposedDate: null,
+        proposedTime: null,
+      },
     });
     await notifyUser(updated.doctorId, {
       type: "appointment",
@@ -484,6 +532,55 @@ export const getAssignedAppointments = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching assigned appointments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Patient accepts or declines a new time their doctor proposed.
+export const respondToProposal = async (req: Request, res: Response) => {
+  try {
+    const patient = (req as any).user;
+    const id = req.params.id as string;
+    const { accept } = req.body;
+    if (typeof accept !== "boolean") {
+      return res.status(400).json({ message: "accept must be true or false" });
+    }
+    const appointment = await prisma.appointment.findUnique({ where: { id } });
+    if (!appointment || appointment.patientId !== patient.id) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    if (!appointment.proposedDate) {
+      return res.status(400).json({ message: "There's no new time to respond to" });
+    }
+    if (!["requested", "scheduled", "confirmed"].includes(appointment.status)) {
+      return res.status(400).json({ message: "This appointment can no longer be changed" });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id },
+      data: accept
+        ? {
+            date: appointment.proposedDate,
+            time: appointment.proposedTime,
+            status: "confirmed",
+            proposedDate: null,
+            proposedTime: null,
+          }
+        : { proposedDate: null, proposedTime: null },
+    });
+    await notifyUser(updated.doctorId, {
+      type: "appointment",
+      title: accept ? "New time accepted" : "New time declined",
+      message: accept
+        ? `${updated.patientName} accepted ${formatVisit(updated.date, updated.time)}. The visit is confirmed.`
+        : `${updated.patientName} can't make ${formatVisit(appointment.proposedDate, appointment.proposedTime)} and kept the original time. Message them to agree another time, or cancel with a reason.`,
+      link: "/doctor-home/appointments",
+    });
+    const io = req.app.get("io");
+    if (io) io.emit("appointment_updated");
+    res.json(updated);
+  } catch (error) {
+    console.error("Error responding to proposal:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

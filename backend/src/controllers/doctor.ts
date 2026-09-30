@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { upcomingTimeOff } from "./timeOff";
 
 const DOCTOR_SELECT = {
   id: true,
@@ -165,8 +166,11 @@ export const getDoctorById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    const [withRating] = await withRatings([doctor]);
-    res.json(withRating);
+    const [withRating, timeOff] = await Promise.all([
+      withRatings([doctor]).then((rows) => rows[0]),
+      upcomingTimeOff(doctor.id),
+    ]);
+    res.json({ ...withRating, timeOff });
   } catch (error) {
     console.error("Error fetching doctor:", error);
     res.status(500).json({ message: "Server error" });

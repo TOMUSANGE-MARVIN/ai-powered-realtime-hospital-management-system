@@ -6,6 +6,7 @@ import {
   getPatientLabResults,
   getAllLabResults,
   updateLabResult,
+  getMyLabResults,
 } from "../controllers/labResults";
 
 const labResultsRouter = Router();
@@ -17,6 +18,9 @@ labResultsRouter.post(
   checkRole(["admin", "doctor", "lab_tech"]),
   createLabResult,
 );
+
+// GET: A patient's own reviewed results (mobile app)
+labResultsRouter.get("/mine", requireAuth, checkRole(["patient"]), getMyLabResults);
 
 // GET: Fetch all lab results across all patients (Test Requests / Results Entry pages)
 labResultsRouter.get(

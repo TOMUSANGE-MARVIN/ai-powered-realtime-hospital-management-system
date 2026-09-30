@@ -55,6 +55,18 @@ class AppointmentRepository {
     ApiException.checkStatus(response);
   }
 
+  /// Patient accepts or declines the doctor's proposed new time.
+  Future<void> respondToProposal(
+    String appointmentId, {
+    required bool accept,
+  }) async {
+    final response = await _dio.patch(
+      '/api/appointments/$appointmentId/proposal',
+      data: {'accept': accept},
+    );
+    ApiException.checkStatus(response);
+  }
+
   Future<void> cancel(String appointmentId, {String? reason}) async {
     final response = await _dio.patch(
       '/api/appointments/$appointmentId/cancel',

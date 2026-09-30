@@ -18,6 +18,8 @@ class Appointment {
     this.notes,
     this.cancellationReason,
     this.cancelledBy,
+    this.proposedDate,
+    this.proposedTime,
   });
 
   final String id;
@@ -42,6 +44,10 @@ class Appointment {
 
   /// patient | doctor | admin
   final String? cancelledBy;
+
+  /// A new time the doctor proposed, waiting for the patient's answer.
+  final DateTime? proposedDate;
+  final String? proposedTime;
 
   bool get isCancellable =>
       status == 'requested' || status == 'scheduled' || status == 'confirmed';
@@ -79,6 +85,10 @@ class Appointment {
       notes: json['notes'] as String?,
       cancellationReason: json['cancellationReason'] as String?,
       cancelledBy: json['cancelledBy'] as String?,
+      proposedDate: json['proposedDate'] == null
+          ? null
+          : DateTime.parse(json['proposedDate'] as String),
+      proposedTime: json['proposedTime'] as String?,
     );
   }
 }

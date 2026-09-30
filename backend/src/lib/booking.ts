@@ -51,6 +51,18 @@ export async function insertAppointment(input: {
       : `${patient.name} requested a ${kind} consultation on ${formatVisit(appointment.date, appointment.time)}.`,
     link: "/doctor-home/appointments",
   });
+  if (appointment.isEmergency) {
+    // Admins hear about every emergency straight away, so one can step in if
+    // the doctor doesn't respond.
+    const admins = await prisma.user.findMany({ where: { role: "admin" }, select: { id: true } });
+    for (const admin of admins) {
+      await notifyUser(admin.id, {
+        type: "appointment",
+        title: "Emergency request",
+        message: `${patient.name} requested emergency care from ${doctor.name}.`,
+      });
+    }
+  }
   return appointment;
 }
 

@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
+import '../../labs/presentation/lab_results_screen.dart' show LabResultCard;
 import '../../profile/data/medical_document.dart';
 import '../data/patient_history.dart';
 import '../state/doctor_providers.dart';
@@ -111,6 +112,15 @@ class PatientHistoryScreen extends ConsumerWidget {
                   _DocumentCard(document: document),
                   const SizedBox(height: 12),
                 ],
+              if (history.labResults.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _SectionTitle('Lab results', count: history.labResults.length),
+                const SizedBox(height: 8),
+                for (final r in history.labResults) ...[
+                  LabResultCard(result: r, showAi: true),
+                  const SizedBox(height: 12),
+                ],
+              ],
               const SizedBox(height: 12),
               _SectionTitle('Visits with you', count: history.visits.length),
               const SizedBox(height: 8),

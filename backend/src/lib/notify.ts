@@ -11,7 +11,8 @@ type NotificationType =
   | "prescription"
   | "payment"
   | "review"
-  | "payout";
+  | "payout"
+  | "lab_result";
 
 export interface NotifyInput {
   title: string;

@@ -332,11 +332,11 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
 - [x] **Medium — Notifications inbox.** Done: a Notifications screen with unread badge on the patient Home header and doctor dashboard, live updates over the socket, tap to open the related screen, mark one / all read (read is now owner-only). The server now creates notifications for: new booking and emergency (doctor), confirmed / cancelled / rescheduled / started / completed (patient), patient cancel and reschedule (doctor), new prescription (patient), new review (doctor), payout approved / sent / rejected (doctor), refund requested (patient). 14/14 checks. Push to phones still needs Firebase (see High items).
 - [x] **Medium — Visit summary.** Done: patients see the doctor's summary on completed appointments (collapsed, tap to expand), and the "How was your visit?" notification says when one was added.
 - [x] **Medium — Payment history and receipts.** Done: Settings → Payments & Billing and Profile → View all open a history (total paid, each payment with voucher, status, refund) and a shareable receipt. Backend `GET /api/payments/mine` (own payments only, no unfinished checkouts).
-- [ ] **Medium — Lab results.** Lab results exist in the web system, but patients can't see them in the app.
-- [ ] **Medium — Doctor-proposed new times.** When a doctor reschedules, the new time is simply applied. The patient can't accept or decline it, and isn't notified (see push notifications).
+- [x] **Medium — Lab results.** Done: Profile → Lab Results shows results a doctor has reviewed (image, date, doctor's notes; the AI analysis stays with clinicians), and patients are notified when one is reviewed. Doctors now see all of a patient's lab results, with the AI analysis, in Full History.
+- [x] **Medium — Doctor-proposed new times.** Done: a doctor's reschedule is now a proposal. The patient gets a notification and an Accept / Keep original banner; accepting moves and confirms the visit, declining keeps the original time, and the doctor is told either way (the doctor's card shows "waiting for the patient"). Admins still move visits directly.
 - [x] **Medium — Unread badges.** Done: the Messages tab shows the unread count in both apps, refreshed live when messages arrive or are read.
-- [ ] **Low — Book again.** No "Book again" shortcut from a completed appointment.
-- [ ] **Low — Emergency escalation.** If no doctor responds to an emergency request, nothing escalates it (no timeout, no fallback doctor, no admin alert).
+- [x] **Low — Book again.** Done: completed, cancelled and missed visits have a Book again button.
+- [x] **Low — Emergency escalation.** Partly done: every admin is notified the moment an emergency is requested. Still open: an automatic reminder or reassignment if the doctor hasn't responded after N minutes (needs a scheduled job).
 
 **Needs from you before these can be built:**
 - Password reset: an email provider (for example Resend, Mailgun or an SMTP account) and the address to send from.
@@ -350,10 +350,10 @@ Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book 
 - [ ] **High — Push notifications.** No alert for a new booking request, emergency, message or call while the app is closed (shares the patient work above).
 - [x] **Medium — Consultation notes.** Done: End consultation asks for a visit summary; completed visits have Add / Edit summary. Shown to the patient and in Full History.
 - [x] **Medium — Reasons for reject / cancel.** Done: doctors pick or type a reason when declining or cancelling (appointments list and dashboard); patients can add one when cancelling; the reason and who cancelled are stored (migration `20260930190000_appointment_cancellation`), shown on the card and included in the notification. Also fixed: patients could cancel completed or already-cancelled visits. 13/13 checks.
-- [ ] **Medium — Time off.** No way to block specific dates (leave, conferences); working days and hours repeat every week.
-- [ ] **Medium — Lab requests and results.** Doctors can't order lab tests from the app, and lab results don't appear in a patient's Full History.
-- [ ] **Medium — Issued prescriptions.** Doctors have no list of prescriptions they've issued, and drafts are kept per patient on one device only.
-- [ ] **Low — No-shows.** No way to mark a patient as a no-show (affects payouts and refunds).
+- [x] **Medium — Time off.** Done: Profile → My practice → Time off. Doctors add or remove date ranges with a reason; the booking and reschedule date pickers skip those days, the server rejects bookings on them (emergencies excepted), and adding time off lists any visits already booked on those days.
+- [ ] **Medium — Lab requests.** Results are done (see Patient → Lab results and Full History). Still open: ordering a lab test from the app — tests are requested on the web today.
+- [x] **Medium — Issued prescriptions.** Done: Profile → My practice → Prescriptions issued, searchable by patient or medication, with dispensing status. (Drafts are still per device.)
+- [x] **Low — No-shows.** Done: confirmed visits have a No-show button; the patient sees "Missed" with Book again and is notified. (How no-shows affect payouts and refunds follows the refund policy you choose.)
 - [ ] **Low — Doctor onboarding.** Doctors can't sign up themselves; admins create their accounts on the web. Decide whether that stays, or add self-sign-up with admin verification.
 
 ### Both

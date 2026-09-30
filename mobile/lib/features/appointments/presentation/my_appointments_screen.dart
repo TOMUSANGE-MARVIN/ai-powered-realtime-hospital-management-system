@@ -206,6 +206,13 @@ class _AppointmentCard extends ConsumerWidget {
           icon: Icons.check_circle_outline_rounded,
           label: 'Completed',
         );
+      case 'no_show':
+        return (
+          bg: const Color(0xFF55605F),
+          fg: Colors.white,
+          icon: Icons.event_busy_outlined,
+          label: 'Missed',
+        );
       case 'cancelled':
         return (
           bg: const Color(0xFFD32F2F),
@@ -329,6 +336,36 @@ class _AppointmentCard extends ConsumerWidget {
           isVideo: appointment.consultationType == 'video',
           peerImage: doctor?.image,
         );
+  }
+
+  Future<void> _respondToProposal(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool accept,
+  }) async {
+    try {
+      await ref
+          .read(appointmentRepositoryProvider)
+          .respondToProposal(appointment.id, accept: accept);
+      ref.invalidate(myAppointmentsProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              accept
+                  ? 'New time accepted — your visit is confirmed'
+                  : 'Kept your original time. The doctor has been told.',
+            ),
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    }
   }
 
   Future<void> _review(BuildContext context, WidgetRef ref) async {
@@ -511,6 +548,53 @@ class _AppointmentCard extends ConsumerWidget {
               style: const TextStyle(fontSize: 13.5, color: Color(0xFF55605F)),
             ),
           ],
+          if (appointment.proposedDate != null &&
+              appointment.isCancellable) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(kCardRadius),
+                border: Border.all(color: const Color(0xFFFFA000)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${appointment.doctorName} proposed a new time',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${DateFormat('EEE, MMM d, yyyy').format(appointment.proposedDate!)}'
+                    '${appointment.proposedTime != null ? ' · ${appointment.proposedTime}' : ''}',
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () =>
+                              _respondToProposal(context, ref, accept: false),
+                          child: const Text('Keep original'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () =>
+                              _respondToProposal(context, ref, accept: true),
+                          child: const Text('Accept'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (appointment.status == 'cancelled' &&
               appointment.cancelledBy != null) ...[
             const SizedBox(height: 10),
@@ -531,6 +615,22 @@ class _AppointmentCard extends ConsumerWidget {
               appointment.notes?.isNotEmpty == true) ...[
             const SizedBox(height: 12),
             _VisitSummary(text: appointment.notes!),
+          ],
+          if (appointment.doctorId != null &&
+              const {
+                'completed',
+                'cancelled',
+                'no_show',
+              }.contains(appointment.status)) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                icon: const Icon(Icons.replay_rounded, size: 18),
+                label: const Text('Book again'),
+                onPressed: () => context.push('/book/${appointment.doctorId}'),
+              ),
+            ),
           ],
           if (appointment.doctorId != null ||
               appointment.isCancellable ||
@@ -713,7 +813,8 @@ class _RescheduleSheetState extends State<_RescheduleSheet> {
   int? _slot;
 
   bool _isOpenDay(DateTime day) =>
-      _weekdays == null || _weekdays.contains(day.weekday);
+      (_weekdays == null || _weekdays.contains(day.weekday)) &&
+      !(widget.doctor?.isAwayOn(day) ?? false);
 
   List<int> _openSlots(DateTime day) {
     final now = DateTime.now();

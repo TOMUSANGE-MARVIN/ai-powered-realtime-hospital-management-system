@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
 import '../../../core/offline/offline_interceptor.dart';
 import '../../auth/state/auth_controller.dart';
@@ -199,7 +200,7 @@ class ChatOutbox extends Notifier<List<PendingMessage>> {
           _events.add(OutboxSent(next.localId, sent));
           ref.invalidate(conversationsProvider);
         } catch (error) {
-          // No connection, or the server is briefly down (5xx) — keep it
+          // No connection, the server is briefly down (5xx) or rate limiting (429) — keep it
           // queued for the next reconnect / send.
           if (isUnreachableError(error) || _isServerError(error)) return;
           // The server refused it (e.g. the conversation is no longer
@@ -213,8 +214,16 @@ class ChatOutbox extends Notifier<List<PendingMessage>> {
     }
   }
 
-  static bool _isServerError(Object error) =>
-      error is DioException && (error.response?.statusCode ?? 0) >= 500;
+  /// Worth retrying later: the server is briefly down (5xx) or asked us to
+  /// slow down (429).
+  static bool _isServerError(Object error) {
+    final status = switch (error) {
+      DioException(:final response) => response?.statusCode ?? 0,
+      ApiException(:final statusCode) => statusCode ?? 0,
+      _ => 0,
+    };
+    return status >= 500 || status == 429;
+  }
 
   void _remove(String localId) {
     state = state.where((m) => m.localId != localId).toList();

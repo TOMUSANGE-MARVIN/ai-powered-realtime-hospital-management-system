@@ -3,9 +3,13 @@ import 'package:dio/dio.dart';
 /// Normalizes backend error responses (`{ "message": "..." }`) and network
 /// failures into a single user-displayable string.
 class ApiException implements Exception {
-  ApiException(this.message);
+  ApiException(this.message, {this.statusCode});
 
   final String message;
+
+  /// The HTTP status when the server answered with an error (e.g. 429 when
+  /// rate limited); null for network failures.
+  final int? statusCode;
 
   factory ApiException.fromDioError(DioException error) {
     final data = error.response?.data;
@@ -45,8 +49,11 @@ class ApiException implements Exception {
     if (status < 400) return;
     final data = response.data;
     if (data is Map && data['message'] is String) {
-      throw ApiException(data['message'] as String);
+      throw ApiException(data['message'] as String, statusCode: status);
     }
-    throw ApiException('Request failed with status $status');
+    throw ApiException(
+      'Request failed with status $status',
+      statusCode: status,
+    );
   }
 }

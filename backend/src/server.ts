@@ -52,6 +52,13 @@ import paymentRouter from "./routes/payment";
 import messageRouter from "./routes/message";
 import callRouter from "./routes/call";
 import aiSearchRouter from "./routes/aiSearch";
+import {
+  aiLimiter,
+  apiLimiter,
+  paymentLimiter,
+  uploadLimiter,
+  writeLimiter,
+} from "./middleware/rateLimit";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -89,6 +96,13 @@ app.use(
 
 // Use cookie parser middleware to parse cookies in incoming requests
 app.use(cookieParser());
+
+// Rate limiting (E23.5) — after cookieParser, which the session-based
+// limiter key needs.
+app.use("/api", apiLimiter, writeLimiter);
+app.use("/api/ai", aiLimiter);
+app.use("/api/uploads", uploadLimiter);
+app.use("/api/payments/initiate", paymentLimiter);
 
 // Body Parsers
 app.use(express.json());

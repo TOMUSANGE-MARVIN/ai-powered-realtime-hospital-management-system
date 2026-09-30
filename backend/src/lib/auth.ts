@@ -36,6 +36,26 @@ export const auth = betterAuth({
     "askmusawo://mobile",
   ],
   emailAndPassword: { enabled: true },
+  // Brute-force protection for sign-in, sign-up and 2FA codes (E23.5). On in
+  // every environment (RATE_LIMIT=off only for local test runs). Traefik sets
+  // X-Real-IP to the connecting address; the client can't forge it. Limits
+  // are per IP, and Ugandan mobile networks share one IP across many phones,
+  // so they're set to stop password guessing without locking out a network.
+  advanced: {
+    ipAddress: { ipAddressHeaders: ["x-real-ip"] },
+  },
+  rateLimit: {
+    enabled: process.env.RATE_LIMIT !== "off",
+    window: 60,
+    max: 200,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 20 },
+      "/sign-up/email": { window: 600, max: 30 },
+      "/two-factor/*": { window: 60, max: 10 },
+      "/forget-password": { window: 600, max: 10 },
+      "/reset-password": { window: 600, max: 10 },
+    },
+  },
   plugins: [
     // TOTP (authenticator app) only — there is no SMS/email provider wired up
     // for the OTP method yet.

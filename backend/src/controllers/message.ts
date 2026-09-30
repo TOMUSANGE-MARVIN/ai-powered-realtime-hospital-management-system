@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { isUserOnline } from "../lib/socket";
+import { decryptMessage, decryptText, encryptMessageFields } from "../lib/messageCrypto";
 
 // Inbox: one row per counterpart the user has ever messaged, most recent
 // conversation first — the WhatsApp-style chat list.
@@ -53,7 +54,7 @@ export const getConversations = async (req: Request, res: Response) => {
           otherUserRole: user?.role ?? null,
           otherUserGender: user?.gender ?? null,
           otherUserOnline: isUserOnline(id),
-          lastMessageText: last.text,
+          lastMessageText: decryptText(last.text),
           lastMessageAttachmentType: last.attachmentType,
           lastMessageAt: last.createdAt,
           lastMessageFromMe: last.senderId === me.id,
@@ -76,16 +77,18 @@ export const getConversation = async (req: Request, res: Response) => {
     const me = (req as any).user;
     const otherUserId = req.params.otherUserId as string;
 
-    const messages = await prisma.message.findMany({
-      where: {
-        OR: [
-          { senderId: me.id, receiverId: otherUserId },
-          { senderId: otherUserId, receiverId: me.id },
-        ],
-      },
-      orderBy: { createdAt: "asc" },
-      take: 200,
-    });
+    const messages = (
+      await prisma.message.findMany({
+        where: {
+          OR: [
+            { senderId: me.id, receiverId: otherUserId },
+            { senderId: otherUserId, receiverId: me.id },
+          ],
+        },
+        orderBy: { createdAt: "asc" },
+        take: 200,
+      })
+    ).map(decryptMessage);
 
     // Mark messages sent to me as read (and, as a safety net, delivered —
     // covers the case where the sender's socket check at send time missed
@@ -159,7 +162,7 @@ export const sendMessage = async (req: Request, res: Response) => {
         replyToId: original.id,
         replyToText: original.deletedAt
           ? "This message was deleted"
-          : original.text ||
+          : decryptText(original.text) ||
             (original.attachmentType === "image"
               ? "📷 Photo"
               : original.attachmentType === "audio"
@@ -171,7 +174,7 @@ export const sendMessage = async (req: Request, res: Response) => {
     }
 
     let message = await prisma.message.create({
-      data: {
+      data: encryptMessageFields({
         senderId: me.id,
         receiverId,
         text: trimmedText,
@@ -179,7 +182,7 @@ export const sendMessage = async (req: Request, res: Response) => {
         attachmentType: attachmentType || undefined,
         attachmentName: attachmentName || undefined,
         ...replySnapshot,
-      },
+      }),
     });
 
     const io = req.app.get("io");
@@ -193,6 +196,8 @@ export const sendMessage = async (req: Request, res: Response) => {
         data: { deliveredAt: new Date() },
       });
     }
+
+    message = decryptMessage(message);
 
     // Push to both sides' user rooms so any open chat screen updates live —
     // the sender too, in case they have the conversation open on another
@@ -225,16 +230,18 @@ export const deleteMessage = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "You can only delete your own messages" });
     }
 
-    const updated = await prisma.message.update({
-      where: { id },
-      data: {
-        text: "",
-        attachmentUrl: null,
-        attachmentType: null,
-        attachmentName: null,
-        deletedAt: new Date(),
-      },
-    });
+    const updated = decryptMessage(
+      await prisma.message.update({
+        where: { id },
+        data: {
+          text: "",
+          attachmentUrl: null,
+          attachmentType: null,
+          attachmentName: null,
+          deletedAt: new Date(),
+        },
+      }),
+    );
 
     const io = req.app.get("io");
     if (io) {

@@ -426,10 +426,20 @@ Why: the flow plan's screens are mostly built, but its legal section (Uganda Med
 
 ### 5. Infrastructure and security checks
 
-- [ ] Confirm where the VPS is hosted (207.180.249.87); if outside Uganda, note the cross-border transfer requirements or plan a move
-- [ ] Confirm or enable encryption at rest for the MySQL volume and backups
-- [ ] Backend: rate limiting on auth and write endpoints
-- [ ] Decide: chat encryption level (end-to-end, or encrypted at rest on the server)
+Checked on production 2026-09-30: Contabo VPS in Lauterbourg, France; plain ext4 disk (no LUKS); MySQL 8.4 with table / redo / undo / binlog encryption all off; MySQL port not published (internal Docker network only); no database backups configured in Coolify; no rate limiting in Traefik or the app; chat messages stored in plain text.
+
+- [x] Backend: rate limiting (`middleware/rateLimit.ts`, `express-rate-limit`) — all API 600 / 5 min, writes 120 / 5 min, AI search 15 / 10 min, uploads 40 / 10 min, payment starts 10 / 10 min; counted per session (per IP only when signed out, because mobile networks share IPs); Pesapal callbacks exempt; 429 with a plain message
+- [x] Backend: better-auth limits on sign-in (20 / min per IP), sign-up (30 / 10 min), 2FA codes (10 / min), password reset; client IP from Traefik's X-Real-IP; `RATE_LIMIT=off` only for local test runs
+- [x] Mobile: a rate-limited chat message stays queued in the outbox instead of failing
+- [x] Chat encryption decided and built: AES-256-GCM at rest for message text, quoted replies and attachment names (`lib/messageCrypto.ts`), key only in `MESSAGE_ENCRYPTION_KEY`; HTTPS/WSS in transit; not end-to-end (doctors' records, several devices and legal holds need the server to read them)
+- [x] `scripts/encrypt-messages.ts` encrypts existing messages (safe to re-run)
+- [x] Verify: `smoke_security.py` 15/15; all suites pass with encryption on (316 checks)
+- [ ] **Owner, before deploying:** in Coolify → backend → Environment Variables add `MESSAGE_ENCRYPTION_KEY` (from `openssl rand -base64 32`) and store a copy in a password manager — losing it makes every chat unreadable
+- [ ] After deploy: `docker exec <backend container> bun scripts/encrypt-messages.ts` to encrypt the existing messages
+- [ ] Decide: database encryption at rest — (a) move to a VPS / volume with full-disk encryption (LUKS), (b) MySQL InnoDB tablespace encryption with a keyring kept off the data disk, or (c) application-level encryption of more fields (medical history, notes, documents) like chats
+- [ ] Set up database backups in Coolify (daily, to S3-compatible storage with server-side encryption) — there are none today
+- [ ] Uploaded files (documents, lab images, voice notes, licences) are served publicly by unguessable URL — move behind authenticated, time-limited links
+- [ ] Hosting is in France: note the cross-border transfer in the PDPO registration, or plan a move to a provider in Uganda / East Africa
 - [ ] **Owner:** register with the Personal Data Protection Office (PDPO); partner with or register a licensed facility
 
 ### 6. Search filters

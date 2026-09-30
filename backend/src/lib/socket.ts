@@ -1,6 +1,7 @@
 import { Server as SocketIOServer } from "socket.io";
 import { Server as HttpServer } from "http";
 import { prisma } from "./prisma";
+import { decryptMessage } from "./messageCrypto";
 
 let io: SocketIOServer;
 
@@ -99,7 +100,7 @@ export const initSocket = (server: HttpServer) => {
         for (const [senderId, messages] of bySender) {
           io.to(`user_${senderId}`).emit(
             "messages_updated",
-            messages.map((m) => ({ ...m, deliveredAt: now })),
+            messages.map((m) => ({ ...decryptMessage(m), deliveredAt: now })),
           );
         }
       } catch (error) {

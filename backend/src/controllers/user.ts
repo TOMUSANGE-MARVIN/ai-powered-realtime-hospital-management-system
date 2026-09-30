@@ -4,6 +4,7 @@ import { inngest } from "../inngest/client";
 import { polarClient } from "../lib/auth";
 import { prisma } from "../lib/prisma";
 import { isUserOnline } from "../lib/socket";
+import { logRecordAccess } from "../lib/recordAccess";
 
 // Whether a user currently has a live Socket.IO connection — not sensitive
 // data, so no role restriction (used for the chat header and the caller's
@@ -31,6 +32,9 @@ export const getUserById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (user.role === "patient") {
+      await logRecordAccess(currentUser, user.id, "profile");
+    }
     res.json(user);
   } catch (error) {
     console.error("Error fetching user:", error);

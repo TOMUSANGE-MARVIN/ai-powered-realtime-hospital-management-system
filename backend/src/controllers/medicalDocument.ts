@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { logRecordAccess } from "../lib/recordAccess";
 
 export const createMedicalDocument = async (req: Request, res: Response) => {
   try {
@@ -115,6 +116,7 @@ export const getPatientHistory = async (req: Request, res: Response) => {
       }),
     ]);
 
+    await logRecordAccess(doctor, patientId, "full_history");
     res.json({ patient, documents, appointments, labResults });
   } catch (error) {
     console.error("Error fetching patient history:", error);

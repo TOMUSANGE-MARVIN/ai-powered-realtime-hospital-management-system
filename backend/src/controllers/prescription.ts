@@ -5,6 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "../lib/prisma";
 import { notifyUser } from "../lib/notify";
 import { logActivity } from "../lib/activity";
+import { logRecordAccess } from "../lib/recordAccess";
 
 export const getPrescriptions = async (req: Request, res: Response) => {
   try {
@@ -27,6 +28,11 @@ export const getPrescriptions = async (req: Request, res: Response) => {
       }),
     ]);
 
+    await logRecordAccess(
+      (req as any).user,
+      results.map((p) => p.patient),
+      "prescriptions",
+    );
     res.json({
       res: results,
       pagination: {

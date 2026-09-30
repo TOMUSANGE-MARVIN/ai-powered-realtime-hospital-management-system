@@ -45,6 +45,18 @@ class PrivacySettingsScreen extends ConsumerWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
+                if (user?.role == 'patient') ...[
+                  ListTile(
+                    leading: const Icon(Icons.visibility_outlined),
+                    title: const Text('Who viewed my records'),
+                    subtitle: const Text(
+                      'Doctors and staff who opened your records',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/settings/record-access'),
+                  ),
+                  const Divider(height: 1),
+                ],
                 ListTile(
                   leading: const Icon(Icons.privacy_tip_outlined),
                   title: const Text('Privacy Policy'),

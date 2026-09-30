@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { notifyUser } from "../lib/notify";
 import { inngest } from "../inngest/client";
 import { logActivity } from "../lib/activity";
+import { logRecordAccess } from "../lib/recordAccess";
 
 // Create a new lab result
 export const createLabResult = async (req: Request, res: Response) => {
@@ -119,6 +120,7 @@ export const getAllLabResults = async (req: Request, res: Response) => {
       ...r,
       patientName: patientMap.get(r.patient)?.name || "Unknown",
     }));
+    await logRecordAccess((req as any).user, patientIds, "lab_results");
 
     res.json({
       res: enriched,
@@ -143,6 +145,7 @@ export const getPatientLabResults = async (req: Request, res: Response) => {
       where: { patient: patientId },
       orderBy: { createdAt: "desc" },
     });
+    await logRecordAccess((req as any).user, patientId, "lab_results");
     res.status(200).json(results);
   } catch (error) {
     console.error("Error fetching lab results:", error);

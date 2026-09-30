@@ -633,3 +633,22 @@ model Consent {
   @@index([userId, type])
   @@map("consent")
 }
+
+// Every time someone other than the patient opens a patient's records
+// (E23.3) — Full History, lab results, prescriptions, the patient profile.
+// Patients see their own entries (Settings → Privacy → Who viewed my
+// records); admins see all of them. Append-only.
+model RecordAccess {
+  id         String   @id @default(cuid())
+  patientId  String
+  viewerId   String
+  viewerName String
+  viewerRole String   @db.VarChar(30)
+  // full_history | lab_results | prescriptions | profile
+  resource   String   @db.VarChar(30)
+  createdAt  DateTime @default(now())
+
+  @@index([patientId, createdAt])
+  @@index([viewerId, createdAt])
+  @@map("record_access")
+}

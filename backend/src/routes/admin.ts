@@ -16,6 +16,7 @@ import {
 } from "../controllers/adminContent";
 import { listPayments, refundPayment, syncPayment } from "../controllers/adminPayments";
 import { listVerifications, reviewVerification } from "../controllers/doctorVerification";
+import { listRecordAccess } from "../controllers/recordAccess";
 
 const adminRouter = Router();
 
@@ -32,6 +33,7 @@ adminRouter.post("/payments/:id/sync", requireAuth, checkRole(["admin"]), syncPa
 adminRouter.post("/payments/:id/refund", requireAuth, checkRole(["admin"]), refundPayment);
 adminRouter.get("/doctor-verifications", requireAuth, checkRole(["admin"]), listVerifications);
 adminRouter.post("/doctor-verifications/:id", requireAuth, checkRole(["admin"]), reviewVerification);
+adminRouter.get("/record-access", requireAuth, checkRole(["admin"]), listRecordAccess);
 adminRouter.get("/reports", requireAuth, checkRole(["admin"]), getReports);
 
 export default adminRouter;

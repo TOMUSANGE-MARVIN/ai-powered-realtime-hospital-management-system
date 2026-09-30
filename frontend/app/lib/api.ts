@@ -27,6 +27,7 @@ import type {
   AdminPaymentsResponse,
   DoctorVerification,
   LegalDocuments,
+  RecordAccessEntry,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -888,4 +889,23 @@ export const updateLegal = async (
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.message || "Failed to save");
   return body;
+};
+
+// Record-access audit log (E23.3), admin only.
+export const getRecordAccess = async ({
+  page = 1,
+  limit = 20,
+  search = "",
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<{ total: number; page: number; limit: number; res: RecordAccessEntry[] }> => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (search.trim()) params.set("search", search.trim());
+  const res = await fetch(`${API_URL}/admin/record-access?${params}`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch the record-access log");
+  return res.json();
 };

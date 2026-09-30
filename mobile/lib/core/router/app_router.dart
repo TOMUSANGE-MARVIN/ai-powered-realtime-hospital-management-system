@@ -40,6 +40,7 @@ import '../../features/doctor/presentation/time_off_screen.dart';
 import '../../features/doctor/presentation/issued_prescriptions_screen.dart';
 import '../../features/profile/presentation/health_profile_screen.dart';
 import '../../features/profile/presentation/privacy_settings_screen.dart';
+import '../../features/profile/presentation/record_access_screen.dart';
 import '../../features/doctor/presentation/patient_history_screen.dart';
 import '../../features/appointments/presentation/rate_doctor_screen.dart';
 import '../../features/appointments/presentation/booking_confirmation_screen.dart';
@@ -274,6 +275,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings/privacy',
         builder: (context, state) => const PrivacySettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/record-access',
+        builder: (context, state) => const RecordAccessScreen(),
       ),
       GoRoute(
         path: '/settings/two-factor',

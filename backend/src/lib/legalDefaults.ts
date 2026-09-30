@@ -41,6 +41,8 @@ We do not sell your information, and we do not use your health information for a
 
 - The doctors you book or message, while they are treating you. A doctor can only open your full history when they are treating you.
 - A small number of Ask Musawo staff who need it to run the service (for example to resolve a payment problem).
+
+Every time someone other than you opens your records, it is logged. You can see who opened them in the app under Settings → Privacy → Who viewed my records.
 - Service providers who work for us under contract: our hosting provider, Pesapal for payments, and our file-storage provider. They may only use your information to provide their service to us.
 - Authorities, when the law requires it.
 
@@ -50,7 +52,7 @@ We keep medical records for as long as the law requires health records to be kep
 
 ## How we protect it
 
-Your information travels over encrypted connections (HTTPS). Access is limited by role, and sign-in can be protected with two-factor authentication. No system is perfectly secure; if a breach affects you, we will tell you and the Personal Data Protection Office as the Act requires.
+Your information travels over encrypted connections (HTTPS). Access is limited by role, sign-in can be protected with two-factor authentication, and every access to patient records is logged. No system is perfectly secure; if a breach affects you, we will tell you and the Personal Data Protection Office as the Act requires.
 
 ## Where it is stored
 

@@ -523,3 +523,16 @@ export interface LegalDocuments {
   privacy: string;
   telemedicineConsent: string;
 }
+
+/** One time someone other than the patient opened their records (E23.3). */
+export interface RecordAccessEntry {
+  id: string;
+  patientId: string;
+  patientName: string;
+  patientEmail: string | null;
+  viewerId: string;
+  viewerName: string;
+  viewerRole: string;
+  resource: "full_history" | "lab_results" | "prescriptions" | "profile";
+  createdAt: string;
+}

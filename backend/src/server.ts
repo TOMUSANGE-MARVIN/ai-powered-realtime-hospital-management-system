@@ -42,6 +42,7 @@ import earningsRouter from "./routes/earnings";
 import medicalDocumentRouter from "./routes/medicalDocument";
 import uploadRouterGeneric from "./routes/upload";
 import legalRouter from "./routes/legal";
+import recordAccessRouter from "./routes/recordAccess";
 import voucherRouter from "./routes/voucher";
 import withdrawalRouter from "./routes/withdrawal";
 import adminRouter from "./routes/admin";
@@ -111,6 +112,7 @@ app.get("/api/me", async (req, res) => {
   return res.json(session);
 });
 app.use("/api/legal", legalRouter);
+app.use("/api/record-access", recordAccessRouter);
 app.use("/api/users", userRouter);
 app.use("/api/activity-logs", activityLogRouter);
 app.use("/api/notifications", notificationRouter);

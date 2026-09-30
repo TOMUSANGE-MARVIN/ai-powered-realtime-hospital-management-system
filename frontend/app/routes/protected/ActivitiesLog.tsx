@@ -22,11 +22,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns"; // Recommended for date formatting
 import GlobalSearch from "@/components/global/GlobalSearch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import RecordAccessLog from "@/components/audit/RecordAccessLog";
 
 export function meta() {
   return [{ title: "Audit Logs | Ask Musawo" }];
 }
-const ActivitiesLog = () => {
+const ActivityLogTab = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const limit = 10;
@@ -159,5 +161,22 @@ const ActivitiesLog = () => {
     </Card>
   );
 };
+
+// Two audit trails: what people changed (activity log), and who opened
+// which patient's records (record-access log, E23.3).
+const ActivitiesLog = () => (
+  <Tabs defaultValue="activity" className="space-y-4">
+    <TabsList>
+      <TabsTrigger value="activity">Activity</TabsTrigger>
+      <TabsTrigger value="records">Record access</TabsTrigger>
+    </TabsList>
+    <TabsContent value="activity">
+      <ActivityLogTab />
+    </TabsContent>
+    <TabsContent value="records">
+      <RecordAccessLog />
+    </TabsContent>
+  </Tabs>
+);
 
 export default ActivitiesLog;

@@ -403,15 +403,17 @@ Why: the flow plan's screens are mostly built, but its legal section (Uganda Med
 - [x] Mobile: Privacy Policy and Terms links in Settings → Privacy
 - [x] Web: public `/privacy` and `/terms` (footer links), admin editor with preview and publish
 - [x] Verify: `smoke_legal.py` 21/21; all suites pass (283 checks); browser run of gate → accept, booking consent, sign-up
-- [ ] Add "access to your records is logged" back to the Privacy Policy once E23.3 ships
+- [x] Add "access to your records is logged" back to the Privacy Policy once E23.3 ships
 - [ ] Deploy: after release, every existing user accepts once; app builds older than this one can't book until updated
 
 ### 3. Record-access audit log
 
-- [ ] Backend: log every read of a patient's Full History, medical documents, lab results and prescriptions by someone other than the patient (who, whose record, what, when)
-- [ ] Web: Activities Log filter for record access; admins can see who opened a given patient's records
-- [ ] Mobile (patient): "Who viewed my records" list in Settings → Privacy
-- [ ] Verify: a doctor opening a patient's history creates exactly one entry, visible to admin and patient
+- [x] Backend: `record_access` table (patient, viewer name and role, which records, when) — migration `20261001150000_record_access`; `lib/recordAccess.ts` logs reads of Full History, patient lab results, staff lab and prescription lists, and patient profiles by anyone but the patient; repeat views within 30 minutes count once; logging never blocks the request
+- [x] Backend: `GET /api/record-access/mine` (patient), admin `GET /api/admin/record-access?patientId=&viewerId=&search=`
+- [x] Web: Audit Logs → Record access tab (search by viewer or patient)
+- [x] Mobile (patient): Settings → Privacy → Who viewed my records
+- [x] Privacy Policy draft says access is logged and where to see it (E23.2 follow-up)
+- [x] Verify: `smoke_access.py` 18/18; all suites pass (301 checks); browser check of both screens
 
 ### 4. Prescription detail screen
 

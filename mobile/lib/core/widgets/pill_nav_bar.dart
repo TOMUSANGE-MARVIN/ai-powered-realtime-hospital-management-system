@@ -36,30 +36,39 @@ class PillNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final selected = currentIndex < 0 ? 0 : currentIndex;
-    return CurvedNavigationBar(
-      index: selected,
-      height: 60,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    // The package ignores system insets, so on edge-to-edge Android the bar
+    // would sit under the system navigation buttons. Lift it above them and
+    // fill the gap with the bar's colour.
+    return ColoredBox(
       color: Colors.white,
-      buttonBackgroundColor: seedTeal,
-      animationDuration: const Duration(milliseconds: 300),
-      onTap: onTap,
-      items: [
-        for (var i = 0; i < items.length; i++)
-          Badge(
-            isLabelVisible: (badges[i] ?? 0) > 0,
-            backgroundColor: const Color(0xFFD32F2F),
-            label: Text((badges[i] ?? 0) > 9 ? '9+' : '${badges[i]}'),
-            child: Icon(
-              i == selected
-                  ? (items[i].selectedIcon ?? items[i].icon)
-                  : items[i].icon,
-              color: i == selected
-                  ? Colors.white
-                  : scheme.onSurfaceVariant.withValues(alpha: 0.6),
-            ),
-          ),
-      ],
+      child: SafeArea(
+        top: false,
+        child: CurvedNavigationBar(
+          index: selected,
+          height: 60,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          color: Colors.white,
+          buttonBackgroundColor: seedTeal,
+          animationDuration: const Duration(milliseconds: 300),
+          onTap: onTap,
+          items: [
+            for (var i = 0; i < items.length; i++)
+              Badge(
+                isLabelVisible: (badges[i] ?? 0) > 0,
+                backgroundColor: const Color(0xFFD32F2F),
+                label: Text((badges[i] ?? 0) > 9 ? '9+' : '${badges[i]}'),
+                child: Icon(
+                  i == selected
+                      ? (items[i].selectedIcon ?? items[i].icon)
+                      : items[i].icon,
+                  color: i == selected
+                      ? Colors.white
+                      : scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

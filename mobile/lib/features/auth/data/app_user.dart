@@ -33,6 +33,7 @@ class AppUser {
     this.twoFactorEnabled = false,
     this.doctorVerificationStatus,
     this.verificationNote,
+    this.legalAcceptedVersion,
   });
 
   final String id;
@@ -73,6 +74,10 @@ class AppUser {
 
   /// The admin's reason when a licence submission was rejected.
   final String? verificationNote;
+
+  /// Version of the Terms + Privacy Policy this user last accepted; the app
+  /// asks again whenever it differs from the current version.
+  final String? legalAcceptedVersion;
 
   bool get isDoctor => role == 'doctor';
 
@@ -117,6 +122,7 @@ class AppUser {
       availableToday: json['availableToday'] as bool? ?? false,
       doctorVerificationStatus: json['doctorVerificationStatus'] as String?,
       verificationNote: json['verificationNote'] as String?,
+      legalAcceptedVersion: json['legalAcceptedVersion'] as String?,
       createdAt: DateTime.tryParse(
         json['createdAt'] as String? ?? '',
       )?.toLocal(),

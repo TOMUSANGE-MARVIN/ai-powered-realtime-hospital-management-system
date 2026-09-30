@@ -222,6 +222,13 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      // Terms + Privacy Policy version last accepted (E23.2); set only by
+      // POST /api/legal/accept.
+      legalAcceptedVersion: {
+        type: "string",
+        required: false,
+        input: false,
+      },
       insuranceProvider: {
         type: "string",
         required: false,

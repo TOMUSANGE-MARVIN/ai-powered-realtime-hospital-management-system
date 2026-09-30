@@ -26,6 +26,7 @@ import type {
   AdminPayment,
   AdminPaymentsResponse,
   DoctorVerification,
+  LegalDocuments,
 } from "@/types";
 
 export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
@@ -863,5 +864,28 @@ export const reviewDoctorVerification = async ({
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.message || "Failed to update verification");
+  return body;
+};
+
+// Legal documents (E23.2). Reading is public; editing is admin-only.
+export const getLegal = async (): Promise<LegalDocuments> => {
+  const res = await fetch(`${API_URL}/legal`);
+  if (!res.ok) throw new Error("Failed to load the legal documents");
+  return res.json();
+};
+
+export const updateLegal = async (
+  changes: Partial<Pick<LegalDocuments, "terms" | "privacy" | "telemedicineConsent">> & {
+    publishNewVersion?: boolean;
+  },
+): Promise<LegalDocuments> => {
+  const res = await fetch(`${API_URL}/legal`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(changes),
+    credentials: "include",
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.message || "Failed to save");
   return body;
 };

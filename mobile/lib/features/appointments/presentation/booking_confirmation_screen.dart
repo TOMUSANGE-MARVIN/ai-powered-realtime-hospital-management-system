@@ -9,6 +9,8 @@ import '../../../core/widgets/loading_dots.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
+import '../../legal/data/legal_repository.dart';
+import '../../legal/presentation/legal_text.dart';
 import '../../payments/data/payment_repository.dart';
 import '../../payments/state/payment_providers.dart';
 import '../data/booking_draft.dart';
@@ -35,6 +37,9 @@ class _BookingConfirmationScreenState
   late BookingDraft _draft = widget.draft;
   bool _applying = false;
   bool _booking = false;
+
+  /// Telemedicine consent (E23.2) — required before booking or paying.
+  bool _consented = false;
   String? _voucherError;
 
   @override
@@ -114,6 +119,7 @@ class _BookingConfirmationScreenState
             reason: _draft.reason,
             consultationType: _draft.consultationType,
             isEmergency: _draft.isEmergency,
+            telemedicineConsent: _consented,
           );
       ref.invalidate(myAppointmentsProvider);
       if (!mounted) return;
@@ -317,6 +323,13 @@ class _BookingConfirmationScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            _ConsentRow(
+              value: _consented,
+              onChanged: _booking
+                  ? null
+                  : (v) => setState(() => _consented = v),
+            ),
+            const SizedBox(height: 4),
             if (draft.fee > 0)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -342,7 +355,7 @@ class _BookingConfirmationScreenState
               width: double.infinity,
               height: 52,
               child: FilledButton(
-                onPressed: _booking ? null : _confirm,
+                onPressed: _booking || !_consented ? null : _confirm,
                 child: _booking
                     ? const LoadingDots()
                     : const Text('Confirm Appointment'),
@@ -351,6 +364,90 @@ class _BookingConfirmationScreenState
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "I consent to this consultation" with a link to the full wording, which
+/// comes from the published legal documents so admins can edit it.
+class _ConsentRow extends ConsumerWidget {
+  const _ConsentRow({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  void _showWording(BuildContext context, String text) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Consent to consultation',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
+              LegalText(text),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wording = ref
+        .watch(legalDocumentsProvider)
+        .value
+        ?.telemedicineConsent;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Checkbox(
+          value: value,
+          onChanged: onChanged == null ? null : (v) => onChanged!(v ?? false),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text.rich(
+              TextSpan(
+                style: const TextStyle(fontSize: 13, height: 1.4),
+                children: [
+                  const TextSpan(
+                    text:
+                        'I consent to this consultation and to my health '
+                        'information being shared with this doctor. ',
+                  ),
+                  if (wording != null)
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic,
+                      child: GestureDetector(
+                        onTap: () => _showWording(context, wording),
+                        child: const Text(
+                          'What this means',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: seedTeal,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -390,17 +390,21 @@ Why: the flow plan's screens are mostly built, but its legal section (Uganda Med
 - [x] Web: Doctors → Licence verification queue (pending / rejected / approved / not submitted / all; view document; approve; reject or revoke with reason)
 - [x] Verify: smoke suite `smoke_verification.py` 31/31; all other suites pass (258 checks); browser run register → submit → admin approves → dashboard opens by itself
 - [ ] Verify on the Samsung (camera photo of a licence)
-- [ ] Deploy: run the migration on production (existing doctors become approved), then release the app
+- [x] Deploy: migration applied on production by the 2026-09-30 Coolify deploy; all six existing doctors approved (checked)
+- [ ] Release the new app build to phones
 
 ### 2. Consent and legal screens
 
-- [ ] Content: Privacy Policy and Terms of Service text (owner to review; admin-editable via Content or Settings)
-- [ ] Backend: record acceptance (document version and timestamp per user); consent record per consultation
-- [ ] Mobile: "I agree to the Terms and Privacy Policy" checkbox on Register; existing users accept once on next sign-in when the version changes
-- [ ] Mobile: telemedicine consent step before the first consultation (explains remote care limits and how health data is used)
-- [ ] Mobile: Privacy Policy and Terms links in Settings → Privacy
-- [ ] Web: the same pages on the public site
-- [ ] Verify: can't register or book without accepting; the acceptance is stored with its version
+- [x] Content: draft Privacy Policy, Terms of Service and consultation consent (`backend/src/lib/legalDefaults.ts`), written against the Data Protection and Privacy Act 2019; admins edit them in Settings → Legal & Consent
+- [ ] **Owner:** have a Ugandan lawyer review the three texts before launch (fill in the company's legal name and address)
+- [x] Backend: `GET /api/legal` (public), `POST /api/legal/accept`, admin `PUT /api/legal` (save wording, or publish a new version); `user.legalAcceptedVersion` + append-only `consent` table — migration `20261001120000_legal_consent`
+- [x] Backend: booking and payment refuse (428) without current Terms/Privacy acceptance and `telemedicineConsent: true`; consent stored per payment / appointment
+- [x] Mobile: Register checkbox with Terms and Privacy links (acceptance recorded at sign-up); "Before you continue" / "We've updated our terms" gate for everyone else; consent box and "What this means" on the booking Confirmation screen
+- [x] Mobile: Privacy Policy and Terms links in Settings → Privacy
+- [x] Web: public `/privacy` and `/terms` (footer links), admin editor with preview and publish
+- [x] Verify: `smoke_legal.py` 21/21; all suites pass (283 checks); browser run of gate → accept, booking consent, sign-up
+- [ ] Add "access to your records is logged" back to the Privacy Policy once E23.3 ships
+- [ ] Deploy: after release, every existing user accepts once; app builds older than this one can't book until updated
 
 ### 3. Record-access audit log
 

@@ -46,6 +46,20 @@ class PrivacySettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: const Text('Privacy Policy'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/legal/privacy'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: const Text('Terms of Service'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/legal/terms'),
+                ),
+                const Divider(height: 1),
+                ListTile(
                   leading: const Icon(Icons.verified_user_outlined),
                   title: const Text('Two-Factor Authentication'),
                   trailing: const Icon(Icons.chevron_right),

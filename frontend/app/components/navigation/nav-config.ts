@@ -153,6 +153,7 @@ export const navConfig: {
         { title: "Categories", url: "/settings/categories" },
         { title: "Vouchers", url: "/settings/vouchers" },
         { title: "Doctor Payouts", url: "/settings/payouts" },
+        { title: "Legal & Consent", url: "/settings/legal" },
       ],
     },
   ],

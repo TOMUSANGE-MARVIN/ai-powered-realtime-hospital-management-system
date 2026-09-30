@@ -76,6 +76,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           : await _repo.initiate(
               doctorId: _draft.doctor.id,
               voucherCode: _draft.voucherCode,
+              // Given on the Confirmation screen, the only way here.
+              telemedicineConsent: true,
               booking: {
                 'date': _draft.date.toIso8601String(),
                 'time': _draft.time,

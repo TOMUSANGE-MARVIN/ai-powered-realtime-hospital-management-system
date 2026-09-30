@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/providers.dart';
+import '../../legal/data/legal_repository.dart';
 import '../data/app_user.dart';
 import '../data/auth_repository.dart';
 
@@ -51,18 +52,34 @@ class AuthController extends AsyncNotifier<AppUser?> {
     if (user != null) state = AsyncData(user);
   }
 
+  /// [acceptedLegalVersion] is the Terms + Privacy version the person
+  /// ticked on the Register screen; it's recorded straight after the
+  /// account is created, before the app moves on, so a new user is never
+  /// asked to accept twice.
   Future<void> signUp({
     required String name,
     required String email,
     required String password,
+    required String acceptedLegalVersion,
   }) async {
     await _clearOfflineData();
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref
-          .read(authRepositoryProvider)
-          .signUp(name: name, email: email, password: password),
-    );
+    state = await AsyncValue.guard(() async {
+      final repo = ref.read(authRepositoryProvider);
+      final user = await repo.signUp(
+        name: name,
+        email: email,
+        password: password,
+      );
+      try {
+        await ref.read(legalRepositoryProvider).accept(acceptedLegalVersion);
+        return await repo.getSession() ?? user;
+      } catch (_) {
+        // The account exists either way; the app will ask for acceptance
+        // on the next screen instead.
+        return user;
+      }
+    });
   }
 
   Future<void> signOut() async {

@@ -25,6 +25,7 @@ class AppointmentRepository {
     required String consultationType,
     bool isEmergency = false,
     String? paymentId,
+    bool telemedicineConsent = false,
   }) async {
     final response = await _dio.post(
       '/api/appointments/book',
@@ -36,6 +37,7 @@ class AppointmentRepository {
         'consultationType': consultationType,
         'isEmergency': isEmergency,
         'paymentId': ?paymentId,
+        'telemedicineConsent': telemedicineConsent,
       },
     );
     ApiException.checkStatus(response);

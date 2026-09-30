@@ -69,6 +69,9 @@ model User {
   verificationReviewedBy   String?   @db.Text
   // Admin's reason when a submission is rejected.
   verificationNote         String?   @db.Text
+  // Version of the Terms + Privacy Policy last accepted (E23.2); patients and
+  // doctors are asked again whenever an admin publishes a new version.
+  legalAcceptedVersion     String?   @db.VarChar(40)
   sessions                 Session[]
   accounts                 Account[]
   twoFactors               TwoFactor[]
@@ -611,4 +614,22 @@ model DoctorTimeOff {
 
   @@index([doctorId, endDate])
   @@map("doctor_time_off")
+}
+
+// Every acceptance a user gives (E23.2): Terms and Privacy Policy at sign-up
+// or after an update, and telemedicine consent for each booking. Kept as an
+// append-only record under the Data Protection and Privacy Act 2019.
+model Consent {
+  id            String   @id @default(cuid())
+  userId        String
+  // terms | privacy | telemedicine
+  type          String   @db.VarChar(20)
+  version       String   @db.VarChar(40)
+  doctorId      String?
+  paymentId     String?
+  appointmentId String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId, type])
+  @@map("consent")
 }

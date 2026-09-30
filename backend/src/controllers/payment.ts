@@ -10,6 +10,7 @@ import { VoucherError } from "./voucher";
 import { priceConsultation } from "../lib/pricing";
 import { bookPaidPayment, type BookingDetails } from "../lib/booking";
 import { APPROVED_DOCTOR } from "../lib/doctorVerification";
+import { CONSENT_ERRORS, hasAcceptedCurrentLegal, recordTelemedicineConsent } from "../lib/legal";
 
 // Pay-before-book via Pesapal. The patient pays on Pesapal's hosted checkout
 // (cards + mobile money), so this server never sees card details. Payment
@@ -104,6 +105,13 @@ export const initiatePayment = async (req: Request, res: Response) => {
     if (!doctorId) {
       return res.status(400).json({ message: "doctorId is required" });
     }
+    // Consent before any consultation (E23.2).
+    if (!(await hasAcceptedCurrentLegal(patient.id))) {
+      return res.status(428).json(CONSENT_ERRORS.legal);
+    }
+    if (req.body.telemedicineConsent !== true) {
+      return res.status(428).json(CONSENT_ERRORS.telemedicine);
+    }
     if (!isPesapalConfigured()) {
       return res.status(503).json({ message: "Online payments are not available right now" });
     }
@@ -146,6 +154,7 @@ export const initiatePayment = async (req: Request, res: Response) => {
         status: "pending",
       },
     });
+    await recordTelemedicineConsent({ userId: patient.id, doctorId, paymentId: payment.id });
 
     const [firstName, ...rest] = String(patient.name || "").trim().split(/\s+/);
     try {

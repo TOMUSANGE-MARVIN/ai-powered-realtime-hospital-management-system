@@ -60,6 +60,7 @@ class PaymentRepository {
     required String doctorId,
     String? voucherCode,
     Map<String, dynamic>? booking,
+    bool telemedicineConsent = false,
   }) async {
     final response = await _dio.post(
       '/api/payments/initiate',
@@ -67,6 +68,7 @@ class PaymentRepository {
         'doctorId': doctorId,
         'voucherCode': ?voucherCode,
         'booking': ?booking,
+        'telemedicineConsent': telemedicineConsent,
       },
     );
     ApiException.checkStatus(response);

@@ -514,3 +514,12 @@ export interface DoctorVerification {
   verificationNote: string | null;
   createdAt: string;
 }
+
+/** Published Terms, Privacy Policy and telemedicine consent (E23.2). */
+export interface LegalDocuments {
+  version: string;
+  updatedAt: string;
+  terms: string;
+  privacy: string;
+  telemedicineConsent: string;
+}

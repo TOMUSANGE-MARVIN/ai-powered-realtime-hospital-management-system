@@ -5,6 +5,7 @@ import { bookPaidPayment, insertAppointment } from "../lib/booking";
 import { formatVisit, notifyUser } from "../lib/notify";
 import { logActivity } from "../lib/activity";
 import { APPROVED_DOCTOR } from "../lib/doctorVerification";
+import { CONSENT_ERRORS, hasAcceptedCurrentLegal, recordTelemedicineConsent } from "../lib/legal";
 
 // Public endpoint — used by the marketing "Book Appointment" form (no auth)
 export const requestAppointment = async (req: Request, res: Response) => {
@@ -299,6 +300,15 @@ export const bookAppointment = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
+    // Consent before any consultation (E23.2). A paid booking gave its
+    // telemedicine consent when the payment started.
+    if (!(await hasAcceptedCurrentLegal(patient.id))) {
+      return res.status(428).json(CONSENT_ERRORS.legal);
+    }
+    if (!doctor.consultationFee && req.body.telemedicineConsent !== true) {
+      return res.status(428).json(CONSENT_ERRORS.telemedicine);
+    }
+
     if (!isEmergency && (await timeOffOn(doctorId, new Date(date)))) {
       return res.status(400).json({ message: `${doctor.name} is away on that day. Please choose another date.` });
     }
@@ -341,6 +351,10 @@ export const bookAppointment = async (req: Request, res: Response) => {
         if (linked) return res.status(200).json(linked);
       }
       throw error;
+    }
+
+    if (!doctor.consultationFee) {
+      await recordTelemedicineConsent({ userId: patient.id, doctorId, appointmentId: appointment.id });
     }
 
     const io = req.app.get("io");

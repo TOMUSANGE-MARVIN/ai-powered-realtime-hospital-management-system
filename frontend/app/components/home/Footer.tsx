@@ -208,12 +208,12 @@ export default function Footer() {
             © 2026 Ask Musawo. All Rights Reserved
           </p>
           <div className="flex items-center gap-5 text-xs text-stone-500">
-            <a href="#" className="hover:text-white">
+            <Link to="/privacy" className="hover:text-white">
               Privacy
-            </a>
-            <a href="#" className="hover:text-white">
+            </Link>
+            <Link to="/terms" className="hover:text-white">
               Terms
-            </a>
+            </Link>
             <a href="#" className="hover:text-white">
               Sitemap
             </a>

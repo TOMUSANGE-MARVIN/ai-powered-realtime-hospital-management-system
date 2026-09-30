@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/loading_dots.dart';
 import '../../doctor/data/verification_repository.dart';
+import '../../legal/data/legal_repository.dart';
+import '../../legal/presentation/legal_accept_screen.dart';
 import '../state/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -25,6 +27,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   /// verification screen before patients can see them.
   bool _asDoctor = false;
 
+  /// Terms + Privacy consent, required by the Data Protection and Privacy
+  /// Act before we store any health information.
+  bool _agreed = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -35,6 +41,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_agreed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please agree to the Terms and Privacy Policy'),
+        ),
+      );
+      return;
+    }
+    final LegalDocuments legal;
+    try {
+      legal = await ref.read(legalDocumentsProvider.future);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Couldn't load the Terms. Check your connection."),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
     ref.read(doctorSignupIntentProvider.notifier).set(_asDoctor);
     await ref
         .read(authControllerProvider.notifier)
@@ -42,6 +69,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
+          acceptedLegalVersion: legal.version,
         );
     // A successful sign-up triggers an immediate redirect away from this
     // screen (see app_router.dart), which can unmount it before this
@@ -157,9 +185,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ? 'Minimum 8 characters'
                         : null,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Checkbox(
+                        value: _agreed,
+                        onChanged: isLoading
+                            ? null
+                            : (v) => setState(() => _agreed = v ?? false),
+                      ),
+                      const Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 12),
+                          child: LegalAgreementText(),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   FilledButton(
-                    onPressed: isLoading ? null : _submit,
+                    onPressed: isLoading || !_agreed ? null : _submit,
                     child: isLoading
                         ? const LoadingDots()
                         : const Text('Create account'),

@@ -46,6 +46,9 @@ import '../../features/appointments/presentation/booking_confirmation_screen.dar
 import '../../features/appointments/data/appointment.dart';
 import '../../features/doctor/data/verification_repository.dart';
 import '../../features/doctor/presentation/doctor_verification_screen.dart';
+import '../../features/legal/data/legal_repository.dart';
+import '../../features/legal/presentation/legal_accept_screen.dart';
+import '../../features/legal/presentation/legal_document_screen.dart';
 
 /// Bridges Riverpod's [authControllerProvider] to go_router's
 /// [Listenable]-based `refreshListenable`, so navigation reacts immediately
@@ -55,6 +58,7 @@ class _AuthRefreshNotifier extends ChangeNotifier {
     ref.listen(authControllerProvider, (_, _) => notifyListeners());
     ref.listen(onboardingControllerProvider, (_, _) => notifyListeners());
     ref.listen(doctorSignupIntentProvider, (_, _) => notifyListeners());
+    ref.listen(legalDocumentsProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -75,6 +79,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       final hasSeenWelcome = ref.read(onboardingControllerProvider);
       final location = state.matchedLocation;
       const publicRoutes = {'/welcome', '/login', '/register'};
+      // Readable by anyone, at any point (Register links to them).
+      const legalRoutes = {'/legal/terms', '/legal/privacy'};
+      if (legalRoutes.contains(location)) return null;
 
       if (authState.isLoading) {
         // Only bounce to the splash screen for the initial session check on
@@ -96,6 +103,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
         if (location == '/welcome') return '/login';
         return publicRoutes.contains(location) ? null : '/login';
+      }
+
+      // Consent first: nobody uses the app until they've accepted the
+      // current Terms and Privacy Policy (E23.2). Skipped until the
+      // documents have loaded, so an offline launch isn't blocked.
+      const legalAccept = '/legal/accept';
+      final legalVersion = ref.read(legalDocumentsProvider).value?.version;
+      if (legalVersion != null && user.legalAcceptedVersion != legalVersion) {
+        return location == legalAccept ? null : legalAccept;
+      }
+      if (location == legalAccept) {
+        return user.isDoctor ? '/doctor-home' : '/home';
       }
 
       // Doctors wait on the verification screen until an admin approves
@@ -227,6 +246,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/payments/history',
         builder: (context, state) => const PaymentHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/legal/accept',
+        builder: (context, state) => const LegalAcceptScreen(),
+      ),
+      GoRoute(
+        path: '/legal/terms',
+        builder: (context, state) => const LegalDocumentScreen(privacy: false),
+      ),
+      GoRoute(
+        path: '/legal/privacy',
+        builder: (context, state) => const LegalDocumentScreen(privacy: true),
       ),
       GoRoute(
         path: '/doctor-verification',

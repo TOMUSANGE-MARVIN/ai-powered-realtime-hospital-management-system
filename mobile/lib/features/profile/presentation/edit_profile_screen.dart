@@ -8,6 +8,9 @@ import '../../../core/api/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../auth/state/auth_controller.dart';
+import '../../appointments/data/booking_draft.dart'
+    show parseAvailableWeekdays, parseSlotMinutes;
+import '../../doctors/state/doctor_providers.dart';
 import '../state/profile_providers.dart';
 
 const _genderOptions = ['Male', 'Female', 'Other'];
@@ -42,6 +45,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _insuranceProviderController = TextEditingController();
   final _insuranceMemberNoController = TextEditingController();
   String _email = '';
+  // Doctor-only professional details.
+  final _qualificationsController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _treatmentsController = TextEditingController();
+  String? _specialization;
+  Set<int> _workDays = {1, 2, 3, 4, 5};
+  TimeOfDay _workStart = const TimeOfDay(hour: 8, minute: 0);
+  TimeOfDay _workEnd = const TimeOfDay(hour: 17, minute: 0);
+  bool _availableToday = false;
   DateTime? _dateOfBirth;
   bool _initialized = false;
   bool _saving = false;
@@ -84,6 +96,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _hospitalAddressController.text = user.hospitalAddress ?? '';
     _feeController.text = user.consultationFee?.toString() ?? '';
     _email = user.email;
+    _specialization = user.specialization;
+    _qualificationsController.text = user.qualifications ?? '';
+    _experienceController.text = user.yearsOfExperience?.toString() ?? '';
+    _treatmentsController.text = user.treatments ?? '';
+    _availableToday = user.availableToday;
+    final days = parseAvailableWeekdays(user.availabilityDays);
+    if (days != null && days.isNotEmpty) _workDays = days;
+    if (user.availabilityHours != null) {
+      final slots = parseSlotMinutes(user.availabilityHours);
+      if (slots.isNotEmpty) {
+        _workStart = TimeOfDay(
+          hour: slots.first ~/ 60,
+          minute: slots.first % 60,
+        );
+        final end = slots.last + 30;
+        _workEnd = TimeOfDay(hour: end ~/ 60, minute: end % 60);
+      }
+    }
     _phoneController.text = user.phoneNumber ?? '';
     _addressController.text = user.address ?? '';
     _insuranceProviderController.text = user.insuranceProvider ?? '';
@@ -123,6 +153,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _hospitalAddressController.dispose();
     _feeController.dispose();
     _phoneController.dispose();
+    _qualificationsController.dispose();
+    _experienceController.dispose();
+    _treatmentsController.dispose();
     _addressController.dispose();
     _insuranceProviderController.dispose();
     _insuranceMemberNoController.dispose();
@@ -178,7 +211,41 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  static const _dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  /// Same text format the booking screen parses (e.g. "Mon, Wed, Fri").
+  String _formatDays() => [
+    for (var d = 1; d <= 7; d++)
+      if (_workDays.contains(d)) _dayNames[d - 1],
+  ].join(', ');
+
+  String _formatTime(TimeOfDay t) =>
+      DateFormat('h:mm a').format(DateTime(2000, 1, 1, t.hour, t.minute));
+
+  Future<void> _pickTime({required bool start}) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: start ? _workStart : _workEnd,
+    );
+    if (picked == null) return;
+    setState(() => start ? _workStart = picked : _workEnd = picked);
+  }
+
   Future<void> _save() async {
+    if (_role == 'doctor') {
+      final startMin = _workStart.hour * 60 + _workStart.minute;
+      final endMin = _workEnd.hour * 60 + _workEnd.minute;
+      if (_workDays.isEmpty || endMin - startMin < 30) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Pick at least one working day, and working hours that are at least 30 minutes long.',
+            ),
+          ),
+        );
+        return;
+      }
+    }
     setState(() => _saving = true);
     try {
       await ref.read(profileRepositoryProvider).updateMe({
@@ -203,6 +270,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           'hospitalName': _hospitalNameController.text.trim(),
           'hospitalAddress': _hospitalAddressController.text.trim(),
           'consultationFee': int.tryParse(_feeController.text.trim()),
+          'specialization': ?_specialization,
+          'qualifications': _qualificationsController.text.trim(),
+          'yearsOfExperience': int.tryParse(_experienceController.text.trim()),
+          'treatments': _treatmentsController.text.trim(),
+          'availabilityDays': _formatDays(),
+          'availabilityHours':
+              '${_formatTime(_workStart)} - ${_formatTime(_workEnd)}',
+          'availableToday': _availableToday,
         },
       });
       ref.invalidate(authControllerProvider);
@@ -424,7 +499,47 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   List<Widget> _doctorFields() {
+    final categories = ref.watch(categoriesProvider).value ?? const [];
+    final specialties = {
+      for (final c in categories) c.name,
+      ?_specialization,
+    }.toList()..sort();
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return [
+      DropdownButtonFormField<String>(
+        initialValue: _specialization,
+        decoration: const InputDecoration(labelText: 'Specialization'),
+        items: [
+          for (final name in specialties)
+            DropdownMenuItem(value: name, child: Text(name)),
+        ],
+        onChanged: (value) => setState(() => _specialization = value),
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _qualificationsController,
+        decoration: const InputDecoration(
+          labelText: 'Qualifications',
+          hintText: 'e.g. MBChB, MMed Paediatrics',
+        ),
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _experienceController,
+        keyboardType: TextInputType.number,
+        decoration: const InputDecoration(labelText: 'Years of experience'),
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _treatmentsController,
+        minLines: 1,
+        maxLines: 3,
+        decoration: const InputDecoration(
+          labelText: 'Conditions you treat',
+          hintText: 'Separate with commas, e.g. Asthma, Malaria',
+        ),
+      ),
+      const SizedBox(height: 12),
       TextField(
         controller: _bioController,
         maxLines: 3,
@@ -445,6 +560,61 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         controller: _feeController,
         keyboardType: TextInputType.number,
         decoration: const InputDecoration(labelText: 'Consultation Fee (UGX)'),
+      ),
+      const SizedBox(height: 20),
+      const Text('Availability', style: TextStyle(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 4),
+      Text(
+        'Patients can only book the days and hours you set here.',
+        style: TextStyle(color: muted, fontSize: 13),
+      ),
+      const SizedBox(height: 10),
+      Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (var d = 1; d <= 7; d++)
+            FilterChip(
+              label: Text(_dayNames[d - 1]),
+              selected: _workDays.contains(d),
+              selectedColor: seedTeal,
+              checkmarkColor: Colors.white,
+              labelStyle: TextStyle(
+                color: _workDays.contains(d) ? Colors.white : null,
+                fontWeight: FontWeight.w600,
+              ),
+              onSelected: (on) =>
+                  setState(() => on ? _workDays.add(d) : _workDays.remove(d)),
+            ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.schedule, size: 18),
+              label: Text('From ${_formatTime(_workStart)}'),
+              onPressed: () => _pickTime(start: true),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.schedule, size: 18),
+              label: Text('To ${_formatTime(_workEnd)}'),
+              onPressed: () => _pickTime(start: false),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: const Text('Available today'),
+        subtitle: const Text('Shows an "Available today" badge to patients'),
+        value: _availableToday,
+        onChanged: (v) => setState(() => _availableToday = v),
       ),
       const SizedBox(height: 16),
     ];

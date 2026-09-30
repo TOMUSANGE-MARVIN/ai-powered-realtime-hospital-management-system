@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "../lib/prisma";
+import { notifyUser } from "../lib/notify";
 import { logActivity } from "../lib/activity";
 
 export const getPrescriptions = async (req: Request, res: Response) => {
@@ -82,6 +83,12 @@ export const createPrescription = async (req: Request, res: Response) => {
       include: { items: true },
     });
 
+    await notifyUser(patient, {
+      type: "prescription",
+      title: "New prescription",
+      message: `${currentUser.name} sent you a prescription with ${prescription.items.length} item${prescription.items.length === 1 ? "" : "s"}.`,
+      link: "/home/profile",
+    });
     const io = req.app.get("io");
     if (io) io.emit("prescription_updated");
     await logActivity(

@@ -42,11 +42,16 @@ class _PesapalCheckoutScreenState extends State<PesapalCheckoutScreen> {
           },
           onUrlChange: (change) {
             final url = change.url;
-            if (url != null && url.contains(PaymentRepository.callbackPath)) _finish(true);
+            if (url != null && url.contains(PaymentRepository.callbackPath)) {
+              _finish(true);
+            }
           },
           onWebResourceError: (error) {
             if (error.isForMainFrame ?? true) {
-              setState(() => _error = "Couldn't load the payment page. Check your connection.");
+              setState(
+                () => _error =
+                    "Couldn't load the payment page. Check your connection.",
+              );
             }
           },
         ),

@@ -318,6 +318,48 @@ Layout and content match the design (in the app's own teal styling) for: Setting
 - [ ] **Time format** — chat timestamps show 24-hour (21:23) while the design uses 12-hour (09:41 AM); use 12-hour with AM/PM
 - [ ] Decide whether the design's bottom navigation labels (Home, Appointments, Inbox, Profile) should replace the app's icon-only pill navigation
 
+## E21. User-flow gaps (patient and doctor)
+
+Found on 2026-09-30 by walking each journey (sign-up → find a doctor → book and pay → the visit → after the visit) through the mobile app and backend. **High** = the flow breaks, or money or trust is at risk. **Medium** = the user can work around it, but the product feels incomplete. **Low** = polish.
+
+### Patient
+
+- [ ] **High — Forgot password.** No reset flow in the app (the web "Forgot?" link goes nowhere either). A patient who forgets their password is locked out. better-auth supports reset; it needs an email provider.
+- [x] **High — Paid but not booked.** Done: the payment now carries the booking details and the server books the appointment the moment Pesapal confirms (IPN, callback or status check); the app's book call returns the same appointment (10/10 checks).
+- [ ] **High — Cancelling a paid appointment.** A patient cancelling, or a doctor rejecting or cancelling a paid request, only changes the status. No refund is requested and the patient isn't told what happens to their money. Needs a policy (for example a full refund if cancelled more than X hours ahead), then an automatic refund request or an admin task.
+- [ ] **High — No push notifications.** Nothing reaches the patient when the app is closed: doctor confirmed / rejected / rescheduled, new message, prescription issued, or a reminder before the visit. Updates only arrive over the live socket while the app is open. Needs Firebase Cloud Messaging (or similar), plus server-side triggers and scheduled reminders (for example 24 h and 15 min before).
+- [ ] **High — Incoming calls when the app is closed.** Calls ring only while the app is open. A doctor calling at appointment time can't reach a patient whose app is in the background. Needs push-triggered call UI (CallKit on iOS, full-screen notification / ConnectionService on Android).
+- [x] **Medium — Notifications inbox.** Done: a Notifications screen with unread badge on the patient Home header and doctor dashboard, live updates over the socket, tap to open the related screen, mark one / all read (read is now owner-only). The server now creates notifications for: new booking and emergency (doctor), confirmed / cancelled / rescheduled / started / completed (patient), patient cancel and reschedule (doctor), new prescription (patient), new review (doctor), payout approved / sent / rejected (doctor), refund requested (patient). 14/14 checks. Push to phones still needs Firebase (see High items).
+- [ ] **Medium — Visit summary.** After a consultation the patient sees only a prescription, if one was written. Doctors can't record notes, diagnosis or advice, so there's no record of the visit (see Doctor "Consultation notes").
+- [ ] **Medium — Payment history and receipts.** Patients can see only an "active invoice", not a list of past payments, amounts, vouchers or refund status, and can't download receipts.
+- [ ] **Medium — Lab results.** Lab results exist in the web system, but patients can't see them in the app.
+- [ ] **Medium — Doctor-proposed new times.** When a doctor reschedules, the new time is simply applied. The patient can't accept or decline it, and isn't notified (see push notifications).
+- [ ] **Medium — Unread badges.** No unread-message count on the Messages tab, so new replies are easy to miss.
+- [ ] **Low — Book again.** No "Book again" shortcut from a completed appointment.
+- [ ] **Low — Emergency escalation.** If no doctor responds to an emergency request, nothing escalates it (no timeout, no fallback doctor, no admin alert).
+
+**Needs from you before these can be built:**
+- Password reset: an email provider (for example Resend, Mailgun or an SMTP account) and the address to send from.
+- Push notifications and background calls: a Firebase project with Android and iOS apps registered (`google-services.json`, `GoogleService-Info.plist`) and a service-account key for the server; for iOS calls, an Apple Push (VoIP) certificate.
+- Cancellation refunds: the refund policy (for example full refund if cancelled more than X hours before the visit).
+
+### Doctor
+
+- [x] **High — Starting and ending a consultation.** Done: Start consultation (rings the patient for video/voice), Call patient, End consultation, an In progress filter, and prescriptions can be written during the visit. Also fixed: any doctor could edit any appointment and any field — doctors are now limited to their own appointments, valid status steps and status/date/time/notes (11/11 checks).
+- [x] **High — Professional profile editing.** Done: Edit Profile now has specialization, qualifications, years of experience, treatments, working days, working hours and Available today, written in the format the booking screen reads (unit-tested). Also fixed: `/api/me` never returned these fields, because they were missing from better-auth's `additionalFields`.
+- [ ] **High — Push notifications.** No alert for a new booking request, emergency, message or call while the app is closed (shares the patient work above).
+- [ ] **Medium — Consultation notes.** No place to record findings, diagnosis or follow-up advice for a visit (`Appointment.notes` exists but no screen writes it); the notes should show in the patient's visit summary and in Full History.
+- [ ] **Medium — Reasons for reject / cancel.** Doctors reject or cancel without giving a reason, so the patient sees only "Cancelled".
+- [ ] **Medium — Time off.** No way to block specific dates (leave, conferences); working days and hours repeat every week.
+- [ ] **Medium — Lab requests and results.** Doctors can't order lab tests from the app, and lab results don't appear in a patient's Full History.
+- [ ] **Medium — Issued prescriptions.** Doctors have no list of prescriptions they've issued, and drafts are kept per patient on one device only.
+- [ ] **Low — No-shows.** No way to mark a patient as a no-show (affects payouts and refunds).
+- [ ] **Low — Doctor onboarding.** Doctors can't sign up themselves; admins create their accounts on the web. Decide whether that stays, or add self-sign-up with admin verification.
+
+### Both
+
+- [ ] **Medium — Appointment time convention.** Bookings store the chosen local wall-clock time as if it were UTC, and the app displays it back unconverted. This works while everyone is in Uganda, but server-side reminders, the admin pages and any user in another time zone would be 3 hours off. Store true UTC when booking, convert on display, and migrate existing rows in the same release.
+
 ## Final pass
 
 - [x] Re-render every design screen and compare side by side with the app — done 2026-09-30 for the 14 patient and 6 doctor screens that exist in the app (Flutter web at 390 px, seeded data); findings in **E20**. Not compared: Video / Audio call, Payment (Pesapal web view) and the web Admin Dashboard (compared in E13)

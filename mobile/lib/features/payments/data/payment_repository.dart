@@ -54,13 +54,20 @@ class PaymentRepository {
   /// Path Pesapal redirects to after checkout — the WebView closes on it.
   static const callbackPath = '/api/payments/pesapal/callback';
 
+  /// [booking] is stored with the payment so the server can book the
+  /// appointment itself once Pesapal confirms, even if the app is closed.
   Future<Payment> initiate({
     required String doctorId,
     String? voucherCode,
+    Map<String, dynamic>? booking,
   }) async {
     final response = await _dio.post(
       '/api/payments/initiate',
-      data: {'doctorId': doctorId, 'voucherCode': ?voucherCode},
+      data: {
+        'doctorId': doctorId,
+        'voucherCode': ?voucherCode,
+        'booking': ?booking,
+      },
     );
     ApiException.checkStatus(response);
     return Payment.fromJson(response.data as Map<String, dynamic>);

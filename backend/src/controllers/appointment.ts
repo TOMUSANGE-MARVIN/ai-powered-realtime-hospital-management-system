@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { prisma } from "../lib/prisma";
+import { bookPaidPayment, insertAppointment } from "../lib/booking";
+import { formatVisit, notifyUser } from "../lib/notify";
 import { logActivity } from "../lib/activity";
 
 // Public endpoint — used by the marketing "Book Appointment" form (no auth)
@@ -105,9 +107,79 @@ export const createAppointment = async (req: Request, res: Response) => {
   }
 };
 
+type AppointmentRow = NonNullable<Awaited<ReturnType<typeof prisma.appointment.findUnique>>>;
+
+/** Tells the patient what changed about their appointment. */
+async function notifyPatientOfChange(before: AppointmentRow, after: AppointmentRow) {
+  const doctor = after.doctorName || "Your doctor";
+  const visit = formatVisit(after.date, after.time);
+  const link = "/home/appointments";
+  if (after.status !== before.status) {
+    const byStatus: Record<string, { title: string; message: string }> = {
+      confirmed: { title: "Appointment confirmed", message: `${doctor} confirmed your visit on ${visit}.` },
+      cancelled: {
+        title: "Appointment cancelled",
+        message: `${doctor} cancelled your visit on ${visit}.${after.paymentId ? " Contact support about your payment." : ""}`,
+      },
+      in_progress: { title: "Your consultation has started", message: `${doctor} is ready for your visit now.` },
+      completed: { title: "How was your visit?", message: `Rate your consultation with ${doctor}.` },
+    };
+    const text = byStatus[after.status];
+    if (text) await notifyUser(after.patientId, { type: "appointment", link, ...text });
+    return;
+  }
+  if (after.date.getTime() !== before.date.getTime() || after.time !== before.time) {
+    await notifyUser(after.patientId, {
+      type: "appointment",
+      title: "Appointment rescheduled",
+      message: `${doctor} moved your visit to ${visit}.`,
+      link,
+    });
+  }
+}
+
+// Status changes a doctor may make on their own appointments.
+const DOCTOR_TRANSITIONS: Record<string, string[]> = {
+  requested: ["confirmed", "cancelled"],
+  scheduled: ["confirmed", "cancelled"],
+  confirmed: ["in_progress", "completed", "cancelled"],
+  in_progress: ["completed"],
+};
+
 export const updateAppointment = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
+    const user = (req as any).user;
+
+    // Doctors (mobile app) may only touch their own appointments, only these
+    // fields, and only along the normal consultation flow. Admins and nurses
+    // keep full access from the web.
+    if (user.role === "doctor") {
+      const current = await prisma.appointment.findUnique({ where: { id } });
+      if (!current || current.doctorId !== user.id) {
+        return res.status(404).json({ message: "Appointment not found" });
+      }
+      const allowed = ["status", "date", "time", "notes"];
+      const extra = Object.keys(req.body).filter((k) => !allowed.includes(k));
+      if (extra.length) {
+        return res.status(400).json({ message: `Doctors can't change: ${extra.join(", ")}` });
+      }
+      const { status } = req.body;
+      if (status && status !== current.status) {
+        if (!DOCTOR_TRANSITIONS[current.status]?.includes(status)) {
+          return res.status(400).json({
+            message: `Can't move a ${current.status.replace("_", " ")} appointment to ${String(status).replace("_", " ")}`,
+          });
+        }
+      }
+      if ((req.body.date !== undefined || req.body.time !== undefined) &&
+          !["requested", "scheduled", "confirmed"].includes(current.status)) {
+        return res.status(400).json({ message: "Only upcoming appointments can be rescheduled" });
+      }
+    }
+
+    const before = await prisma.appointment.findUnique({ where: { id } });
+
     const { status, doctorId, doctorName, nurseId, isVirtual, date, ...rest } =
       req.body;
 
@@ -133,6 +205,8 @@ export const updateAppointment = async (req: Request, res: Response) => {
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
+
+    if (before) await notifyPatientOfChange(before, appointment);
 
     const io = req.app.get("io");
     if (io) io.emit("appointment_updated");
@@ -195,39 +269,28 @@ export const bookAppointment = async (req: Request, res: Response) => {
       if (payment.status !== "paid") {
         return res.status(402).json({ message: "Payment has not been completed" });
       }
-      const alreadyUsed = await prisma.appointment.findFirst({
-        where: { paymentId },
-        select: { id: true },
-      });
-      if (alreadyUsed) {
-        return res
-          .status(409)
-          .json({ message: "This payment is already linked to an appointment" });
-      }
+      // The server may already have booked it when Pesapal confirmed the
+      // payment; hand that appointment back instead of failing.
+      const existing = await prisma.appointment.findUnique({ where: { paymentId } });
+      if (existing) return res.status(200).json(existing);
     }
 
-    // Emergencies need immediate attention — the date is always today.
-    const appointmentDate = isEmergency ? new Date() : new Date(date);
-
-    const appointment = await prisma.appointment.create({
-      data: {
-        patientId: patient.id,
-        patientName: patient.name,
-        patientEmail: patient.email,
-        doctorId,
-        doctorName: doctor.name,
-        department: department || doctor.department,
-        date: appointmentDate,
-        time,
-        reason,
-        consultationType,
-        isVirtual: consultationType !== "in_person" && consultationType !== "physical",
-        isEmergency: !!isEmergency,
-        paymentId: doctor.consultationFee ? paymentId : undefined,
-        status: "requested",
-        fee: doctor.consultationFee ?? undefined,
-      },
-    });
+    let appointment;
+    try {
+      appointment = await insertAppointment({
+        patient,
+        doctor: { id: doctorId, ...doctor },
+        details: { date, time, reason, consultationType, department, isEmergency },
+        paymentId: doctor.consultationFee ? paymentId : null,
+      });
+    } catch (error: any) {
+      // Lost a race with the server-side booking for the same payment.
+      if (error?.code === "P2002" && paymentId) {
+        const linked = await bookPaidPayment(paymentId);
+        if (linked) return res.status(200).json(linked);
+      }
+      throw error;
+    }
 
     const io = req.app.get("io");
     if (io) io.emit("appointment_updated");
@@ -296,6 +359,12 @@ export const cancelMyAppointment = async (req: Request, res: Response) => {
       where: { id },
       data: { status: "cancelled" },
     });
+    await notifyUser(updated.doctorId, {
+      type: "appointment",
+      title: "Appointment cancelled",
+      message: `${updated.patientName} cancelled their visit on ${formatVisit(updated.date, updated.time)}.`,
+      link: "/doctor-home/appointments",
+    });
 
     const io = req.app.get("io");
     if (io) io.emit("appointment_updated");
@@ -339,6 +408,12 @@ export const rescheduleMyAppointment = async (req: Request, res: Response) => {
     const updated = await prisma.appointment.update({
       where: { id },
       data: { date: newDate, time: time || null, status: "requested" },
+    });
+    await notifyUser(updated.doctorId, {
+      type: "appointment",
+      title: "Reschedule request",
+      message: `${updated.patientName} asked to move their visit to ${formatVisit(updated.date, updated.time)}. Please confirm the new time.`,
+      link: "/doctor-home/appointments",
     });
 
     const io = req.app.get("io");

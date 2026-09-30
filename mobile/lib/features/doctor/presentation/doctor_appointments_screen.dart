@@ -7,6 +7,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
+import '../../calls/state/call_controller.dart';
 import '../../chat/data/chat_args.dart';
 
 class DoctorAppointmentsScreen extends ConsumerStatefulWidget {
@@ -50,6 +51,12 @@ class _DoctorAppointmentsScreenState
                 _FilterChip(
                   label: 'Confirmed',
                   value: 'confirmed',
+                  selected: _filter,
+                  onSelect: (v) => setState(() => _filter = v),
+                ),
+                _FilterChip(
+                  label: 'In progress',
+                  value: 'in_progress',
                   selected: _filter,
                   onSelect: (v) => setState(() => _filter = v),
                 ),
@@ -152,6 +159,53 @@ class _DoctorAppointmentCard extends ConsumerWidget {
     }
   }
 
+  bool get _isCallVisit =>
+      appointment.consultationType == 'voice' ||
+      appointment.consultationType == 'video';
+
+  void _call(WidgetRef ref) {
+    ref
+        .read(callControllerProvider.notifier)
+        .startOutgoingCall(
+          appointment.patientId!,
+          appointment.patientName ?? 'Patient',
+          isVideo: appointment.consultationType == 'video',
+        );
+  }
+
+  /// Marks the visit in progress and, for video / voice visits, rings the
+  /// patient straight away.
+  Future<void> _start(BuildContext context, WidgetRef ref) async {
+    await _updateStatus(context, ref, 'in_progress');
+    if (_isCallVisit && appointment.patientId != null) _call(ref);
+  }
+
+  Future<void> _end(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('End consultation?'),
+        content: Text(
+          'Mark the visit with ${appointment.patientName ?? 'this patient'} '
+          'as completed. You can still write a prescription afterwards.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Not yet'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('End consultation'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await _updateStatus(context, ref, 'completed');
+    }
+  }
+
   Future<void> _reschedule(BuildContext context, WidgetRef ref) async {
     final date = await showDatePicker(
       context: context,
@@ -244,12 +298,39 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                     onPressed: () => _updateStatus(context, ref, 'cancelled'),
                     child: const Text('Cancel'),
                   ),
-                  FilledButton(
-                    onPressed: () => _updateStatus(context, ref, 'completed'),
-                    child: const Text('Mark completed'),
+                  FilledButton.icon(
+                    icon: Icon(
+                      _isCallVisit
+                          ? (appointment.consultationType == 'video'
+                                ? Icons.videocam_outlined
+                                : Icons.call_outlined)
+                          : Icons.play_arrow_rounded,
+                      size: 18,
+                    ),
+                    onPressed: () => _start(context, ref),
+                    label: const Text('Start consultation'),
                   ),
                 ],
-                if (appointment.status == 'completed' &&
+                if (appointment.status == 'in_progress') ...[
+                  if (_isCallVisit && appointment.patientId != null)
+                    OutlinedButton.icon(
+                      icon: Icon(
+                        appointment.consultationType == 'video'
+                            ? Icons.videocam_outlined
+                            : Icons.call_outlined,
+                        size: 16,
+                      ),
+                      onPressed: () => _call(ref),
+                      label: const Text('Call patient'),
+                    ),
+                  FilledButton.icon(
+                    icon: const Icon(Icons.check_rounded, size: 18),
+                    onPressed: () => _end(context, ref),
+                    label: const Text('End consultation'),
+                  ),
+                ],
+                if ((appointment.status == 'completed' ||
+                        appointment.status == 'in_progress') &&
                     appointment.patientId != null)
                   OutlinedButton.icon(
                     icon: const Icon(Icons.receipt_long, size: 16),

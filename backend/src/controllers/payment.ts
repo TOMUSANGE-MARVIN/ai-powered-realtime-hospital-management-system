@@ -8,6 +8,7 @@ import {
 } from "../lib/pesapal";
 import { VoucherError } from "./voucher";
 import { priceConsultation } from "../lib/pricing";
+import { bookPaidPayment, type BookingDetails } from "../lib/booking";
 
 // Pay-before-book via Pesapal. The patient pays on Pesapal's hosted checkout
 // (cards + mobile money), so this server never sees card details. Payment
@@ -51,6 +52,14 @@ export async function syncWithPesapal(payment: PaymentRecord): Promise<PaymentRe
         data: { usedCount: { increment: 1 } },
       });
     }
+    if (status === "paid" && payment.status === "pending") {
+      try {
+        await bookPaidPayment(payment.id);
+      } catch (error) {
+        // The app's own book call (or an admin) can still finish it.
+        console.error("Error auto-booking paid payment:", error);
+      }
+    }
     return updated;
   } catch (error) {
     // Pesapal answers unpaid orders with an error body — that's still "pending".
@@ -77,7 +86,19 @@ const toClient = (payment: PaymentRecord, redirectUrl?: string) => ({
 export const initiatePayment = async (req: Request, res: Response) => {
   try {
     const patient = (req as any).user;
-    const { doctorId, phoneNumber, voucherCode } = req.body;
+    const { doctorId, phoneNumber, voucherCode, booking } = req.body;
+    // Kept with the payment so the server can book once Pesapal confirms,
+    // even if the app is closed by then.
+    const bookingDetails: BookingDetails | null =
+      booking && typeof booking === "object" && typeof booking.date === "string"
+        ? {
+            date: booking.date,
+            time: booking.time ?? null,
+            reason: booking.reason ?? null,
+            consultationType: booking.consultationType ?? null,
+            isEmergency: booking.isEmergency === true,
+          }
+        : null;
 
     if (!doctorId) {
       return res.status(400).json({ message: "doctorId is required" });
@@ -118,6 +139,7 @@ export const initiatePayment = async (req: Request, res: Response) => {
         discount: price.discount,
         tax: price.tax,
         voucherCode: price.voucherCode,
+        bookingDetails: (bookingDetails ?? undefined) as any,
         method: "pesapal",
         phoneNumber: phoneNumber || null,
         status: "pending",

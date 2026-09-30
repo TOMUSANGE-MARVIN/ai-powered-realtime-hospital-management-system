@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { notifyUser } from "../lib/notify";
 
 export const MIN_WITHDRAWAL_UGX = 5000;
 
@@ -134,6 +135,17 @@ export const updateWithdrawal = async (req: Request, res: Response) => {
         processedAt: status === "paid" || status === "rejected" ? new Date() : null,
       },
     });
+    const amount = `UGX ${updated.amount.toLocaleString()}`;
+    const text: Record<string, { title: string; message: string }> = {
+      approved: { title: "Payout approved", message: `Your ${amount} withdrawal was approved and will be sent soon.` },
+      paid: { title: "Payout sent", message: `${amount} was sent to your ${updated.provider} account.` },
+      rejected: {
+        title: "Payout rejected",
+        message: `Your ${amount} withdrawal was rejected${updated.adminNote ? `: ${updated.adminNote}` : "."} The amount is back in your balance.`,
+      },
+    };
+    const note = text[status];
+    if (note) await notifyUser(updated.doctorId, { type: "payout", link: "/doctor-home/earnings", ...note });
     const io = req.app.get("io");
     if (io) io.emit("withdrawal_updated");
     res.json(updated);

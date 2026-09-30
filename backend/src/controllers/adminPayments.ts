@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { notifyUser } from "../lib/notify";
 import { isPesapalConfigured, PesapalError, requestRefund } from "../lib/pesapal";
 import { syncWithPesapal } from "./payment";
 
@@ -188,6 +189,12 @@ export const refundPayment = async (req: Request, res: Response) => {
         refundRequestedAt: new Date(),
         refundRequestedBy: admin.name,
       },
+    });
+    await notifyUser(payment.patientId, {
+      type: "payment",
+      title: "Refund on its way",
+      message: `A refund of UGX ${value.toLocaleString()} has been requested. You'll receive it once Pesapal completes the refund.`,
+      link: "/home/appointments",
     });
     if (cancelAppointment === true) {
       await prisma.appointment.updateMany({

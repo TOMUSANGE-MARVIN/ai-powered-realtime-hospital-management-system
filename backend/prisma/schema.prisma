@@ -261,6 +261,10 @@ model Payment {
   refundReason      String?   @db.Text
   refundRequestedAt DateTime?
   refundRequestedBy String?
+  // What the patient chose at checkout ({date, time, reason, consultationType,
+  // isEmergency}). The server books the appointment from it as soon as the
+  // payment is confirmed, so an app closed mid-checkout doesn't strand money.
+  bookingDetails    Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -384,6 +388,11 @@ enum NotificationType {
   assignment
   lab_result
   alert
+  appointment
+  prescription
+  payment
+  review
+  payout
 }
 
 model Notification {
@@ -399,6 +408,7 @@ model Notification {
   createdAt DateTime         @default(now())
 
   @@index([announcementId])
+  @@index([user, createdAt])
   @@map("notification")
 }
 

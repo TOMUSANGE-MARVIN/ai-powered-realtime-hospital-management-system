@@ -164,6 +164,34 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      qualifications: {
+        type: "string",
+        required: false,
+      },
+      yearsOfExperience: {
+        type: "number",
+        required: false,
+      },
+      treatments: {
+        type: "string",
+        required: false,
+      },
+      availabilityDays: {
+        type: "string",
+        required: false,
+      },
+      availabilityHours: {
+        type: "string",
+        required: false,
+      },
+      availableToday: {
+        type: "boolean",
+        required: false,
+      },
+      boardCertified: {
+        type: "boolean",
+        required: false,
+      },
       phoneNumber: {
         type: "string",
         required: false,

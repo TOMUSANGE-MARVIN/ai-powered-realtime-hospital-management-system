@@ -75,6 +75,13 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           : await _repo.initiate(
               doctorId: _draft.doctor.id,
               voucherCode: _draft.voucherCode,
+              booking: {
+                'date': _draft.date.toIso8601String(),
+                'time': _draft.time,
+                'reason': _draft.reason,
+                'consultationType': _draft.consultationType,
+                'isEmergency': _draft.isEmergency,
+              },
             );
       _payment = payment;
       final url = payment.redirectUrl;

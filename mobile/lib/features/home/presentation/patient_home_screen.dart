@@ -15,6 +15,8 @@ import '../../auth/state/auth_controller.dart';
 import '../../doctors/data/doctor.dart';
 import '../../doctors/presentation/category_card.dart';
 import '../../doctors/presentation/doctor_card.dart';
+import '../../notifications/presentation/notifications_screen.dart'
+    show NotificationBell;
 import '../../doctors/state/doctor_providers.dart';
 
 String _greetingFor(DateTime now) {
@@ -350,7 +352,9 @@ class _HeroHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 4),
+              const NotificationBell(color: darkTealBackground),
+              const SizedBox(width: 4),
               Semantics(
                 button: true,
                 label: 'Your profile',
@@ -359,7 +363,9 @@ class _HeroHeader extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 26,
                     backgroundColor: const Color(0xFFE0F2F2),
-                    backgroundImage: image != null ? NetworkImage(image!) : null,
+                    backgroundImage: image != null
+                        ? NetworkImage(image!)
+                        : null,
                     child: image == null
                         ? Text(
                             firstName.characters.first.toUpperCase(),
@@ -523,7 +529,9 @@ class _PromoCarouselState extends State<_PromoCarousel> {
                 width: i == _page ? 22 : 7,
                 height: 7,
                 decoration: BoxDecoration(
-                  color: i == _page ? seedTeal : seedTeal.withValues(alpha: 0.25),
+                  color: i == _page
+                      ? seedTeal
+                      : seedTeal.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(kCardRadius),
                 ),
               ),
@@ -570,7 +578,10 @@ class _PromoSlide extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(kCardRadius),
@@ -629,7 +640,10 @@ class _PromoSlide extends StatelessWidget {
                             children: [
                               Text(
                                 promo.cta,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               const Icon(Icons.arrow_forward, size: 18),

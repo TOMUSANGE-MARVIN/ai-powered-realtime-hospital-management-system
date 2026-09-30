@@ -24,6 +24,12 @@ class AppUser {
     this.insuranceProvider,
     this.insuranceMemberNo,
     this.createdAt,
+    this.qualifications,
+    this.yearsOfExperience,
+    this.treatments,
+    this.availabilityDays,
+    this.availabilityHours,
+    this.availableToday = false,
     this.twoFactorEnabled = false,
   });
 
@@ -52,6 +58,12 @@ class AppUser {
   final String? insuranceProvider;
   final String? insuranceMemberNo;
   final DateTime? createdAt;
+  final String? qualifications;
+  final int? yearsOfExperience;
+  final String? treatments;
+  final String? availabilityDays;
+  final String? availabilityHours;
+  final bool availableToday;
 
   bool get hasInsurance => insuranceProvider?.isNotEmpty == true;
 
@@ -81,6 +93,12 @@ class AppUser {
       address: json['address'] as String?,
       insuranceProvider: json['insuranceProvider'] as String?,
       insuranceMemberNo: json['insuranceMemberNo'] as String?,
+      qualifications: json['qualifications'] as String?,
+      yearsOfExperience: (json['yearsOfExperience'] as num?)?.toInt(),
+      treatments: json['treatments'] as String?,
+      availabilityDays: json['availabilityDays'] as String?,
+      availabilityHours: json['availabilityHours'] as String?,
+      availableToday: json['availableToday'] as bool? ?? false,
       createdAt: DateTime.tryParse(
         json['createdAt'] as String? ?? '',
       )?.toLocal(),

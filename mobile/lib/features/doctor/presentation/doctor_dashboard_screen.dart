@@ -10,6 +10,8 @@ import '../../../core/widgets/skeleton.dart';
 import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
+import '../../notifications/presentation/notifications_screen.dart'
+    show NotificationBell;
 import '../state/doctor_providers.dart';
 
 String _greetingName(String? fullName) {
@@ -39,6 +41,7 @@ class DoctorDashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Hi, ${_greetingName(userAsync.value?.name)}'),
+        actions: const [NotificationBell(), SizedBox(width: 4)],
       ),
       body: RefreshIndicator(
         onRefresh: () async {

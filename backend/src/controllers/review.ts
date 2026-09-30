@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { notifyUser } from "../lib/notify";
 
 // Patient reviews a completed appointment. One review per appointment —
 // submitting again replaces the previous rating/comment.
@@ -51,6 +52,14 @@ export const createReview = async (req: Request, res: Response) => {
       },
     });
 
+    await notifyUser(review.doctorId, {
+      type: "review",
+      title: `New ${review.rating}-star review`,
+      message: review.comment
+        ? `${patient.name}: "${review.comment.slice(0, 120)}"`
+        : `${patient.name} rated your consultation.`,
+      link: "/doctor-home/reviews",
+    });
     res.status(201).json(review);
   } catch (error) {
     console.error("Error creating review:", error);

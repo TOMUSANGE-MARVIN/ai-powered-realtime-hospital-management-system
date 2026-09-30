@@ -88,6 +88,8 @@ flutter:
     - assets/images/home_slides/
     # Quick-action card backgrounds (Gemini-generated, tinted per accent).
     - assets/images/quick_actions/
+    # Wave behind the home specialty cards (tinted per category at runtime).
+    - assets/images/specialties/
     # Payment brand marks (Wikimedia Commons originals) for the Pesapal method picker.
     - assets/images/payments/
     - assets/images/illustrations/ask-musawo-logo.svg

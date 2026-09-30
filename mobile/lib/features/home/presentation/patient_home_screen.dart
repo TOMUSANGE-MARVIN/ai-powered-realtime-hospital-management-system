@@ -72,11 +72,12 @@ class PatientHomeScreen extends ConsumerWidget {
                 const SizedBox(height: 28),
                 _SectionHeader(
                   title: 'Browse specialties',
+                  subtitle: 'Find the right doctor for your health needs',
                   onSeeAll: () => context.push('/categories'),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 140,
+                  height: 212,
                   child: categoriesAsync.when(
                     data: (categories) => ListView.separated(
                       scrollDirection: Axis.horizontal,
@@ -86,7 +87,7 @@ class PatientHomeScreen extends ConsumerWidget {
                       itemBuilder: (context, index) => CategoryCard(
                         category: categories[index].category,
                         count: categories[index].count,
-                        width: 108,
+                        width: 150,
                         tinted: true,
                       ),
                     ),
@@ -234,9 +235,10 @@ class _PatientHomeSkeleton extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.onSeeAll});
+  const _SectionHeader({required this.title, this.subtitle, this.onSeeAll});
 
   final String title;
+  final String? subtitle;
   final VoidCallback? onSeeAll;
 
   @override
@@ -248,16 +250,33 @@ class _SectionHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.3,
-                color: scheme.onSurface,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           if (onSeeAll != null)

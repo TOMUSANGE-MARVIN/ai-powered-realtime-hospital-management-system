@@ -92,50 +92,201 @@ class CategoryCard extends StatelessWidget {
   }
 
   Widget _buildTinted(BuildContext context, SpecialtyAccent accent) {
-    return SoftCard(
-      onTap: () => context.push('/search', extra: category.name),
-      color: accent.background.withValues(alpha: 0.45),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
-      borderRadius: BorderRadius.circular(kCardRadius),
-      borderSide: BorderSide(color: accent.foreground.withValues(alpha: 0.18)),
-      child: SizedBox(
-        width: width,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 46,
-              height: 46,
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final (blurb, blurbIcon) =
+        _blurbForKey[category.iconKey] ??
+        ('Find the right doctor', Icons.healing_rounded);
+    final surface = dark
+        ? accent.foreground.withValues(alpha: 0.12)
+        : Color.alphaBlend(
+            accent.background.withValues(alpha: 0.6),
+            Colors.white,
+          );
+    return Semantics(
+      button: true,
+      label: '${category.name}, $count doctor${count == 1 ? '' : 's'}. $blurb',
+      excludeSemantics: true,
+      child: Material(
+        color: surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kCardRadius),
+          side: BorderSide(color: accent.foreground.withValues(alpha: 0.16)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/search', extra: category.name),
+          child: SizedBox(
+            width: width,
+            child: Stack(
+              children: [
+                // Soft wave (Gemini-generated mask) tinted per category.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Image.asset(
+                    'assets/images/specialties/wave.webp',
+                    fit: BoxFit.fitWidth,
+                    alignment: Alignment.bottomCenter,
+                    color: accent.foreground.withValues(
+                      alpha: dark ? 0.10 : 0.09,
+                    ),
+                    colorBlendMode: BlendMode.srcIn,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _IconBubble(
+                            icon:
+                                iconForKey[category.iconKey] ??
+                                Icons.local_hospital,
+                            accent: accent,
+                          ),
+                          const Spacer(),
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: accent.foreground.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              size: 20,
+                              color: dark
+                                  ? accent.foreground
+                                  : scheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text(
+                        category.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '$count doctor${count == 1 ? '' : 's'}',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: accent.foreground.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(kCardRadius),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(blurbIcon, size: 14, color: accent.foreground),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                blurb,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  height: 1.25,
+                                  fontWeight: FontWeight.w600,
+                                  color: accent.foreground,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What each specialty covers, in plain words, for the chip on home cards.
+const _blurbForKey = <String, (String, IconData)>{
+  'internal_medicine': (
+    'Adult & chronic care',
+    Icons.medical_information_rounded,
+  ),
+  'pediatrics': ('Babies & children', Icons.child_friendly_rounded),
+  'orthopedics': ('Bones, joints & muscles', Icons.directions_walk_rounded),
+  'cardiology': ('Heart & blood vessels', Icons.monitor_heart_rounded),
+  'obstetrics_gynecology': ("Women's health", Icons.female_rounded),
+  'emergency_medicine': ('Urgent & critical care', Icons.bolt_rounded),
+  'neurology': ('Brain & nerves', Icons.psychology_alt_rounded),
+  'dermatology': ('Skin, hair & nails', Icons.spa_rounded),
+  'general': ('Everyday health', Icons.healing_rounded),
+};
+
+/// Large pastel circle holding the specialty icon, with a few small dots
+/// around it for texture.
+class _IconBubble extends StatelessWidget {
+  const _IconBubble({required this.icon, required this.accent});
+
+  final IconData icon;
+  final SpecialtyAccent accent;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget dot(double size, double alpha) => Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: accent.foreground.withValues(alpha: alpha),
+        shape: BoxShape.circle,
+      ),
+    );
+    return SizedBox(
+      width: 72,
+      height: 68,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 6,
+            top: 4,
+            child: Container(
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
-                color: accent.background,
+                color: accent.foreground.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                iconForKey[category.iconKey] ?? Icons.local_hospital,
-                color: accent.foreground,
-                size: 24,
-              ),
+              child: Icon(icon, color: accent.foreground, size: 30),
             ),
-            const SizedBox(height: 10),
-            Text(
-              category.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: darkTealBackground,
-                height: 1.15,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              '$count doctor${count == 1 ? '' : 's'}',
-              style: const TextStyle(fontSize: 11.5, color: Color(0xFF6B7A7A)),
-            ),
-          ],
-        ),
+          ),
+          Positioned(left: 0, bottom: 10, child: dot(7, 0.22)),
+          Positioned(right: 0, top: 6, child: dot(6, 0.25)),
+          Positioned(left: 14, top: 0, child: dot(4, 0.2)),
+        ],
       ),
     );
   }

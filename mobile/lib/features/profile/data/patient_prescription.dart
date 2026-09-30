@@ -47,7 +47,7 @@ class PatientPrescription {
       id: (json['id'] ?? json['_id']).toString(),
       doctorName: json['doctorName'] as String? ?? 'Doctor',
       status: json['status'] as String? ?? 'pending',
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
       items: (json['items'] as List? ?? [])
           .map(
             (i) => PatientPrescriptionItem.fromJson(i as Map<String, dynamic>),

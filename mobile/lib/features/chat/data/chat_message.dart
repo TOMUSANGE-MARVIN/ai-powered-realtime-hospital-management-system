@@ -46,19 +46,19 @@ class ChatMessage {
       receiverId: json['receiverId'] as String,
       text: json['text'] as String? ?? '',
       createdAt:
-          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.tryParse(json['createdAt'] as String? ?? '')?.toLocal() ??
           DateTime.now(),
       attachmentUrl: json['attachmentUrl'] as String?,
       attachmentType: json['attachmentType'] as String?,
       attachmentName: json['attachmentName'] as String?,
       deletedAt: json['deletedAt'] != null
-          ? DateTime.tryParse(json['deletedAt'] as String)
+          ? DateTime.tryParse(json['deletedAt'] as String)?.toLocal()
           : null,
       deliveredAt: json['deliveredAt'] != null
-          ? DateTime.tryParse(json['deliveredAt'] as String)
+          ? DateTime.tryParse(json['deliveredAt'] as String)?.toLocal()
           : null,
       readAt: json['readAt'] != null
-          ? DateTime.tryParse(json['readAt'] as String)
+          ? DateTime.tryParse(json['readAt'] as String)?.toLocal()
           : null,
       replyToId: json['replyToId'] as String?,
       replyToText: json['replyToText'] as String?,

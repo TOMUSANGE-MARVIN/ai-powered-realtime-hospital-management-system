@@ -13,16 +13,25 @@ import '../state/doctor_providers.dart';
 
 final _dateFormat = DateFormat('d MMM yyyy');
 
+/// Extensions that are definitely not pictures. Everything else is tried as
+/// an image, since hosted uploads (UploadThing, Unsplash) have no extension;
+/// a failed load falls back to a file tile.
+const _documentExtensions = [
+  '.pdf',
+  '.doc',
+  '.docx',
+  '.xls',
+  '.xlsx',
+  '.ppt',
+  '.pptx',
+  '.txt',
+  '.csv',
+  '.zip',
+];
+
 bool _isImage(String url) {
   final path = Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
-  return const [
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.webp',
-    '.gif',
-    '.heic',
-  ].any(path.endsWith);
+  return !_documentExtensions.any(path.endsWith);
 }
 
 /// A doctor's "Full History" of one patient: health facts, every document the

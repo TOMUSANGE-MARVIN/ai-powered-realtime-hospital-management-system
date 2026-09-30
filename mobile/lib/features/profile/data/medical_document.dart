@@ -16,7 +16,7 @@ class MedicalDocument {
       id: json['id'] as String,
       title: json['title'] as String,
       url: json['url'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
     );
   }
 }

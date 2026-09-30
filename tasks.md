@@ -305,8 +305,21 @@ Pesapal refund rules ([RefundRequest docs](https://developer.pesapal.com/how-to-
 - [x] Verify: 24/24 API checks against a local Pesapal mock (`PESAPAL_BASE_URL`, tests only) covering listing, every refund rule, Pesapal rejection, and sync to reversed; screenshots
 - [ ] Verify: one real refund on production with a small card payment (needs your Pesapal merchant approval)
 
+## E20. Gaps found in the side-by-side comparison (mobile)
+
+Layout and content match the design (in the app's own teal styling) for: Settings, 2FA, Edit Profile, User Profile, Full History, Upload Prescription, Doctor Profile, Categories, Chat. The differences below are structural. None block use, but each is a place the app doesn't do what the design shows.
+
+- [x] Full History showed image documents as file tiles when the URL had no extension (UploadThing and Unsplash links) — fixed: anything that isn't a known document type is tried as an image, with the file tile as fallback
+- [ ] **Book appointment** — design: horizontal date strip + time-slot chips with a 3-step indicator; app: date and time pickers. Rebuild the date and slot selection as chips (keep the doctor's working days and hours rules)
+- [ ] **My Appointments** — design: Upcoming / Completed / Canceled filter tabs and grouping under "Tomorrow" / "Pending for confirmation"; app: one list. Add the tabs and grouping
+- [ ] **Doctor dashboard** — design: doctor photo and name header, patient avatars, date and time on each card, Reschedule / Join call / Cancel actions, "Next available today"; app: Accept / Reject only and no avatars. Add the missing actions and header
+- [ ] **Doctor earnings** — design: Total earnings and This month tiles and a line chart for Today / Week / Month / Year; app: available and pending only, one number per period. Add the tiles and chart (needs a per-day earnings series from `/api/earnings/mine`)
+- [ ] **Doctor profile (patient view)** — design: rating and patients-count tiles, reviews carousel and 3-step indicator; app: richer tabs but no patients count. Add the patients-count tile
+- [ ] **Time format** — chat timestamps show 24-hour (21:23) while the design uses 12-hour (09:41 AM); use 12-hour with AM/PM
+- [ ] Decide whether the design's bottom navigation labels (Home, Appointments, Inbox, Profile) should replace the app's icon-only pill navigation
+
 ## Final pass
 
-- [ ] Re-render every design screen and compare side by side with the app
+- [x] Re-render every design screen and compare side by side with the app — done 2026-09-30 for the 14 patient and 6 doctor screens that exist in the app (Flutter web at 390 px, seeded data); findings in **E20**. Not compared: Video / Audio call, Payment (Pesapal web view) and the web Admin Dashboard (compared in E13)
 - [ ] Update the plan doc's screen inventory statuses
 - [ ] Commit per epic

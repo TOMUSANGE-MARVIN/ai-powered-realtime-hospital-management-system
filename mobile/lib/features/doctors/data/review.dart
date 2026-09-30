@@ -43,11 +43,11 @@ class Review {
       rating: (json['rating'] as num?)?.toInt() ?? 0,
       comment: json['comment'] as String?,
       createdAt:
-          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.tryParse(json['createdAt'] as String? ?? '')?.toLocal() ??
           DateTime.now(),
       doctorReply: json['doctorReply'] as String?,
       doctorRepliedAt: json['doctorRepliedAt'] != null
-          ? DateTime.tryParse(json['doctorRepliedAt'] as String)
+          ? DateTime.tryParse(json['doctorRepliedAt'] as String)?.toLocal()
           : null,
       hidden: json['hidden'] as bool? ?? false,
       hiddenReason: json['hiddenReason'] as String?,

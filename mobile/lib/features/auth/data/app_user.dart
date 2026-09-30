@@ -81,7 +81,9 @@ class AppUser {
       address: json['address'] as String?,
       insuranceProvider: json['insuranceProvider'] as String?,
       insuranceMemberNo: json['insuranceMemberNo'] as String?,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? ''),
+      createdAt: DateTime.tryParse(
+        json['createdAt'] as String? ?? '',
+      )?.toLocal(),
     );
   }
 }

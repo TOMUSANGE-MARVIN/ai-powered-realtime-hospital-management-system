@@ -26,7 +26,7 @@ class CallLogEntry {
       id: (json['id'] ?? json['_id']).toString(),
       type: json['type'] as String? ?? 'voice',
       createdAt:
-          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.tryParse(json['createdAt'] as String? ?? '')?.toLocal() ??
           DateTime.now(),
       isOutgoing: json['isOutgoing'] as bool? ?? false,
       otherUserId: json['otherUserId'] as String,

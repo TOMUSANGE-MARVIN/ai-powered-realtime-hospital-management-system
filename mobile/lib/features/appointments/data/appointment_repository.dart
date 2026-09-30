@@ -55,9 +55,10 @@ class AppointmentRepository {
     ApiException.checkStatus(response);
   }
 
-  Future<void> cancel(String appointmentId) async {
+  Future<void> cancel(String appointmentId, {String? reason}) async {
     final response = await _dio.patch(
       '/api/appointments/$appointmentId/cancel',
+      data: {'reason': ?reason},
     );
     ApiException.checkStatus(response);
   }
@@ -83,6 +84,8 @@ class AppointmentRepository {
     String? status,
     DateTime? date,
     String? time,
+    String? notes,
+    String? cancellationReason,
   }) async {
     final response = await _dio.put(
       '/api/appointments/$appointmentId',
@@ -90,6 +93,8 @@ class AppointmentRepository {
         'status': ?status,
         if (date != null) 'date': date.toIso8601String(),
         'time': ?time,
+        'notes': ?notes,
+        'cancellationReason': ?cancellationReason,
       },
     );
     ApiException.checkStatus(response);

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/pill_nav_bar.dart';
+import '../../chat/state/chat_providers.dart';
 
 const patientNavItems = [
   PillNavItem(icon: Icons.home_outlined, selectedIcon: Icons.home),
@@ -22,13 +24,13 @@ const patientNavPaths = [
   '/home/profile',
 ];
 
-class HomeShell extends StatelessWidget {
+class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: PillNavBar(
@@ -37,6 +39,7 @@ class HomeShell extends StatelessWidget {
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
+        badges: {1: ref.watch(unreadMessagesProvider)},
         items: patientNavItems,
       ),
     );

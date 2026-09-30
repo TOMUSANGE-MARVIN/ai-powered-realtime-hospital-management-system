@@ -257,3 +257,49 @@ export const pesapalCallback = async (req: Request, res: Response) => {
         `<p>You can return to the Ask Musawo app.</p></body>`,
     );
 };
+
+// Patient's own payment history, newest first, with the doctor and the
+// appointment each payment booked.
+export const getMyPayments = async (req: Request, res: Response) => {
+  try {
+    const patient = (req as any).user;
+    const payments = await prisma.payment.findMany({
+      where: { patientId: patient.id, status: { not: "pending" } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    const [doctors, appointments] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: [...new Set(payments.map((p) => p.doctorId))] } },
+        select: { id: true, name: true, specialization: true },
+      }),
+      prisma.appointment.findMany({
+        where: { paymentId: { in: payments.map((p) => p.id) } },
+        select: { id: true, paymentId: true, date: true, time: true, status: true, consultationType: true },
+      }),
+    ]);
+    const doctorById = new Map(doctors.map((d) => [d.id, d]));
+    const apptByPayment = new Map(appointments.map((a) => [a.paymentId, a]));
+    res.json(
+      payments.map((p) => ({
+        id: p.id,
+        amount: p.amount,
+        currency: p.currency,
+        status: p.status,
+        method: p.method,
+        reference: p.reference,
+        voucherCode: p.voucherCode,
+        discount: p.discount,
+        tax: p.tax,
+        refundStatus: p.refundStatus,
+        refundAmount: p.refundAmount,
+        createdAt: p.createdAt,
+        doctor: doctorById.get(p.doctorId) ?? null,
+        appointment: apptByPayment.get(p.id) ?? null,
+      })),
+    );
+  } catch (error) {
+    console.error("Error fetching my payments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

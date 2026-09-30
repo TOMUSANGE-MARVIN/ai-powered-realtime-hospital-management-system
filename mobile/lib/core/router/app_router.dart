@@ -34,6 +34,7 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/settings_screen.dart';
 import '../../features/profile/presentation/two_factor_setup_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/payments/presentation/payment_history_screen.dart';
 import '../../features/profile/presentation/health_profile_screen.dart';
 import '../../features/profile/presentation/privacy_settings_screen.dart';
 import '../../features/doctor/presentation/patient_history_screen.dart';
@@ -192,6 +193,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/patients/:id/history',
         builder: (context, state) =>
             PatientHistoryScreen(patientId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/payments/history',
+        builder: (context, state) => const PaymentHistoryScreen(),
       ),
       GoRoute(
         path: '/notifications',

@@ -4,6 +4,7 @@ import { checkRole } from "../middleware/checkRole";
 import {
   initiatePayment,
   getQuote,
+  getMyPayments,
   getPaymentStatus,
   pesapalIpn,
   pesapalCallback,
@@ -17,6 +18,7 @@ paymentRouter.get("/pesapal/ipn", pesapalIpn);
 paymentRouter.post("/pesapal/ipn", pesapalIpn);
 paymentRouter.get("/pesapal/callback", pesapalCallback);
 
+paymentRouter.get("/mine", requireAuth, checkRole(["patient"]), getMyPayments);
 paymentRouter.get("/quote", requireAuth, checkRole(["patient"]), getQuote);
 paymentRouter.post("/initiate", requireAuth, checkRole(["patient"]), initiatePayment);
 paymentRouter.get("/:id/status", requireAuth, checkRole(["patient"]), getPaymentStatus);

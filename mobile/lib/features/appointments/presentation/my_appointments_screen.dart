@@ -224,12 +224,34 @@ class _AppointmentCard extends ConsumerWidget {
   }
 
   Future<void> _cancel(BuildContext context, WidgetRef ref) async {
+    final reasonController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Cancel appointment?'),
-        content: Text(
-          'Cancel your appointment with ${appointment.doctorName}?',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Cancel your appointment with ${appointment.doctorName}?'),
+            if (appointment.fee != null && appointment.fee! > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Contact support about a refund for your payment.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              maxLines: 2,
+              maxLength: 300,
+              decoration: const InputDecoration(labelText: 'Reason (optional)'),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -243,9 +265,13 @@ class _AppointmentCard extends ConsumerWidget {
         ],
       ),
     );
+    final reason = reasonController.text.trim();
+    reasonController.dispose();
     if (confirmed != true) return;
     try {
-      await ref.read(appointmentRepositoryProvider).cancel(appointment.id);
+      await ref
+          .read(appointmentRepositoryProvider)
+          .cancel(appointment.id, reason: reason.isEmpty ? null : reason);
       ref.invalidate(myAppointmentsProvider);
     } on ApiException catch (e) {
       if (context.mounted) {
@@ -484,6 +510,27 @@ class _AppointmentCard extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 13.5, color: Color(0xFF55605F)),
             ),
+          ],
+          if (appointment.status == 'cancelled' &&
+              appointment.cancelledBy != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              [
+                appointment.cancelledBy == 'patient'
+                    ? 'You cancelled this appointment.'
+                    : appointment.cancelledBy == 'doctor'
+                    ? '${appointment.doctorName} cancelled this appointment.'
+                    : 'Ask Musawo cancelled this appointment.',
+                if (appointment.cancellationReason?.isNotEmpty == true)
+                  'Reason: ${appointment.cancellationReason}',
+              ].join(' '),
+              style: const TextStyle(fontSize: 13, color: Color(0xFFD32F2F)),
+            ),
+          ],
+          if (appointment.status == 'completed' &&
+              appointment.notes?.isNotEmpty == true) ...[
+            const SizedBox(height: 12),
+            _VisitSummary(text: appointment.notes!),
           ],
           if (appointment.doctorId != null ||
               appointment.isCancellable ||
@@ -760,6 +807,70 @@ class _RescheduleSheetState extends State<_RescheduleSheet> {
                       context,
                     ).pop(day.add(Duration(minutes: _slot!))),
               child: const Text('Request new time'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The doctor's visit summary, collapsed to a few lines until tapped.
+class _VisitSummary extends StatefulWidget {
+  const _VisitSummary({required this.text});
+
+  final String text;
+
+  @override
+  State<_VisitSummary> createState() => _VisitSummaryState();
+}
+
+class _VisitSummaryState extends State<_VisitSummary> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: tealBackground,
+          borderRadius: BorderRadius.circular(kCardRadius),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.notes_rounded, size: 16, color: seedTeal),
+                const SizedBox(width: 6),
+                const Expanded(
+                  child: Text(
+                    'Visit summary',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: seedTeal,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  size: 18,
+                  color: seedTeal,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              widget.text,
+              maxLines: _expanded ? null : 3,
+              overflow: _expanded ? null : TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13.5, height: 1.4),
             ),
           ],
         ),

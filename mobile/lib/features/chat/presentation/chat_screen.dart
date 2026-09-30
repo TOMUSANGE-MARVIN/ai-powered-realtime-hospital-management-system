@@ -23,7 +23,6 @@ import '../../auth/state/auth_controller.dart';
 import '../../calls/state/call_controller.dart';
 import '../data/chat_message.dart';
 import '../state/chat_providers.dart';
-import 'chat_list_screen.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({

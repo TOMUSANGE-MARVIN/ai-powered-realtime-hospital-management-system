@@ -162,6 +162,10 @@ model Appointment {
   paymentId        String?           @unique
   meetingId        String?
   notes            String?           @db.Text
+  // Set when the appointment is cancelled or rejected.
+  cancellationReason String?         @db.Text
+  // "patient" | "doctor" | "admin"
+  cancelledBy      String?
   fee              Int?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt

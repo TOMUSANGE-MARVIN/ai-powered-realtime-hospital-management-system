@@ -502,6 +502,10 @@ class _BillingSection extends ConsumerWidget {
 
     return _SectionCard(
       title: 'Payment & Billing',
+      trailing: TextButton(
+        onPressed: () => context.push('/payments/history'),
+        child: const Text('View all'),
+      ),
       child: invoiceAsync.when(
         data: (invoice) => Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

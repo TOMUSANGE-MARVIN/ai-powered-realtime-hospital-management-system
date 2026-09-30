@@ -15,6 +15,9 @@ class Appointment {
     this.fee,
     this.consultationType,
     this.isEmergency = false,
+    this.notes,
+    this.cancellationReason,
+    this.cancelledBy,
   });
 
   final String id;
@@ -32,6 +35,13 @@ class Appointment {
   final int? fee;
   final String? consultationType;
   final bool isEmergency;
+
+  /// The doctor's visit summary, shared with the patient.
+  final String? notes;
+  final String? cancellationReason;
+
+  /// patient | doctor | admin
+  final String? cancelledBy;
 
   bool get isCancellable =>
       status == 'requested' || status == 'scheduled' || status == 'confirmed';
@@ -66,6 +76,9 @@ class Appointment {
       fee: json['fee'] as int?,
       consultationType: json['consultationType'] as String?,
       isEmergency: json['isEmergency'] as bool? ?? false,
+      notes: json['notes'] as String?,
+      cancellationReason: json['cancellationReason'] as String?,
+      cancelledBy: json['cancelledBy'] as String?,
     );
   }
 }

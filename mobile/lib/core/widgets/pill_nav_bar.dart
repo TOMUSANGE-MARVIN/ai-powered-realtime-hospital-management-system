@@ -22,11 +22,15 @@ class PillNavBar extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
     required this.items,
+    this.badges = const {},
   });
 
   final int currentIndex;
   final ValueChanged<int> onTap;
   final List<PillNavItem> items;
+
+  /// Unread counts by tab index; 0 or missing shows no badge.
+  final Map<int, int> badges;
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +46,18 @@ class PillNavBar extends StatelessWidget {
       onTap: onTap,
       items: [
         for (var i = 0; i < items.length; i++)
-          Icon(
-            i == selected ? (items[i].selectedIcon ?? items[i].icon) : items[i].icon,
-            color: i == selected ? Colors.white : scheme.onSurfaceVariant.withValues(alpha: 0.6),
+          Badge(
+            isLabelVisible: (badges[i] ?? 0) > 0,
+            backgroundColor: const Color(0xFFD32F2F),
+            label: Text((badges[i] ?? 0) > 9 ? '9+' : '${badges[i]}'),
+            child: Icon(
+              i == selected
+                  ? (items[i].selectedIcon ?? items[i].icon)
+                  : items[i].icon,
+              color: i == selected
+                  ? Colors.white
+                  : scheme.onSurfaceVariant.withValues(alpha: 0.6),
+            ),
           ),
       ],
     );

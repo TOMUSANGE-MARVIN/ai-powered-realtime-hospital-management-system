@@ -12,6 +12,7 @@ import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../notifications/presentation/notifications_screen.dart'
     show NotificationBell;
+import 'appointment_dialogs.dart';
 import '../state/doctor_providers.dart';
 
 String _greetingName(String? fullName) {
@@ -222,10 +223,23 @@ class _RequestTile extends ConsumerWidget {
     WidgetRef ref,
     String status,
   ) async {
+    String? reason;
+    if (status == 'cancelled') {
+      reason = await askCancellationReason(
+        context,
+        patientName: appointment.patientName ?? 'the patient',
+        isReject: true,
+      );
+      if (reason == null || !context.mounted) return;
+    }
     try {
       await ref
           .read(appointmentRepositoryProvider)
-          .updateAssigned(appointment.id, status: status);
+          .updateAssigned(
+            appointment.id,
+            status: status,
+            cancellationReason: reason?.isEmpty == true ? null : reason,
+          );
       ref.invalidate(assignedRequestsProvider);
       ref.invalidate(todaysAssignedAppointmentsProvider);
     } on ApiException catch (e) {

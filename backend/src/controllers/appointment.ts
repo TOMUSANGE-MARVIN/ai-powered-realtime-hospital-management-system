@@ -119,10 +119,15 @@ async function notifyPatientOfChange(before: AppointmentRow, after: AppointmentR
       confirmed: { title: "Appointment confirmed", message: `${doctor} confirmed your visit on ${visit}.` },
       cancelled: {
         title: "Appointment cancelled",
-        message: `${doctor} cancelled your visit on ${visit}.${after.paymentId ? " Contact support about your payment." : ""}`,
+        message: `${doctor} ${before.status === "requested" ? "declined" : "cancelled"} your visit on ${visit}.${after.cancellationReason ? ` Reason: ${after.cancellationReason}` : ""}${after.paymentId ? " Contact support about your payment." : ""}`,
       },
       in_progress: { title: "Your consultation has started", message: `${doctor} is ready for your visit now.` },
-      completed: { title: "How was your visit?", message: `Rate your consultation with ${doctor}.` },
+      completed: {
+        title: "How was your visit?",
+        message: after.notes
+          ? `${doctor} added a visit summary. Read it and rate your consultation.`
+          : `Rate your consultation with ${doctor}.`,
+      },
     };
     const text = byStatus[after.status];
     if (text) await notifyUser(after.patientId, { type: "appointment", link, ...text });
@@ -151,15 +156,17 @@ export const updateAppointment = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const user = (req as any).user;
 
+    const before = await prisma.appointment.findUnique({ where: { id } });
+
     // Doctors (mobile app) may only touch their own appointments, only these
     // fields, and only along the normal consultation flow. Admins and nurses
     // keep full access from the web.
     if (user.role === "doctor") {
-      const current = await prisma.appointment.findUnique({ where: { id } });
+      const current = before;
       if (!current || current.doctorId !== user.id) {
         return res.status(404).json({ message: "Appointment not found" });
       }
-      const allowed = ["status", "date", "time", "notes"];
+      const allowed = ["status", "date", "time", "notes", "cancellationReason"];
       const extra = Object.keys(req.body).filter((k) => !allowed.includes(k));
       if (extra.length) {
         return res.status(400).json({ message: `Doctors can't change: ${extra.join(", ")}` });
@@ -178,12 +185,16 @@ export const updateAppointment = async (req: Request, res: Response) => {
       }
     }
 
-    const before = await prisma.appointment.findUnique({ where: { id } });
-
     const { status, doctorId, doctorName, nurseId, isVirtual, date, ...rest } =
       req.body;
 
     const update: any = { ...rest };
+    if (status === "cancelled" && before?.status !== "cancelled") {
+      update.cancelledBy = user.role === "doctor" ? "doctor" : "admin";
+      if (typeof req.body.cancellationReason === "string") {
+        update.cancellationReason = req.body.cancellationReason.trim().slice(0, 500) || null;
+      }
+    }
     if (date !== undefined) update.date = new Date(date);
     if (status) update.status = status;
     if (doctorId !== undefined) update.doctorId = doctorId;
@@ -354,15 +365,20 @@ export const cancelMyAppointment = async (req: Request, res: Response) => {
     if (appointment.patientId !== patient.id) {
       return res.status(403).json({ message: "Forbidden" });
     }
+    if (!["requested", "scheduled", "confirmed"].includes(appointment.status)) {
+      return res.status(400).json({ message: "Only upcoming appointments can be cancelled" });
+    }
 
+    const reason =
+      typeof req.body?.reason === "string" ? req.body.reason.trim().slice(0, 500) : "";
     const updated = await prisma.appointment.update({
       where: { id },
-      data: { status: "cancelled" },
+      data: { status: "cancelled", cancelledBy: "patient", cancellationReason: reason || null },
     });
     await notifyUser(updated.doctorId, {
       type: "appointment",
       title: "Appointment cancelled",
-      message: `${updated.patientName} cancelled their visit on ${formatVisit(updated.date, updated.time)}.`,
+      message: `${updated.patientName} cancelled their visit on ${formatVisit(updated.date, updated.time)}.${updated.cancellationReason ? ` Reason: ${updated.cancellationReason}` : ""}`,
       link: "/doctor-home/appointments",
     });
 

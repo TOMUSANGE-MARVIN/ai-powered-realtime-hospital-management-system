@@ -183,9 +183,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _NavRow(
                 icon: Icons.credit_card_outlined,
                 label: isDoctor ? 'Earnings & Payouts' : 'Payments & Billing',
-                onTap: () => context.go(
-                  isDoctor ? '/doctor-home/earnings' : '/home/profile',
-                ),
+                onTap: () => isDoctor
+                    ? context.go('/doctor-home/earnings')
+                    : context.push('/payments/history'),
               ),
             ],
           ),

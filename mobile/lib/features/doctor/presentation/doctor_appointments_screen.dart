@@ -9,6 +9,7 @@ import '../../appointments/data/appointment.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../calls/state/call_controller.dart';
 import '../../chat/data/chat_args.dart';
+import 'appointment_dialogs.dart';
 
 class DoctorAppointmentsScreen extends ConsumerStatefulWidget {
   const DoctorAppointmentsScreen({super.key});
@@ -143,12 +144,19 @@ class _DoctorAppointmentCard extends ConsumerWidget {
   Future<void> _updateStatus(
     BuildContext context,
     WidgetRef ref,
-    String status,
-  ) async {
+    String? status, {
+    String? notes,
+    String? cancellationReason,
+  }) async {
     try {
       await ref
           .read(appointmentRepositoryProvider)
-          .updateAssigned(appointment.id, status: status);
+          .updateAssigned(
+            appointment.id,
+            status: status,
+            notes: notes,
+            cancellationReason: cancellationReason,
+          );
       ref.invalidate(allAssignedAppointmentsProvider);
     } on ApiException catch (e) {
       if (context.mounted) {
@@ -181,29 +189,49 @@ class _DoctorAppointmentCard extends ConsumerWidget {
   }
 
   Future<void> _end(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('End consultation?'),
-        content: Text(
-          'Mark the visit with ${appointment.patientName ?? 'this patient'} '
-          'as completed. You can still write a prescription afterwards.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Not yet'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('End consultation'),
-          ),
-        ],
-      ),
+    final summary = await askVisitSummary(
+      context,
+      patientName: appointment.patientName ?? 'The patient',
+      initial: appointment.notes,
+      action: 'End consultation',
     );
-    if (confirmed == true && context.mounted) {
-      await _updateStatus(context, ref, 'completed');
-    }
+    if (summary == null || !context.mounted) return;
+    await _updateStatus(
+      context,
+      ref,
+      'completed',
+      notes: summary.isEmpty ? null : summary,
+    );
+  }
+
+  Future<void> _editSummary(BuildContext context, WidgetRef ref) async {
+    final summary = await askVisitSummary(
+      context,
+      patientName: appointment.patientName ?? 'The patient',
+      initial: appointment.notes,
+      action: 'Save summary',
+    );
+    if (summary == null || !context.mounted) return;
+    await _updateStatus(context, ref, null, notes: summary);
+  }
+
+  Future<void> _cancelWithReason(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool isReject,
+  }) async {
+    final reason = await askCancellationReason(
+      context,
+      patientName: appointment.patientName ?? 'the patient',
+      isReject: isReject,
+    );
+    if (reason == null || !context.mounted) return;
+    await _updateStatus(
+      context,
+      ref,
+      'cancelled',
+      cancellationReason: reason.isEmpty ? null : reason,
+    );
   }
 
   Future<void> _reschedule(BuildContext context, WidgetRef ref) async {
@@ -285,7 +313,8 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                     child: const Text('Accept'),
                   ),
                   OutlinedButton(
-                    onPressed: () => _updateStatus(context, ref, 'cancelled'),
+                    onPressed: () =>
+                        _cancelWithReason(context, ref, isReject: true),
                     child: const Text('Reject'),
                   ),
                 ],
@@ -295,7 +324,8 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                     child: const Text('Reschedule'),
                   ),
                   OutlinedButton(
-                    onPressed: () => _updateStatus(context, ref, 'cancelled'),
+                    onPressed: () =>
+                        _cancelWithReason(context, ref, isReject: false),
                     child: const Text('Cancel'),
                   ),
                   FilledButton.icon(
@@ -329,6 +359,16 @@ class _DoctorAppointmentCard extends ConsumerWidget {
                     label: const Text('End consultation'),
                   ),
                 ],
+                if (appointment.status == 'completed')
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.notes_rounded, size: 16),
+                    onPressed: () => _editSummary(context, ref),
+                    label: Text(
+                      appointment.notes?.isNotEmpty == true
+                          ? 'Edit summary'
+                          : 'Add summary',
+                    ),
+                  ),
                 if ((appointment.status == 'completed' ||
                         appointment.status == 'in_progress') &&
                     appointment.patientId != null)

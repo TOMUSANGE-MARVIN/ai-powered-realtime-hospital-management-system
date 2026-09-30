@@ -18,10 +18,6 @@ const _chipBg = Color(0xFFEDEFF5);
 const _onlineGreen = Color(0xFF3BB273);
 const _offlineGrey = Color(0xFFB6BAC6);
 
-final conversationsProvider = FutureProvider<List<Conversation>>((ref) {
-  return ref.watch(chatRepositoryProvider).listConversations();
-});
-
 enum _ChatFilter { all, unread, favorites }
 
 class ChatListScreen extends ConsumerStatefulWidget {

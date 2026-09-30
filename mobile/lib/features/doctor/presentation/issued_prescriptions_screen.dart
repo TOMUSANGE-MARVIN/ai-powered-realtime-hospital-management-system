@@ -5,24 +5,27 @@ import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 
 final issuedPrescriptionsProvider =
-    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-      try {
-        final response = await ref
-            .watch(dioProvider)
-            .get('/api/prescriptions/issued');
-        ApiException.checkStatus(response);
-        return [
-          for (final p in response.data as List) p as Map<String, dynamic>,
-        ];
-      } on DioException catch (error) {
-        throw ApiException.fromDioError(error);
-      }
-    });
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>(
+      (ref) => offlineFirst(ref, () async {
+        try {
+          final response = await ref
+              .watch(dioProvider)
+              .get('/api/prescriptions/issued');
+          ApiException.checkStatus(response);
+          return [
+            for (final p in response.data as List) p as Map<String, dynamic>,
+          ];
+        } on DioException catch (error) {
+          throw ApiException.fromDioError(error);
+        }
+      }),
+    );
 
 /// Prescriptions this doctor has sent, newest first.
 class IssuedPrescriptionsScreen extends ConsumerStatefulWidget {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../doctors/data/review.dart';
 import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
 import '../../doctors/state/doctor_providers.dart';
@@ -167,13 +168,7 @@ class _RateDoctorScreenState extends ConsumerState<RateDoctorScreen> {
         minimum: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: FilledButton(
           onPressed: _rating == 0 || _submitting ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Submit'),
+          child: _submitting ? const LoadingDots() : const Text('Submit'),
         ),
       ),
     );

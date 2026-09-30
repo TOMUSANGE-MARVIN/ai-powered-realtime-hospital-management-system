@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_network_image.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../labs/presentation/lab_results_screen.dart' show LabResultCard;
@@ -309,13 +310,7 @@ class _DocumentCard extends StatelessWidget {
           if (isImage)
             AspectRatio(
               aspectRatio: 4 / 3,
-              child: Image.network(
-                document.url,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const Center(
-                  child: Icon(Icons.broken_image_outlined, size: 40),
-                ),
-              ),
+              child: AppNetworkImage(document.url),
             ),
           ListTile(
             leading: Icon(
@@ -348,7 +343,9 @@ class _ImageViewer extends StatelessWidget {
       ),
       body: InteractiveViewer(
         maxScale: 5,
-        child: Center(child: Image.network(document.url)),
+        child: Center(
+          child: AppNetworkImage(document.url, fit: BoxFit.contain),
+        ),
       ),
     );
   }

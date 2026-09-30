@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/state/auth_controller.dart';
+import 'app_network_image.dart';
 
 /// Who an avatar belongs to, which picks the default illustration shown
 /// when there's no photo.
@@ -90,7 +91,7 @@ class UserAvatar extends ConsumerWidget {
       ),
       // Painted over the default; if the photo fails to load the default
       // stays visible.
-      foregroundImage: photo != null ? NetworkImage(photo) : null,
+      foregroundImage: photo != null ? appNetworkImageProvider(photo) : null,
       onForegroundImageError: photo != null ? (_, _) {} : null,
       child: child,
     );

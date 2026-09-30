@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 import '../../../core/realtime/socket_providers.dart';
 import '../data/conversation.dart';
 import '../data/chat_repository.dart';
@@ -22,7 +23,10 @@ final conversationsProvider = FutureProvider<List<Conversation>>((ref) {
       s.cancel();
     }
   });
-  return ref.watch(chatRepositoryProvider).listConversations();
+  return offlineFirst(
+    ref,
+    () => ref.watch(chatRepositoryProvider).listConversations(),
+  );
 });
 
 /// Total unread messages, for the Messages tab badge.

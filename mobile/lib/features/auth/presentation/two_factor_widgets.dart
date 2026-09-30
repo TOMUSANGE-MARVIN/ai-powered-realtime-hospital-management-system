@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../state/auth_controller.dart';
 
 /// Six separate digit boxes backed by one invisible text field, so paste,
@@ -227,13 +228,7 @@ class _TwoFactorChallengeSheetState
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _submitting ? null : _submit,
-            child: _submitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Verify'),
+            child: _submitting ? const LoadingDots() : const Text('Verify'),
           ),
           TextButton(
             onPressed: _submitting

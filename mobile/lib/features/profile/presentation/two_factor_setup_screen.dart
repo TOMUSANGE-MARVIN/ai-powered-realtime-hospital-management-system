@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/presentation/two_factor_widgets.dart';
@@ -326,11 +327,7 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
                 onPressed: _busy || _code.length < 6 ? null : _completeSetup,
                 iconAlignment: IconAlignment.end,
                 icon: _busy
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingDots()
                     : const Icon(Icons.arrow_forward),
                 label: const Text('Complete Setup'),
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_network_image.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../data/lab_result.dart';
@@ -106,20 +107,16 @@ class LabResultCard extends StatelessWidget {
                     ),
                     body: InteractiveViewer(
                       maxScale: 5,
-                      child: Center(child: Image.network(image)),
+                      child: Center(
+                        child: AppNetworkImage(image, fit: BoxFit.contain),
+                      ),
                     ),
                   ),
                 ),
               ),
               child: AspectRatio(
                 aspectRatio: 16 / 10,
-                child: Image.network(
-                  image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const Center(
-                    child: Icon(Icons.broken_image_outlined, size: 40),
-                  ),
-                ),
+                child: AppNetworkImage(image),
               ),
             ),
           Padding(

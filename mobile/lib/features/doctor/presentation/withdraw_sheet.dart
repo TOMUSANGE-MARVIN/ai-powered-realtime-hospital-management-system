@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../auth/state/auth_controller.dart';
 import '../state/doctor_providers.dart';
 
@@ -174,14 +175,7 @@ class _WithdrawSheetState extends ConsumerState<_WithdrawSheet> {
               child: FilledButton(
                 onPressed: _submitting ? null : _submit,
                 child: _submitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                    ? const LoadingDots()
                     : const Text('Request withdrawal'),
               ),
             ),

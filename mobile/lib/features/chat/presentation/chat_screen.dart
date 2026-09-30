@@ -16,12 +16,15 @@ import '../../../core/api/providers.dart';
 import '../../../core/presence/presence_providers.dart';
 import '../../../core/realtime/socket_providers.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_network_image.dart';
 import '../../../core/widgets/chat_background.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../calls/state/call_controller.dart';
 import '../data/chat_message.dart';
+import '../state/chat_outbox.dart';
 import '../state/chat_providers.dart';
 import '../../../core/widgets/user_avatar.dart';
 
@@ -52,7 +55,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   List<ChatMessage>? _messages;
   Object? _loadError;
-  bool _sending = false;
+  StreamSubscription<OutboxEvent>? _outboxSubscription;
+  StreamSubscription<void>? _reconnectSubscription;
   bool _uploadingAttachment = false;
   ChatMessage? _replyingTo;
 
@@ -69,6 +73,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // there's text, like WhatsApp's input.
     _textController.addListener(_onTextChanged);
     _loadHistory();
+    _outboxSubscription = ref
+        .read(chatOutboxProvider.notifier)
+        .events
+        .listen(_onOutboxEvent);
+    // Offline, the thread came from the saved copy — catch up on anything
+    // missed as soon as the connection is back.
+    _reconnectSubscription = ref
+        .read(networkStatusProvider)
+        .onReconnect
+        .listen((_) => _loadHistory());
     _newMessageSubscription = ref.read(socketServiceProvider).messages.listen((
       data,
     ) {
@@ -103,14 +117,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .read(chatRepositoryProvider)
           .getConversation(widget.otherUserId);
       if (!mounted) return;
-      setState(() => _messages = history);
+      setState(() {
+        _messages = history;
+        _loadError = null;
+      });
       _scrollToBottom();
       // Fetching the thread marks incoming messages read server-side —
       // refresh the inbox badge next time it's shown.
       ref.invalidate(conversationsProvider);
     } catch (error) {
-      if (!mounted) return;
+      // A failed catch-up keeps the thread that's already on screen.
+      if (!mounted || _messages != null) return;
       setState(() => _loadError = error);
+    }
+  }
+
+  void _onOutboxEvent(OutboxEvent event) {
+    switch (event) {
+      case OutboxSent(:final message):
+        if (message.receiverId == widget.otherUserId) _appendIfNew(message);
+      case OutboxRejected(:final text):
+        if (!mounted) return;
+        if (_textController.text.isEmpty) _textController.text = text;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Message couldn't be sent. Try again.")),
+        );
     }
   }
 
@@ -146,6 +177,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void dispose() {
     _newMessageSubscription?.cancel();
+    _outboxSubscription?.cancel();
+    _reconnectSubscription?.cancel();
     _deletedMessageSubscription?.cancel();
     _statusSubscription?.cancel();
     _recordingTimer?.cancel();
@@ -224,31 +257,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return '$minutes:$seconds';
   }
 
-  Future<void> _send() async {
+  /// Hands the message to the chat outbox, which shows it immediately
+  /// (with a clock) and sends it now or whenever the connection is back.
+  void _send() {
     final text = _textController.text.trim();
-    if (text.isEmpty || _sending) return;
-    setState(() => _sending = true);
+    if (text.isEmpty) return;
     _textController.clear();
-    final replyToId = _replyingTo?.id;
+    final replyTo = _replyingTo;
     setState(() => _replyingTo = null);
-    try {
-      final sent = await ref
-          .read(chatRepositoryProvider)
-          .send(
-            receiverId: widget.otherUserId,
-            text: text,
-            replyToId: replyToId,
-          );
-      _appendIfNew(sent);
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Message failed to send. Try again.')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _sending = false);
-    }
+    ref
+        .read(chatOutboxProvider.notifier)
+        .send(receiverId: widget.otherUserId, text: text, replyTo: replyTo);
+    _scrollToBottom();
   }
 
   Future<void> _pickAttachment() async {
@@ -499,7 +519,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             Expanded(child: _buildBody(myId)),
             if (_uploadingAttachment)
-              const LinearProgressIndicator(minHeight: 2),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    LoadingDots(color: seedTeal, size: 6),
+                    SizedBox(width: 8),
+                    Text('Sending attachment…', style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ),
             if (_replyingTo != null)
               _ReplyPreviewBar(
                 message: _replyingTo!,
@@ -603,17 +633,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             shape: BoxShape.circle,
           ),
           child: IconButton(
-            icon: _sending
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Icon(hasText ? Icons.send : Icons.mic, color: Colors.white),
-            onPressed: _sending || _uploadingAttachment
+            icon: Icon(hasText ? Icons.send : Icons.mic, color: Colors.white),
+            onPressed: _uploadingAttachment
                 ? null
                 : (hasText ? _send : _startRecording),
           ),
@@ -681,10 +702,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (_loadError != null) {
       return Center(child: Text(_loadError.toString()));
     }
-    final messages = _messages;
-    if (messages == null) {
+    final loaded = _messages;
+    if (loaded == null) {
       return const SkeletonChat();
     }
+    final pending = ref
+        .watch(chatOutboxProvider)
+        .where((m) => m.receiverId == widget.otherUserId)
+        .map((m) => m.toChatMessage());
+    final messages = [...loaded, ...pending];
     if (messages.isEmpty) {
       return const Center(child: Text('Say hello 👋'));
     }
@@ -700,7 +726,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           isMine: isMine,
           myId: myId,
           otherUserName: widget.otherUserName,
-          onLongPress: message.isDeleted
+          onLongPress: message.isDeleted || message.pending
               ? null
               : () => _showMessageActions(message, isMine),
         );
@@ -916,6 +942,13 @@ class _MessageTicks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (message.pending) {
+      return Icon(
+        Icons.schedule,
+        size: 13,
+        color: textColor.withValues(alpha: 0.7),
+      );
+    }
     if (message.readAt != null) {
       return const Icon(Icons.done_all, size: 15, color: _seenColor);
     }
@@ -994,22 +1027,16 @@ class _Attachment extends StatelessWidget {
     if (message.isImage) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(kCardRadius),
-        child: Image.network(
-          message.attachmentUrl!,
+        child: SizedBox(
           width: 200,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, progress) {
-            if (progress == null) return child;
-            return const SizedBox(
-              height: 140,
-              width: 200,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) => const SizedBox(
-            height: 100,
+          child: AppNetworkImage(
+            message.attachmentUrl!,
             width: 200,
-            child: Center(child: Icon(Icons.broken_image_outlined)),
+            error: const SizedBox(
+              height: 100,
+              width: 200,
+              child: Center(child: Icon(Icons.broken_image_outlined)),
+            ),
           ),
         ),
       );
@@ -1223,13 +1250,7 @@ class _AudioAttachmentState extends State<_AudioAttachment> {
             width: 34,
             height: 34,
             child: _loading
-                ? Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: widget.textColor,
-                    ),
-                  )
+                ? Center(child: LoadingDots(color: widget.textColor, size: 5))
                 : IconButton(
                     icon: Icon(
                       _hasError

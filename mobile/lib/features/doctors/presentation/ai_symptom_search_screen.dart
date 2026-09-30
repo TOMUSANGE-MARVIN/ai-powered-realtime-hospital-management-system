@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/loading_dots.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../data/ai_search_result.dart';
 import '../data/doctor.dart';
@@ -88,19 +90,19 @@ class _AiSymptomSearchScreenState extends ConsumerState<AiSymptomSearchScreen> {
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _loading ? null : _submit,
-              icon: _loading
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.search),
+              icon: _loading ? const LoadingDots() : const Icon(Icons.search),
               label: Text(_loading ? 'Analysing…' : 'Find a specialist'),
             ),
             const SizedBox(height: 24),
+            if (_loading) ...[
+              const SkeletonBox(
+                width: double.infinity,
+                height: 120,
+                borderRadius: kCardRadius,
+              ),
+              const SizedBox(height: 16),
+              const SkeletonCardList(count: 3, cardHeight: 88),
+            ],
             if (_error != null) _ErrorState(message: _error!),
             if (_result != null) _ResultsView(result: _result!),
           ],

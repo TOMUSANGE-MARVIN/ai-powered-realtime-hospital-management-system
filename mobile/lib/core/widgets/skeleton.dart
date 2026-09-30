@@ -16,9 +16,9 @@ class SkeletonBox extends StatefulWidget {
 
   /// A circular skeleton (for avatars) — `size` sets both width and height.
   const SkeletonBox.circle({super.key, required double size})
-      : width = size,
-        height = size,
-        borderRadius = size / 2;
+    : width = size,
+      height = size,
+      borderRadius = size / 2;
 
   final double? width;
   final double height;
@@ -28,7 +28,8 @@ class SkeletonBox extends StatefulWidget {
   State<SkeletonBox> createState() => _SkeletonBoxState();
 }
 
-class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStateMixin {
+class _SkeletonBoxState extends State<SkeletonBox>
+    with SingleTickerProviderStateMixin {
   late final _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1100),
@@ -50,7 +51,11 @@ class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStat
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: Color.lerp(base, base.withValues(alpha: 0.4), _controller.value),
+            color: Color.lerp(
+              base,
+              base.withValues(alpha: 0.4),
+              _controller.value,
+            ),
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
         );
@@ -79,7 +84,10 @@ class SkeletonListTile extends StatelessWidget {
               children: [
                 SkeletonBox(width: MediaQuery.sizeOf(context).width * 0.4),
                 const SizedBox(height: 8),
-                SkeletonBox(width: MediaQuery.sizeOf(context).width * 0.6, height: 12),
+                SkeletonBox(
+                  width: MediaQuery.sizeOf(context).width * 0.6,
+                  height: 12,
+                ),
               ],
             ),
           ),
@@ -133,7 +141,10 @@ class SkeletonForm extends StatelessWidget {
                 children: [
                   SkeletonBox(width: MediaQuery.sizeOf(context).width * 0.4),
                   const SizedBox(height: 8),
-                  SkeletonBox(width: MediaQuery.sizeOf(context).width * 0.3, height: 12),
+                  SkeletonBox(
+                    width: MediaQuery.sizeOf(context).width * 0.3,
+                    height: 12,
+                  ),
                 ],
               ),
             ),
@@ -144,7 +155,11 @@ class SkeletonForm extends StatelessWidget {
           fieldCount,
           (_) => const Padding(
             padding: EdgeInsets.only(bottom: 16),
-            child: SkeletonBox(width: double.infinity, height: 52, borderRadius: kCardRadius),
+            child: SkeletonBox(
+              width: double.infinity,
+              height: 52,
+              borderRadius: kCardRadius,
+            ),
           ),
         ),
       ],
@@ -172,7 +187,11 @@ class SkeletonCardList extends StatelessWidget {
       children: [
         for (var i = 0; i < count; i++) ...[
           if (i > 0) const SizedBox(height: 8),
-          SkeletonBox(width: double.infinity, height: cardHeight, borderRadius: kCardRadius),
+          SkeletonBox(
+            width: double.infinity,
+            height: cardHeight,
+            borderRadius: kCardRadius,
+          ),
         ],
       ],
     );
@@ -198,8 +217,11 @@ class SkeletonGrid extends StatelessWidget {
         childAspectRatio: 0.82,
       ),
       itemCount: itemCount,
-      itemBuilder: (context, index) =>
-          const SkeletonBox(width: double.infinity, height: double.infinity, borderRadius: kCardRadius),
+      itemBuilder: (context, index) => const SkeletonBox(
+        width: double.infinity,
+        height: double.infinity,
+        borderRadius: kCardRadius,
+      ),
     );
   }
 }
@@ -234,6 +256,66 @@ class SkeletonChat extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// A few text-line bars of varying length — for small sections inside a
+/// card (a balance, a short list) while they fill in.
+class SkeletonLines extends StatelessWidget {
+  const SkeletonLines({super.key, this.count = 2, this.lineHeight = 14});
+
+  final int count;
+  final double lineHeight;
+
+  static const _fractions = [0.9, 0.6, 0.75, 0.5];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          if (i > 0) const SizedBox(height: 10),
+          FractionallySizedBox(
+            widthFactor: _fractions[i % _fractions.length],
+            child: SkeletonBox(height: lineHeight),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// A horizontal row of card placeholders, for carousels (home specialties,
+/// featured doctors) and chip bars. Fills the height it's given.
+class SkeletonCarousel extends StatelessWidget {
+  const SkeletonCarousel({
+    super.key,
+    required this.itemWidth,
+    this.count = 3,
+    this.spacing = 12,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20),
+  });
+
+  final double itemWidth;
+  final int count;
+  final double spacing;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: padding,
+      itemCount: count,
+      separatorBuilder: (_, _) => SizedBox(width: spacing),
+      itemBuilder: (context, index) => SkeletonBox(
+        width: itemWidth,
+        height: double.infinity,
+        borderRadius: kCardRadius,
+      ),
     );
   }
 }

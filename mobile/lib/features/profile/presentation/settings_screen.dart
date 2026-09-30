@@ -9,6 +9,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/state/auth_controller.dart';
@@ -88,7 +89,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final version = ref.watch(_appVersionProvider).value ?? '';
 
     if (!_loaded || user == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Settings'), centerTitle: true),
+        body: const Padding(
+          padding: EdgeInsets.all(16),
+          child: SkeletonCardList(count: 6, cardHeight: 56),
+        ),
+      );
     }
 
     return Scaffold(

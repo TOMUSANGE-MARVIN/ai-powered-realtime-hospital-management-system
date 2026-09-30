@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_network_image.dart';
 import '../../../core/widgets/user_avatar.dart';
 
 /// Maps a doctor's specialization/department text to a representative icon
@@ -48,24 +48,7 @@ class DoctorImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (url == null || url!.isEmpty) return _fallback();
-    return Image.network(
-      url!,
-      fit: BoxFit.cover,
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
-        return Container(
-          color: seedTeal.withValues(alpha: 0.08),
-          child: const Center(
-            child: SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2, color: seedTeal),
-            ),
-          ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) => _fallback(),
-    );
+    return AppNetworkImage(url!, error: _fallback());
   }
 
   Widget _fallback() {

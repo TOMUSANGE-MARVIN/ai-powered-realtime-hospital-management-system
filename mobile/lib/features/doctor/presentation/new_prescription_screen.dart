@@ -13,6 +13,8 @@ import 'package:signature/signature.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_network_image.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../auth/state/auth_controller.dart';
 import '../data/prescription_item_input.dart';
@@ -584,14 +586,7 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
                 child: FilledButton(
                   onPressed: _submitting || !_confirmed ? null : _submit,
                   child: _submitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const LoadingDots()
                       : const Text('Send to Patient'),
                 ),
               ),
@@ -655,7 +650,7 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
             aspectRatio: 3 / 4,
             child: photo != null
                 ? Image.file(photo, fit: BoxFit.cover)
-                : Image.network(url!, fit: BoxFit.cover),
+                : AppNetworkImage(url!),
           ),
           if (busy)
             Positioned.fill(
@@ -665,7 +660,7 @@ class _NewPrescriptionScreenState extends ConsumerState<NewPrescriptionScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const CircularProgressIndicator(color: Colors.white),
+                      const LoadingDots(color: Colors.white, size: 9),
                       const SizedBox(height: 12),
                       Text(
                         _photoState == _PhotoState.uploading

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 import '../data/ai_search_repository.dart';
 import '../data/doctor.dart';
 import '../data/doctor_repository.dart';
@@ -24,11 +25,17 @@ final doctorSearchQueryProvider = StateProvider<String>((ref) => '');
 final selectedSpecialtyProvider = StateProvider<String?>((ref) => null);
 
 final specialtiesProvider = FutureProvider<List<Specialty>>((ref) {
-  return ref.watch(doctorRepositoryProvider).listSpecialties();
+  return offlineFirst(
+    ref,
+    () => ref.watch(doctorRepositoryProvider).listSpecialties(),
+  );
 });
 
 final categoriesProvider = FutureProvider<List<Category>>((ref) {
-  return ref.watch(doctorRepositoryProvider).listCategories();
+  return offlineFirst(
+    ref,
+    () => ref.watch(doctorRepositoryProvider).listCategories(),
+  );
 });
 
 class CategoryWithCount {
@@ -55,31 +62,43 @@ final categoriesWithCountsProvider = FutureProvider<List<CategoryWithCount>>((
 final doctorsListProvider = FutureProvider.autoDispose<List<Doctor>>((ref) {
   final search = ref.watch(doctorSearchQueryProvider);
   final specialty = ref.watch(selectedSpecialtyProvider);
-  return ref
-      .watch(doctorRepositoryProvider)
-      .listDoctors(search: search, specialization: specialty);
+  return offlineFirst(
+    ref,
+    () => ref
+        .watch(doctorRepositoryProvider)
+        .listDoctors(search: search, specialization: specialty),
+  );
 });
 
 final doctorDetailProvider = FutureProvider.autoDispose.family<Doctor, String>((
   ref,
   id,
 ) {
-  return ref.watch(doctorRepositoryProvider).getDoctor(id);
+  return offlineFirst(
+    ref,
+    () => ref.watch(doctorRepositoryProvider).getDoctor(id),
+  );
 });
 
 /// Top-rated doctors for the home dashboard's featured carousel. Not
 /// autoDispose: this is unparameterized "my session" data that should stay
-/// cached across navigation instead of re-fetching (with a loading spinner)
+/// cached across navigation instead of re-fetching (with a loading skeleton)
 /// every time the home screen remounts.
 final featuredDoctorsProvider = FutureProvider<List<Doctor>>((ref) {
-  return ref
-      .watch(doctorRepositoryProvider)
-      .listDoctors(featured: true, limit: 10);
+  return offlineFirst(
+    ref,
+    () => ref
+        .watch(doctorRepositoryProvider)
+        .listDoctors(featured: true, limit: 10),
+  );
 });
 
 final doctorReviewsProvider = FutureProvider.autoDispose
     .family<DoctorReviews, String>((ref, doctorId) {
-      return ref.watch(reviewRepositoryProvider).listForDoctor(doctorId);
+      return offlineFirst(
+        ref,
+        () => ref.watch(reviewRepositoryProvider).listForDoctor(doctorId),
+      );
     });
 
 /// Kicks off the doctor detail + reviews fetches for [doctorId] without

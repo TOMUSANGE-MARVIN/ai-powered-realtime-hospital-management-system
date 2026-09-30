@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
@@ -14,22 +15,22 @@ import '../../doctors/data/doctor.dart' show TimeOffRange;
 final _day = DateFormat('EEE d MMM yyyy');
 String _iso(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
 
-final myTimeOffProvider = FutureProvider.autoDispose<List<TimeOffRange>>((
-  ref,
-) async {
-  try {
-    final response = await ref
-        .watch(dioProvider)
-        .get('/api/doctors/me/time-off');
-    ApiException.checkStatus(response);
-    return [
-      for (final t in response.data as List)
-        TimeOffRange.fromJson(t as Map<String, dynamic>),
-    ];
-  } on DioException catch (error) {
-    throw ApiException.fromDioError(error);
-  }
-});
+final myTimeOffProvider = FutureProvider.autoDispose<List<TimeOffRange>>(
+  (ref) => offlineFirst(ref, () async {
+    try {
+      final response = await ref
+          .watch(dioProvider)
+          .get('/api/doctors/me/time-off');
+      ApiException.checkStatus(response);
+      return [
+        for (final t in response.data as List)
+          TimeOffRange.fromJson(t as Map<String, dynamic>),
+      ];
+    } on DioException catch (error) {
+      throw ApiException.fromDioError(error);
+    }
+  }),
+);
 
 /// Days a doctor isn't taking bookings. Patients can't book them, and the
 /// booking screen hides them.

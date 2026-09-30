@@ -7,6 +7,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../appointments/data/booking_draft.dart'
     show parseAvailableWeekdays, parseSlotMinutes;
@@ -316,7 +317,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   kind: AvatarKind.self,
                   radius: 48,
                   child: _uploadingPhoto
-                      ? const CircularProgressIndicator()
+                      ? const LoadingDots(color: seedTeal)
                       : null,
                 ),
                 Positioned(
@@ -397,16 +398,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _saving ? null : _save,
-            child: _saving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text('Save Changes'),
+            child: _saving ? const LoadingDots() : const Text('Save Changes'),
           ),
         ],
       ),

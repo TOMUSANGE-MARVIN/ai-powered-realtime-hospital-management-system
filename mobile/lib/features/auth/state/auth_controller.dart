@@ -19,7 +19,12 @@ class AuthController extends AsyncNotifier<AppUser?> {
     return ref.read(authRepositoryProvider).getSession();
   }
 
+  /// Saved offline data belongs to one account — drop it whenever the
+  /// signed-in user changes so nobody sees someone else's records.
+  Future<void> _clearOfflineData() => ref.read(offlineCacheProvider).clear();
+
   Future<void> signIn({required String email, required String password}) async {
+    await _clearOfflineData();
     state = const AsyncLoading();
     state = await AsyncValue.guard(
       () => ref
@@ -51,6 +56,7 @@ class AuthController extends AsyncNotifier<AppUser?> {
     required String email,
     required String password,
   }) async {
+    await _clearOfflineData();
     state = const AsyncLoading();
     state = await AsyncValue.guard(
       () => ref
@@ -61,6 +67,7 @@ class AuthController extends AsyncNotifier<AppUser?> {
 
   Future<void> signOut() async {
     await ref.read(authRepositoryProvider).signOut();
+    await _clearOfflineData();
     state = const AsyncData(null);
   }
 }

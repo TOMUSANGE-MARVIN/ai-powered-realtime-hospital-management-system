@@ -15,6 +15,7 @@ class ChatMessage {
     this.replyToText,
     this.replyToSenderId,
     this.replyToAttachmentType,
+    this.pending = false,
   });
 
   final String id;
@@ -32,6 +33,10 @@ class ChatMessage {
   final String? replyToText;
   final String? replyToSenderId;
   final String? replyToAttachmentType;
+
+  /// Written on this device but not yet accepted by the server (queued in
+  /// the chat outbox) — shown with a clock instead of ticks.
+  final bool pending;
 
   bool get isDeleted => deletedAt != null;
   bool get isImage => attachmentType == 'image';

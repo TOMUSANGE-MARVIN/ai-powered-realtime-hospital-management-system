@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/soft_card.dart';
@@ -111,21 +112,21 @@ class PaymentRecord {
   }
 }
 
-final myPaymentsProvider = FutureProvider.autoDispose<List<PaymentRecord>>((
-  ref,
-) async {
-  final dio = ref.watch(dioProvider);
-  try {
-    final response = await dio.get('/api/payments/mine');
-    ApiException.checkStatus(response);
-    return [
-      for (final p in response.data as List)
-        PaymentRecord.fromJson(p as Map<String, dynamic>),
-    ];
-  } on DioException catch (error) {
-    throw ApiException.fromDioError(error);
-  }
-});
+final myPaymentsProvider = FutureProvider.autoDispose<List<PaymentRecord>>(
+  (ref) => offlineFirst(ref, () async {
+    final dio = ref.watch(dioProvider);
+    try {
+      final response = await dio.get('/api/payments/mine');
+      ApiException.checkStatus(response);
+      return [
+        for (final p in response.data as List)
+          PaymentRecord.fromJson(p as Map<String, dynamic>),
+      ];
+    } on DioException catch (error) {
+      throw ApiException.fromDioError(error);
+    }
+  }),
+);
 
 /// A patient's consultation payments, with shareable receipts.
 class PaymentHistoryScreen extends ConsumerWidget {

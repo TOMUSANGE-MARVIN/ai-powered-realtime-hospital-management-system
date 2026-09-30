@@ -17,12 +17,16 @@ class ApiException implements Exception {
       // low-level socket errors, which otherwise surface Dio's raw
       // exception text (e.g. "SocketException: No address associated with
       // hostname") straight to the UI.
-      return ApiException("Can't connect. Check your internet connection and try again.");
+      return ApiException(
+        "You're offline. This needs an internet connection — try again once you're back online.",
+      );
     }
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.sendTimeout ||
         error.type == DioExceptionType.receiveTimeout) {
-      return ApiException('The connection timed out. Check your internet connection and try again.');
+      return ApiException(
+        'The connection timed out. Check your internet connection and try again.',
+      );
     }
     if (error.type == DioExceptionType.cancel) {
       return ApiException('Request was cancelled.');

@@ -5,19 +5,31 @@ import 'dart:typed_data';
 
 import 'package:ask_musawo/core/api/api_client.dart';
 import 'package:ask_musawo/core/api/providers.dart';
+import 'package:ask_musawo/core/offline/network_status.dart';
+import 'package:ask_musawo/core/offline/offline_cache.dart';
 import 'package:ask_musawo/main.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('shows the login screen when signed out', (WidgetTester tester) async {
+  testWidgets('shows the login screen when signed out', (
+    WidgetTester tester,
+  ) async {
     final dio = Dio(BaseOptions(baseUrl: 'http://localhost:5000'));
     dio.httpClientAdapter = _StubAdapter();
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [apiClientProvider.overrideWithValue(ApiClient(dio))],
+        overrides: [
+          apiClientProvider.overrideWithValue(
+            ApiClient(
+              dio,
+              cache: OfflineCache.inMemory(),
+              network: NetworkStatus('http://localhost:5000'),
+            ),
+          ),
+        ],
         child: const AskMusawoApp(),
       ),
     );

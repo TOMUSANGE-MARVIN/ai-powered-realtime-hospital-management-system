@@ -95,7 +95,10 @@ class DoctorDashboardScreen extends ConsumerWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
-                        loading: () => const SizedBox.shrink(),
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6),
+                          child: SkeletonBox(width: 160, height: 28),
+                        ),
                         error: (_, _) => const Text('—'),
                       ),
                     ],
@@ -136,7 +139,8 @@ class DoctorDashboardScreen extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const SizedBox.shrink(),
+                loading: () =>
+                    const SkeletonCardList(count: 2, cardHeight: 110),
                 error: (error, _) => Text(error.toString()),
               ),
               const SizedBox(height: 24),
@@ -158,7 +162,9 @@ class DoctorDashboardScreen extends ConsumerWidget {
                         .toList(),
                   );
                 },
-                loading: () => const SizedBox.shrink(),
+                loading: () => const Column(
+                  children: [SkeletonListTile(), SkeletonListTile()],
+                ),
                 error: (error, _) => Text(error.toString()),
               ),
             ],

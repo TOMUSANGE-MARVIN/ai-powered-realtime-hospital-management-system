@@ -7,6 +7,10 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../offline/network_status.dart';
+import '../offline/offline_cache.dart';
+import '../offline/offline_interceptor.dart';
+
 // Defaults to the production API. Override at build/run time with
 // --dart-define=API_BASE_URL=http://10.0.2.2:5000 (Android emulator) or
 // http://localhost:5000 (physical device over `adb reverse`) for local dev.
@@ -22,10 +26,16 @@ const String apiBaseUrl = String.fromEnvironment(
 /// frontend relies on the browser's cookie jar. On web the browser itself
 /// owns cookies (sent automatically when `withCredentials` is set), so no
 /// cookie manager is needed there.
+///
+/// Every request also passes through [OfflineInterceptor], which saves GET
+/// responses to [cache] and serves them back when [network] says the API
+/// can't be reached — see core/offline/.
 class ApiClient {
-  ApiClient(this.dio);
+  ApiClient(this.dio, {required this.cache, required this.network});
 
   final Dio dio;
+  final OfflineCache cache;
+  final NetworkStatus network;
 
   static Future<ApiClient> create() async {
     final dio = Dio(
@@ -77,8 +87,10 @@ class ApiClient {
       dio.interceptors.add(
         InterceptorsWrapper(
           onError: (error, handler) async {
-            final alreadyRetried = error.requestOptions.extra['retried'] == true;
-            if (!alreadyRetried && error.type == DioExceptionType.connectionError) {
+            final alreadyRetried =
+                error.requestOptions.extra['retried'] == true;
+            if (!alreadyRetried &&
+                error.type == DioExceptionType.connectionError) {
               try {
                 final retryOptions = error.requestOptions
                   ..extra['retried'] = true;
@@ -94,6 +106,15 @@ class ApiClient {
       );
     }
 
-    return ApiClient(dio);
+    final cache = await OfflineCache.open();
+    final network = NetworkStatus(apiBaseUrl);
+    await network.start();
+    // Added last so its onError runs after the retry above has had its
+    // chance — the saved copy is only a fallback for a truly dead request.
+    dio.interceptors.add(
+      OfflineInterceptor(dio: dio, cache: cache, network: network),
+    );
+
+    return ApiClient(dio, cache: cache, network: network);
   }
 }

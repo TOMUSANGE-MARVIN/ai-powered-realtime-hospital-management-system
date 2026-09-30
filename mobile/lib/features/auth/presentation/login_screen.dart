@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/loading_dots.dart';
 import '../data/auth_repository.dart';
 import '../state/auth_controller.dart';
 import 'two_factor_widgets.dart';
@@ -120,14 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   FilledButton(
                     onPressed: isLoading ? null : _submit,
                     child: isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                        ? const LoadingDots()
                         : const Text('Sign in'),
                   ),
                   const SizedBox(height: 12),

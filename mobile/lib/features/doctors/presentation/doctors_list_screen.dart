@@ -130,7 +130,15 @@ class _DoctorsListScreenState extends ConsumerState<DoctorsListScreen> {
                 ),
               );
             },
-            loading: () => const SizedBox.shrink(),
+            loading: () => const SizedBox(
+              height: 68,
+              child: SkeletonCarousel(
+                itemWidth: 96,
+                count: 4,
+                spacing: 8,
+                padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+              ),
+            ),
             error: (_, _) => const SizedBox.shrink(),
           ),
           Expanded(

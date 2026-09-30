@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/offline/offline_first.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../appointments/state/appointment_providers.dart';
@@ -119,7 +120,10 @@ class _DoctorPickerState extends ConsumerState<_DoctorPicker> {
 
 final _searchedDoctorsProvider = FutureProvider.autoDispose
     .family<List<Doctor>, String>((ref, query) {
-      return ref.watch(doctorRepositoryProvider).listDoctors(search: query);
+      return offlineFirst(
+        ref,
+        () => ref.watch(doctorRepositoryProvider).listDoctors(search: query),
+      );
     });
 
 class _PatientPicker extends ConsumerWidget {

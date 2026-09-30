@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 import '../data/call_repository.dart';
 
 final callRepositoryProvider = Provider<CallRepository>((ref) {
@@ -8,5 +9,5 @@ final callRepositoryProvider = Provider<CallRepository>((ref) {
 });
 
 final myCallsProvider = FutureProvider.autoDispose((ref) {
-  return ref.watch(callRepositoryProvider).listMine();
+  return offlineFirst(ref, () => ref.watch(callRepositoryProvider).listMine());
 });

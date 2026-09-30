@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../appointments/data/booking_draft.dart';
 import '../../appointments/state/appointment_providers.dart';
@@ -420,14 +421,7 @@ class _Review extends StatelessWidget {
                   child: FilledButton(
                     onPressed: starting ? null : onPay,
                     child: starting
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                        ? const LoadingDots()
                         : Text(
                             'Pay $money',
                             style: const TextStyle(
@@ -536,11 +530,7 @@ class _Progress extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(strokeWidth: 3, color: seedTeal),
-            ),
+            const LoadingDots(color: seedTeal, size: 10),
             const SizedBox(height: 20),
             Text(
               title,

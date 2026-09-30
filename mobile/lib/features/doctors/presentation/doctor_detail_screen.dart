@@ -940,9 +940,8 @@ class _ReviewsPreviewCard extends ConsumerWidget {
                 ],
               );
             },
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            loading: () => const Column(
+              children: [SkeletonListTile(), SkeletonListTile()],
             ),
             error: (_, _) => const Text(
               'Could not load reviews',
@@ -990,11 +989,12 @@ class _ReviewsTab extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+                loading: () => const Column(
+                  children: [
+                    SkeletonListTile(),
+                    SkeletonListTile(),
+                    SkeletonListTile(),
+                  ],
                 ),
                 error: (_, _) => const Text(
                   'Could not load reviews',

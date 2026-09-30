@@ -92,7 +92,7 @@ class PatientHomeScreen extends ConsumerWidget {
                         tinted: true,
                       ),
                     ),
-                    loading: () => const SizedBox.shrink(),
+                    loading: () => const SkeletonCarousel(itemWidth: 150),
                     error: (_, _) =>
                         const Center(child: Text('Could not load categories')),
                   ),
@@ -121,7 +121,8 @@ class PatientHomeScreen extends ConsumerWidget {
                             _FeaturedDoctorCard(doctor: doctors[index]),
                       );
                     },
-                    loading: () => const SizedBox.shrink(),
+                    loading: () =>
+                        const SkeletonCarousel(itemWidth: 196, spacing: 14),
                     error: (error, _) => Center(child: Text(error.toString())),
                   ),
                 ),
@@ -1208,7 +1209,7 @@ class _QuickActionTile extends StatelessWidget {
                             height: 44,
                             decoration: BoxDecoration(
                               color: accent.foreground,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(kCardRadius),
                             ),
                             child: Icon(icon, color: Colors.white, size: 24),
                           ),

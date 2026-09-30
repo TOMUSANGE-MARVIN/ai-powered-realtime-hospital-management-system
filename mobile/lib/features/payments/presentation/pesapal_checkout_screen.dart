@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../data/payment_repository.dart';
 
 /// Hosts Pesapal's checkout page (card + mobile money) in a WebView.
@@ -21,7 +22,10 @@ class PesapalCheckoutScreen extends StatefulWidget {
 
 class _PesapalCheckoutScreenState extends State<PesapalCheckoutScreen> {
   late final WebViewController _controller;
-  int _progress = 0;
+
+  /// Pesapal's page is blank until it has loaded once — a form-shaped
+  /// skeleton covers it until then.
+  bool _firstLoadDone = false;
   bool _done = false;
   String? _error;
 
@@ -32,7 +36,14 @@ class _PesapalCheckoutScreenState extends State<PesapalCheckoutScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (p) => setState(() => _progress = p),
+          onProgress: (p) {
+            if (p >= 100 && !_firstLoadDone) {
+              setState(() => _firstLoadDone = true);
+            }
+          },
+          onPageFinished: (_) {
+            if (!_firstLoadDone) setState(() => _firstLoadDone = true);
+          },
           onNavigationRequest: (request) {
             if (request.url.contains(PaymentRepository.callbackPath)) {
               _finish(true);
@@ -90,17 +101,6 @@ class _PesapalCheckoutScreenState extends State<PesapalCheckoutScreen> {
             ],
           ),
           centerTitle: true,
-          bottom: _progress < 100
-              ? PreferredSize(
-                  preferredSize: const Size.fromHeight(2),
-                  child: LinearProgressIndicator(
-                    value: _progress / 100,
-                    minHeight: 2,
-                    color: seedTeal,
-                    backgroundColor: Colors.transparent,
-                  ),
-                )
-              : null,
         ),
         body: _error != null
             ? Center(
@@ -122,7 +122,18 @@ class _PesapalCheckoutScreenState extends State<PesapalCheckoutScreen> {
                   ),
                 ),
               )
-            : WebViewWidget(controller: _controller),
+            : Stack(
+                children: [
+                  WebViewWidget(controller: _controller),
+                  if (!_firstLoadDone)
+                    const Positioned.fill(
+                      child: ColoredBox(
+                        color: Colors.white,
+                        child: SkeletonForm(fieldCount: 5),
+                      ),
+                    ),
+                ],
+              ),
       ),
     );
   }

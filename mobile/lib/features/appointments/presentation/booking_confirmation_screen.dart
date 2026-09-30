@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../../../core/widgets/soft_card.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../doctors/presentation/doctor_card.dart' show DoctorImage;
@@ -302,11 +303,7 @@ class _BookingConfirmationScreenState
                     child: OutlinedButton(
                       onPressed: _applying ? null : _applyVoucher,
                       child: _applying
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                          ? const LoadingDots()
                           : const Text('Apply'),
                     ),
                   ),
@@ -347,14 +344,7 @@ class _BookingConfirmationScreenState
               child: FilledButton(
                 onPressed: _booking ? null : _confirm,
                 child: _booking
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                    ? const LoadingDots()
                     : const Text('Confirm Appointment'),
               ),
             ),

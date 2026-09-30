@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/api/api_client.dart';
 import 'core/api/providers.dart';
+import 'core/offline/offline_banner.dart';
 import 'core/realtime/socket_providers.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/calls/presentation/call_overlay.dart';
+import 'features/chat/state/chat_outbox.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +29,9 @@ class AskMusawoApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(socketLifecycleProvider);
+    // Started at launch so messages queued offline in an earlier session
+    // are sent as soon as possible, not only when a chat is opened.
+    ref.listen(chatOutboxProvider, (_, _) {});
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
 
@@ -37,7 +42,9 @@ class AskMusawoApp extends ConsumerWidget {
       darkTheme: buildDarkTheme(),
       themeMode: themeMode,
       routerConfig: router,
-      builder: (context, child) => CallOverlay(child: child),
+      builder: (context, child) => CallOverlay(
+        child: OfflineBanner(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }

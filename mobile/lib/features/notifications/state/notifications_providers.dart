@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 import '../../../core/realtime/socket_providers.dart';
 import '../../appointments/state/appointment_providers.dart';
 import '../data/notifications_repository.dart';
@@ -21,7 +22,10 @@ final notificationsProvider =
         ref.invalidate(allAssignedAppointmentsProvider);
       });
       ref.onDispose(sub.cancel);
-      return ref.watch(notificationsRepositoryProvider).list();
+      return offlineFirst(
+        ref,
+        () => ref.watch(notificationsRepositoryProvider).list(),
+      );
     });
 
 final unreadNotificationsProvider = Provider<int>((ref) {

@@ -453,7 +453,7 @@ class _ConsultationHistorySection extends ConsumerWidget {
                 .toList(),
           );
         },
-        loading: () => const SizedBox.shrink(),
+        loading: () => const SkeletonLines(),
         error: (error, _) => Text(error.toString()),
       ),
     );
@@ -517,7 +517,7 @@ class _PrescriptionsSection extends ConsumerWidget {
                 .toList(),
           );
         },
-        loading: () => const SizedBox.shrink(),
+        loading: () => const SkeletonLines(),
         error: (error, _) => Text(error.toString()),
       ),
     );
@@ -546,7 +546,7 @@ class _BillingSection extends ConsumerWidget {
             ),
           ],
         ),
-        loading: () => const SizedBox.shrink(),
+        loading: () => const SkeletonLines(count: 1),
         error: (_, _) => const Text('UGX 0'),
       ),
     );
@@ -582,7 +582,7 @@ class _MedicalDocumentsSection extends ConsumerWidget {
                 .toList(),
           );
         },
-        loading: () => const SizedBox.shrink(),
+        loading: () => const SkeletonLines(),
         error: (error, _) => Text(error.toString()),
       ),
     );

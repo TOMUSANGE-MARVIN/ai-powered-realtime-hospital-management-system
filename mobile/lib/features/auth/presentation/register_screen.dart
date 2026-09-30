@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/loading_dots.dart';
 import '../state/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -122,14 +123,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   FilledButton(
                     onPressed: isLoading ? null : _submit,
                     child: isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                        ? const LoadingDots()
                         : const Text('Create account'),
                   ),
                   const SizedBox(height: 12),

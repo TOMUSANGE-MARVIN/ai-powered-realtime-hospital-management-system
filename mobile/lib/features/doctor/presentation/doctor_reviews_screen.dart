@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/offline/offline_first.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/skeleton.dart';
@@ -10,7 +11,10 @@ import '../../doctors/presentation/review_help_tags.dart';
 import '../../doctors/state/doctor_providers.dart';
 
 final myReviewsProvider = FutureProvider((ref) {
-  return ref.watch(reviewRepositoryProvider).listMine();
+  return offlineFirst(
+    ref,
+    () => ref.watch(reviewRepositoryProvider).listMine(),
+  );
 });
 
 class DoctorReviewsScreen extends ConsumerWidget {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/offline/offline_first.dart';
 
 /// A lab result (X-ray, blood test, …). Patients only receive reviewed ones,
 /// without the AI analysis; doctors see everything in Full History.
@@ -88,17 +89,19 @@ Future<void> requestLabTest(
   }
 }
 
-final myLabResultsProvider = FutureProvider.autoDispose<List<LabResult>>((
-  ref,
-) async {
-  try {
-    final response = await ref.watch(dioProvider).get('/api/lab-results/mine');
-    ApiException.checkStatus(response);
-    return [
-      for (final r in response.data as List)
-        LabResult.fromJson(r as Map<String, dynamic>),
-    ];
-  } on DioException catch (error) {
-    throw ApiException.fromDioError(error);
-  }
-});
+final myLabResultsProvider = FutureProvider.autoDispose<List<LabResult>>(
+  (ref) => offlineFirst(ref, () async {
+    try {
+      final response = await ref
+          .watch(dioProvider)
+          .get('/api/lab-results/mine');
+      ApiException.checkStatus(response);
+      return [
+        for (final r in response.data as List)
+          LabResult.fromJson(r as Map<String, dynamic>),
+      ];
+    } on DioException catch (error) {
+      throw ApiException.fromDioError(error);
+    }
+  }),
+);

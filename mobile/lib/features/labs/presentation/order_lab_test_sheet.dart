@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/widgets/loading_dots.dart';
 import '../data/lab_result.dart';
 
 /// Lets a doctor order a lab test for a patient. Returns true once the
@@ -114,14 +115,7 @@ class _OrderLabTestSheetState extends ConsumerState<_OrderLabTestSheet> {
             child: FilledButton(
               onPressed: _submitting ? null : _submit,
               child: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? const LoadingDots()
                   : const Text('Order test'),
             ),
           ),

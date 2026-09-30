@@ -712,7 +712,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         .map((m) => m.toChatMessage());
     final messages = [...loaded, ...pending];
     if (messages.isEmpty) {
-      return const Center(child: Text('Say hello 👋'));
+      return const Center(child: Text('Say hello'));
     }
     return ListView.builder(
       controller: _scrollController,
